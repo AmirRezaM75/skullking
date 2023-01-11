@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skull King</title>
+</head>
+<body>
+<input id="button" type="button" value="Send">
+<script>
+    window.addEventListener("load", function(evt) {
+        let ws = new WebSocket("ws://localhost:3000/echo")
+        ws.onopen = function(evt) {
+            console.log("OPEN");
+        }
+
+        ws.onmessage = function(evt) {
+            console.log("RESPONSE: " + evt.data);
+        }
+        let button = document.getElementById("button")
+        button.onclick = (e) => ws.send("amir is here")
+
+    })
+</script>
+</body>
+</html>
