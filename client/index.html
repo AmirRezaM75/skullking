@@ -31,7 +31,8 @@
             }
 
             ws.onmessage = function (e) {
-                console.log("RESPONSE: " + e.data);
+                let cards = JSON.parse(e.data)
+                console.log(cards);
             }
         }
 

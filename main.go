@@ -28,6 +28,7 @@ func (d Deck) shuffle() {
 	count: number of players
 	size: number of cards associated to each player
 */
+//TODO: no need to count
 func (d Deck) deal(count, size int) [][]Card {
 	var output [][]Card
 
@@ -42,8 +43,8 @@ func (d Deck) deal(count, size int) [][]Card {
 }
 
 type Card struct {
-	color  string
-	number int
+	Color  string `json:"color"`
+	Number int    `json:"number"`
 }
 
 func generateCards() []Card {
@@ -54,8 +55,8 @@ func generateCards() []Card {
 	for _, color := range colors {
 		for i := 1; i <= 14; i++ {
 			card := Card{
-				color:  color,
-				number: i,
+				Color:  color,
+				Number: i,
 			}
 			cards = append(cards, card)
 		}
@@ -65,6 +66,8 @@ func generateCards() []Card {
 }
 
 var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -80,7 +83,6 @@ type User struct {
 }
 
 func (s Server) start(w http.ResponseWriter, r *http.Request) {
-	println(len(s.connections))
 	// This is not secure; but acceptable as starting point
 	// @link: https://websockets.readthedocs.io/en/stable/topics/authentication.html
 	token := r.URL.Query().Get("token")
@@ -100,13 +102,61 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 			log.Print("upgrade:", err)
 			return
 		}
+
+		defer c.Close()
+	} else {
+		return
 	}
 
-	c := s.connections[user.id]
+	/*c, err := upgrader.Upgrade(w, r, nil)
 
 	defer c.Close()
 
+	s.connections[user.id] = c
+
+	fmt.Println("New Connection.")
+
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}*/
+
+	var deck Deck
+	cards := generateCards()
+	deck.cards = cards
+	deck.shuffle()
+	items := deck.deal(2, 3)
+
+	fmt.Println("Number of connections: ", len(s.connections))
+out:
 	for {
+		for userId, c := range s.connections {
+			fmt.Println("UserId:", userId)
+			err := c.WriteJSON(items[userId-1])
+			if err != nil {
+				log.Println("write:", err)
+				delete(s.connections, userId)
+				break out
+			}
+		}
+		time.Sleep(time.Second * 5)
+	}
+
+	//if len(s.connections) == 2 {
+	//
+	//	for _, c := range s.connections {
+	//		/*userCards, _ := json.Marshal(items[userId-1])
+	//		stringJSON := string(userCards)
+	//		err := c.WriteJSON(stringJSON)*/
+	//		err = c.WriteMessage(websocket.TextMessage, []byte(time.Now().String()))
+	//		if err != nil {
+	//			log.Println("write:", err)
+	//			break
+	//		}
+	//	}
+	//}
+
+	/*for {
 		// The WebSocket protocol defines three types of control messages: close, ping and pong.
 		// messageType is an int with value websocket.BinaryMessage (2) or websocket.TextMessage (1).
 		messageType, message, err := c.ReadMessage() // or c.ReadJson
@@ -125,18 +175,11 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		time.Sleep(time.Second * 2)
-	}
+	}*/
 }
 
 func main() {
-	/*var deck Deck
-	cards := generateCards()
-	deck.cards = cards
-	deck.shuffle()
-	fmt.Println(deck.cards)
-	output := deck.deal(4, 3)
-	fmt.Println(output)
-	return*/
+
 	server := Server{
 		connections: make(map[int]*websocket.Conn),
 	}
