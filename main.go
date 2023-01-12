@@ -66,11 +66,19 @@ func generateCards() []Card {
 
 var upgrader = websocket.Upgrader{}
 
-func start(w http.ResponseWriter, r *http.Request) {
+type Server struct {
+	connections map[*websocket.Conn]bool
+}
+
+func (s Server) start(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
 	}
 	c, err := upgrader.Upgrade(w, r, nil)
+
+	s.connections[c] = true
+
+	fmt.Println("New Connection.")
 
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -80,34 +88,39 @@ func start(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		// The WebSocket protocol defines three types of control messages: close, ping and pong.
-
 		// messageType is an int with value websocket.BinaryMessage (2) or websocket.TextMessage (1).
 		messageType, message, err := c.ReadMessage() // or c.ReadJson
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		log.Printf("recv: %s", message)
 
-		err = c.WriteMessage(messageType, []byte(time.Now().String()))
-		if err != nil {
-			log.Println("write:", err)
-			break
+		log.Printf("message from client: %s", message)
+
+		for c, _ := range s.connections {
+			err = c.WriteMessage(messageType, []byte(time.Now().String()))
+			if err != nil {
+				log.Println("write:", err)
+				break
+			}
 		}
+		time.Sleep(time.Second * 2)
 	}
 }
 
 func main() {
-	var deck Deck
+	/*var deck Deck
 	cards := generateCards()
 	deck.cards = cards
 	deck.shuffle()
 	fmt.Println(deck.cards)
 	output := deck.deal(4, 3)
 	fmt.Println(output)
-	return
-
-	http.HandleFunc("/start", start)
+	return*/
+	server := Server{
+		connections: make(map[*websocket.Conn]bool),
+	}
+	http.HandleFunc("/start", server.start)
 	fs := http.FileServer(http.Dir("client"))
 	http.Handle("/", fs)
 	log.Fatal(http.ListenAndServe(":3000", nil))

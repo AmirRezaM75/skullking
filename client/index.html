@@ -8,7 +8,7 @@
 <input id="button" type="button" value="Send">
 <script>
     window.addEventListener("load", function(evt) {
-        let ws = new WebSocket("ws://localhost:3000/echo")
+        let ws = new WebSocket("ws://localhost:3000/start")
         ws.onopen = function(evt) {
             console.log("OPEN");
         }
