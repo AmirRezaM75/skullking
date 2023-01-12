@@ -64,26 +64,46 @@ func generateCards() []Card {
 	return cards
 }
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 type Server struct {
-	connections map[*websocket.Conn]bool
+	connections map[int]*websocket.Conn
+}
+
+type User struct {
+	id    int
+	token string
 }
 
 func (s Server) start(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool {
-		return true
+	println(len(s.connections))
+	// This is not secure; but acceptable as starting point
+	// @link: https://websockets.readthedocs.io/en/stable/topics/authentication.html
+	token := r.URL.Query().Get("token")
+
+	user := getUserByToken(token)
+
+	_, ok := s.connections[user.id]
+
+	if !ok {
+		c, err := upgrader.Upgrade(w, r, nil)
+
+		s.connections[user.id] = c
+
+		fmt.Println("New Connection.")
+
+		if err != nil {
+			log.Print("upgrade:", err)
+			return
+		}
 	}
-	c, err := upgrader.Upgrade(w, r, nil)
 
-	s.connections[c] = true
+	c := s.connections[user.id]
 
-	fmt.Println("New Connection.")
-
-	if err != nil {
-		log.Print("upgrade:", err)
-		return
-	}
 	defer c.Close()
 
 	for {
@@ -97,7 +117,7 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("message from client: %s", message)
 
-		for c, _ := range s.connections {
+		for _, c := range s.connections {
 			err = c.WriteMessage(messageType, []byte(time.Now().String()))
 			if err != nil {
 				log.Println("write:", err)
@@ -118,10 +138,24 @@ func main() {
 	fmt.Println(output)
 	return*/
 	server := Server{
-		connections: make(map[*websocket.Conn]bool),
+		connections: make(map[int]*websocket.Conn),
 	}
 	http.HandleFunc("/start", server.start)
 	fs := http.FileServer(http.Dir("client"))
 	http.Handle("/", fs)
 	log.Fatal(http.ListenAndServe(":3000", nil))
+}
+
+// TODO: Get user id from database by token
+func getUserByToken(token string) User {
+	userId := 1
+
+	if token == "POORLY_SECURE_TOKEN" {
+		userId = 2
+	}
+
+	return User{
+		id:    userId,
+		token: token,
+	}
 }
