@@ -83,29 +83,35 @@ type User struct {
 }
 
 func (s Server) start(w http.ResponseWriter, r *http.Request) {
+	//index := 1
 	// This is not secure; but acceptable as starting point
 	// @link: https://websockets.readthedocs.io/en/stable/topics/authentication.html
 	token := r.URL.Query().Get("token")
 
 	user := getUserByToken(token)
 
-	_, ok := s.connections[user.id]
+	c, err := upgrader.Upgrade(w, r, nil)
 
-	if !ok {
-		c, err := upgrader.Upgrade(w, r, nil)
+	s.connections[user.id] = c
 
-		s.connections[user.id] = c
+	fmt.Println("New Connection.")
 
-		fmt.Println("New Connection.")
-
-		if err != nil {
-			log.Print("upgrade:", err)
-			return
-		}
-
-		defer c.Close()
-	} else {
+	if err != nil {
+		log.Print("upgrade:", err)
 		return
+	}
+
+	defer c.Close()
+
+	for {
+		fmt.Println("UserId", user.id)
+		err = c.WriteMessage(websocket.TextMessage, []byte(time.Now().String()))
+		if err != nil {
+			log.Println("write:", err)
+			delete(s.connections, user.id)
+			break
+		}
+		time.Sleep(time.Second * 2)
 	}
 
 	/*c, err := upgrader.Upgrade(w, r, nil)
@@ -121,26 +127,39 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 		return
 	}*/
 
-	var deck Deck
+	/*var deck Deck
 	cards := generateCards()
 	deck.cards = cards
 	deck.shuffle()
-	items := deck.deal(2, 3)
+	items := deck.deal(2, 3)*/
 
 	fmt.Println("Number of connections: ", len(s.connections))
-out:
+	/*out:
 	for {
 		for userId, c := range s.connections {
-			fmt.Println("UserId:", userId)
-			err := c.WriteJSON(items[userId-1])
+			fmt.Println("UserId", userId)
+			err := c.WriteMessage(websocket.TextMessage, []byte(time.Now().String()))
 			if err != nil {
 				log.Println("write:", err)
 				delete(s.connections, userId)
 				break out
 			}
 		}
-		time.Sleep(time.Second * 5)
-	}
+		time.Sleep(time.Second * 2)
+	}*/
+	/*out:
+	for {
+		for userId, c := range s.connections {
+			err := c.WriteMessage(websocket.TextMessage, []byte(strconv.Itoa(index)))
+			index++
+			if err != nil {
+				log.Println("write:", err)
+				delete(s.connections, userId)
+				break out
+			}
+		}
+		time.Sleep(time.Second * 2)
+	}*/
 
 	//if len(s.connections) == 2 {
 	//
@@ -186,7 +205,7 @@ func main() {
 	http.HandleFunc("/start", server.start)
 	fs := http.FileServer(http.Dir("client"))
 	http.Handle("/", fs)
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	http.ListenAndServe(":3000", nil)
 }
 
 // TODO: Get user id from database by token
