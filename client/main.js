@@ -1,11 +1,12 @@
 window.addEventListener("load", function(evt) {
+    let ws = null
     document.getElementById("form").onsubmit = function(e) {
         e.preventDefault()
         let playerId = document.querySelector('input[name="player"]:checked').value;
         // TODO: Get token after authentication (I'm gonna use token based authentication)
         let token = playerId == 1 ? "HIGHLY_SECURE_TOKEN" : "POORLY_SECURE_TOKEN"
 
-        let ws = new WebSocket("ws://localhost:3000/start?token=" + token)
+        ws = new WebSocket("ws://localhost:3000/start?token=" + token)
 
         ws.onopen = function (e) {
             console.log("OPEN");
@@ -17,6 +18,10 @@ window.addEventListener("load", function(evt) {
         }
     }
 
-    /*let button = document.getElementById("button")
-    button.onclick = (e) => ws.send("amir is here")*/
+    let start = document.getElementById("start")
+    start.onclick = function (e) {
+        if (!ws) return
+
+        ws.send("start")
+    }
 })

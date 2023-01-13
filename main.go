@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
@@ -105,96 +106,32 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		fmt.Println("UserId", user.id)
-		err = c.WriteMessage(websocket.TextMessage, []byte(time.Now().String()))
-		if err != nil {
-			log.Println("write:", err)
-			delete(s.connections, user.id)
-			break
-		}
-		time.Sleep(time.Second * 2)
-	}
 
-	/*c, err := upgrader.Upgrade(w, r, nil)
+		_, message, err := c.ReadMessage()
 
-	defer c.Close()
-
-	s.connections[user.id] = c
-
-	fmt.Println("New Connection.")
-
-	if err != nil {
-		log.Print("upgrade:", err)
-		return
-	}*/
-
-	/*var deck Deck
-	cards := generateCards()
-	deck.cards = cards
-	deck.shuffle()
-	items := deck.deal(2, 3)*/
-
-	fmt.Println("Number of connections: ", len(s.connections))
-	/*out:
-	for {
-		for userId, c := range s.connections {
-			fmt.Println("UserId", userId)
-			err := c.WriteMessage(websocket.TextMessage, []byte(time.Now().String()))
-			if err != nil {
-				log.Println("write:", err)
-				delete(s.connections, userId)
-				break out
-			}
-		}
-		time.Sleep(time.Second * 2)
-	}*/
-	/*out:
-	for {
-		for userId, c := range s.connections {
-			err := c.WriteMessage(websocket.TextMessage, []byte(strconv.Itoa(index)))
-			index++
-			if err != nil {
-				log.Println("write:", err)
-				delete(s.connections, userId)
-				break out
-			}
-		}
-		time.Sleep(time.Second * 2)
-	}*/
-
-	//if len(s.connections) == 2 {
-	//
-	//	for _, c := range s.connections {
-	//		/*userCards, _ := json.Marshal(items[userId-1])
-	//		stringJSON := string(userCards)
-	//		err := c.WriteJSON(stringJSON)*/
-	//		err = c.WriteMessage(websocket.TextMessage, []byte(time.Now().String()))
-	//		if err != nil {
-	//			log.Println("write:", err)
-	//			break
-	//		}
-	//	}
-	//}
-
-	/*for {
-		// The WebSocket protocol defines three types of control messages: close, ping and pong.
-		// messageType is an int with value websocket.BinaryMessage (2) or websocket.TextMessage (1).
-		messageType, message, err := c.ReadMessage() // or c.ReadJson
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
 
-		log.Printf("message from client: %s", message)
+		if string(message) == "start" {
+			var deck Deck
+			cards := generateCards()
+			deck.cards = cards
+			deck.shuffle()
+			items := deck.deal(len(s.connections), 3)
 
-		for _, c := range s.connections {
-			err = c.WriteMessage(messageType, []byte(time.Now().String()))
-			if err != nil {
-				log.Println("write:", err)
-				break
+			for userId, c := range s.connections {
+				userCards, _ := json.Marshal(items[userId-1])
+				stringJSON := string(userCards)
+				err := c.WriteJSON(stringJSON)
+				if err != nil {
+					log.Println("write:", err)
+					break
+				}
 			}
 		}
-		time.Sleep(time.Second * 2)
-	}*/
+	}
 }
 
 func main() {
