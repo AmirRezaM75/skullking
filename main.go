@@ -83,6 +83,11 @@ type User struct {
 	token string
 }
 
+type BetCommand struct {
+	Method string
+	EndsAt int64
+}
+
 func (s Server) start(w http.ResponseWriter, r *http.Request) {
 	//index := 1
 	// This is not secure; but acceptable as starting point
@@ -102,12 +107,18 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bets := make(map[int]int)
+
 	defer c.Close()
 
 	for {
-		fmt.Println("UserId", user.id)
-
 		_, message, err := c.ReadMessage()
+
+		token := r.URL.Query().Get("token")
+
+		user := getUserByToken(token)
+
+		fmt.Println("Received message from userId:", user.id)
 
 		if err != nil {
 			log.Println("read:", err)
@@ -115,6 +126,21 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if string(message) == "start" {
+			log.Println("Started")
+			endsAt := time.Now().Add(time.Second * 10).Unix()
+			command, _ := json.Marshal(BetCommand{
+				Method: "bet",
+				EndsAt: endsAt,
+			})
+			for _, c := range s.connections {
+				stringJSON := string(command)
+				err := c.WriteJSON(stringJSON)
+				if err != nil {
+					log.Println("write:", err)
+					break
+				}
+			}
+
 			var deck Deck
 			cards := generateCards()
 			deck.cards = cards
@@ -131,7 +157,29 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+
+		// Check if there is at least one person waiting for betting
+		var betting chan bool
+
+		go wait(betting)
+
+		fmt.Println(<-betting)
+
+		/*if <-betting {
+			fmt.Println("Really timeout")
+		}
+		*/
+		if string(message) == "bet" {
+			log.Println("Bet")
+			bets[user.id] = 1
+		}
 	}
+}
+
+func wait(channel chan bool) {
+	time.Sleep(time.Second * 5)
+	log.Println("timeout")
+	channel <- true
 }
 
 func main() {

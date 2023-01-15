@@ -7,7 +7,6 @@ window.addEventListener("load", function(evt) {
         let token = playerId == 1 ? "HIGHLY_SECURE_TOKEN" : "POORLY_SECURE_TOKEN"
 
         ws = new WebSocket("ws://localhost:3000/start?token=" + token)
-
         ws.onopen = function (e) {
             console.log("OPEN");
         }
@@ -23,5 +22,13 @@ window.addEventListener("load", function(evt) {
         if (!ws) return
 
         ws.send("start")
+    }
+
+    let bet = document.getElementById("bet")
+    bet.onclick = function (e) {
+        console.log("Bet")
+        if (!ws) return
+
+        ws.send("bet")
     }
 })
