@@ -110,76 +110,91 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 	bets := make(map[int]int)
 
 	defer c.Close()
+	var betting = make(chan bool)
 
 	for {
-		_, message, err := c.ReadMessage()
+		reader := make(chan string)
+		go s.reader(c, reader)
+		token = r.URL.Query().Get("token")
+		user = getUserByToken(token)
 
-		token := r.URL.Query().Get("token")
+		select {
+		case command := <-reader:
+			fmt.Println("Received message from userId:", user.id, command)
+			if command == "start" {
+				log.Println("Started")
+				endsAt := time.Now().Add(time.Second * 10).Unix()
+				command, _ := json.Marshal(BetCommand{
+					Method: "bet",
+					EndsAt: endsAt,
+				})
+				for _, c := range s.connections {
+					stringJSON := string(command)
+					err := c.WriteJSON(stringJSON)
+					if err != nil {
+						log.Println("write:", err)
+						break
+					}
+				}
 
-		user := getUserByToken(token)
+				var deck Deck
+				cards := generateCards()
+				deck.cards = cards
+				deck.shuffle()
+				items := deck.deal(len(s.connections), 3)
 
-		fmt.Println("Received message from userId:", user.id)
-
-		if err != nil {
-			log.Println("read:", err)
-			break
-		}
-
-		if string(message) == "start" {
-			log.Println("Started")
-			endsAt := time.Now().Add(time.Second * 10).Unix()
-			command, _ := json.Marshal(BetCommand{
-				Method: "bet",
-				EndsAt: endsAt,
-			})
-			for _, c := range s.connections {
-				stringJSON := string(command)
-				err := c.WriteJSON(stringJSON)
-				if err != nil {
-					log.Println("write:", err)
-					break
+				for userId, c := range s.connections {
+					userCards, _ := json.Marshal(items[userId-1])
+					stringJSON := string(userCards)
+					err := c.WriteJSON(stringJSON)
+					if err != nil {
+						log.Println("write:", err)
+						break
+					}
 				}
 			}
-
-			var deck Deck
-			cards := generateCards()
-			deck.cards = cards
-			deck.shuffle()
-			items := deck.deal(len(s.connections), 3)
-
-			for userId, c := range s.connections {
-				userCards, _ := json.Marshal(items[userId-1])
-				stringJSON := string(userCards)
-				err := c.WriteJSON(stringJSON)
-				if err != nil {
-					log.Println("write:", err)
-					break
+			if command == "start" {
+				go wait(betting)
+			}
+			if command == "bet" {
+				bets[1] = 12
+			}
+		case expired := <-betting:
+			if expired {
+				fmt.Println("connections", len(s.connections))
+				for userId, c := range s.connections {
+					_, exists := bets[userId]
+					if !exists {
+						bets[userId] = 2
+					}
+					err := c.WriteJSON(bets)
+					if err != nil {
+						log.Println("write:", err)
+						break
+					}
 				}
 			}
-		}
-
-		// Check if there is at least one person waiting for betting
-		var betting chan bool
-
-		go wait(betting)
-
-		fmt.Println(<-betting)
-
-		/*if <-betting {
-			fmt.Println("Really timeout")
-		}
-		*/
-		if string(message) == "bet" {
-			log.Println("Bet")
-			bets[user.id] = 1
 		}
 	}
 }
 
+func (s Server) reader(c *websocket.Conn, channel chan string) {
+	_, message, err := c.ReadMessage()
+
+	if err != nil {
+		log.Println("ReadMessage:", err)
+		channel <- ""
+	}
+
+	channel <- string(message)
+
+	close(channel)
+}
+
 func wait(channel chan bool) {
 	time.Sleep(time.Second * 5)
-	log.Println("timeout")
 	channel <- true
+	close(channel)
 }
 
 func main() {
