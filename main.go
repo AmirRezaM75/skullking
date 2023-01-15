@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -111,8 +112,10 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 
 	defer c.Close()
 	var betting = make(chan bool)
-
 	for {
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
 		reader := make(chan string)
 		go s.reader(c, reader)
 		token = r.URL.Query().Get("token")
@@ -159,22 +162,28 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 			if command == "bet" {
 				bets[1] = 12
 			}
+			wg.Done()
 		case expired := <-betting:
 			if expired {
-				fmt.Println("connections", len(s.connections))
-				for userId, c := range s.connections {
+				for userId, _ := range s.connections {
 					_, exists := bets[userId]
 					if !exists {
 						bets[userId] = 2
 					}
+				}
+				for _, c := range s.connections {
 					err := c.WriteJSON(bets)
 					if err != nil {
 						log.Println("write:", err)
 						break
 					}
 				}
+				wg.Done()
+
 			}
 		}
+		//If don't send message it stuck here
+		wg.Wait()
 	}
 }
 
