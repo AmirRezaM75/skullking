@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"skull/ws"
 	"sync"
 	"time"
 )
@@ -211,9 +212,20 @@ func main() {
 	server := Server{
 		connections: make(map[int]*websocket.Conn),
 	}
+
+	hub := ws.NewHub()
+	wsHandler := ws.NewHandler(hub)
+
+	go hub.Run()
+
+	http.HandleFunc("/rooms", wsHandler.CreateRoom)
+	http.HandleFunc("/ws", wsHandler.JoinRoom)
+	http.HandleFunc("/ws/rooms", wsHandler.GetRooms)
+	http.HandleFunc("/ws/clients", wsHandler.GetClients)
 	http.HandleFunc("/start", server.start)
 	fs := http.FileServer(http.Dir("client"))
 	http.Handle("/", fs)
+	fmt.Println("Listening on port 3000")
 	http.ListenAndServe(":3000", nil)
 }
 
