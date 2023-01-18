@@ -16,8 +16,10 @@ type Client struct {
 }
 
 type Message struct {
-	Content string `json:"content"`
-	RoomId  string `json:"roomId"`
+	ContentType string `json:"contentType"`
+	Content     string `json:"content"`
+	Command     string `json:"command"`
+	RoomId      string `json:"roomId"`
 }
 
 func (c *Client) writeMessage() {

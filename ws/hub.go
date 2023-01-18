@@ -92,10 +92,11 @@ func (h *Hub) Run() {
 					for _, client := range h.Rooms[message.RoomId].Clients {
 						userCards, _ := json.Marshal(items[index])
 						index++
-						stringJSON := string(userCards)
 						cardsMessage := &Message{
-							Content: stringJSON,
-							RoomId:  client.RoomId,
+							ContentType: "json",
+							Content:     string(userCards),
+							Command:     "DEAL_CARDS",
+							RoomId:      client.RoomId,
 						}
 						client.Message <- cardsMessage
 					}

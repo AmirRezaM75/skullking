@@ -1,4 +1,9 @@
+// Commands
+const COMMAND_DEAL_CARDS = 'DEAL_CARDS'
+
+
 window.addEventListener("load", function (evt) {
+
     let roomId = "xxx-yyy-zzz"
     let ws = null
     document.getElementById("form").onsubmit = function (e) {
@@ -12,8 +17,16 @@ window.addEventListener("load", function (evt) {
         }
 
         ws.onmessage = function (e) {
-            // let cards = JSON.parse(e.data)
-            console.log(e.data);
+            let message = JSON.parse(e.data)
+            let content = message['content']
+            let command = message['command']
+            if (message['contentType'] === 'json') {
+                content = JSON.parse(message['content'])
+            }
+
+            console.log(message)
+
+            messageHandler(command, content);
         }
     }
 
@@ -47,3 +60,22 @@ window.addEventListener("load", function (evt) {
         ws.send("bet")
     }
 })
+
+function addCard(color, number, container) {
+    let card = document.createElement("div")
+    card.style.backgroundColor = color
+    card.classList.add("card")
+    let cardNumber = document.createElement("span")
+    cardNumber.innerText = number
+    card.appendChild(cardNumber)
+    container.appendChild(card)
+}
+
+
+function messageHandler(command, content) {
+    let cardsContainer = document.getElementById("cards-container")
+
+    if (command === COMMAND_DEAL_CARDS) {
+        content.forEach((card) => addCard(card['color'], card['number'], cardsContainer))
+    }
+}
