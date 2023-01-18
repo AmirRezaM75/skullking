@@ -58,11 +58,6 @@ func (c *Client) readMessage(hub *Hub) {
 			RoomId:  c.RoomId,
 		}
 
-		if msg.Content == "start" {
-			fmt.Println("Starting...")
-			go wait(hub)
-		}
-
 		hub.Broadcast <- msg
 	}
 }

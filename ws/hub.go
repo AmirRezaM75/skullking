@@ -35,22 +35,22 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case expired, ok := <-h.Stall:
-			fmt.Println("Stall", expired, ok)
 			if !ok {
 				h.Stall = nil
 			} else {
-				message := &Message{
-					Content: "Expired",
-					RoomId:  "xxx-yyy-zzz",
-				}
-				if _, ok := h.Rooms[message.RoomId]; ok {
-					for _, client := range h.Rooms[message.RoomId].Clients {
-						client.Message <- message
+				if expired {
+					message := &Message{
+						Command: CommandBettingEnded,
+						RoomId:  "xxx-yyy-zzz",
+					}
+					if _, ok := h.Rooms[message.RoomId]; ok {
+						for _, client := range h.Rooms[message.RoomId].Clients {
+							client.Message <- message
+						}
 					}
 				}
 			}
 		case client := <-h.Register:
-			fmt.Println("Register")
 			if _, ok := h.Rooms[client.RoomId]; ok {
 				room := h.Rooms[client.RoomId]
 				if _, ok = room.Clients[client.Id]; !ok {
@@ -58,7 +58,6 @@ func (h *Hub) Run() {
 				}
 			}
 		case client := <-h.Unregister:
-			fmt.Println("Unregister")
 			if _, ok := h.Rooms[client.RoomId]; ok {
 				clients := h.Rooms[client.RoomId].Clients
 				if _, ok = clients[client.Id]; ok {
@@ -73,8 +72,6 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.Broadcast:
-			fmt.Println("Broadcast")
-
 			if _, ok := h.Rooms[message.RoomId]; ok {
 				for _, client := range h.Rooms[message.RoomId].Clients {
 					client.Message <- message
@@ -100,7 +97,20 @@ func (h *Hub) Run() {
 						}
 						client.Message <- cardsMessage
 					}
+
+					betCommand := BetCommand{Round: 3, EndsAt: time.Now().Add(WaitTime).Unix()}
+					betCommandJson, _ := json.Marshal(betCommand)
+					for _, client := range h.Rooms[message.RoomId].Clients {
+						cardsMessage := &Message{
+							ContentType: "json",
+							Content:     string(betCommandJson),
+							Command:     CommandBettingStarted,
+							RoomId:      client.RoomId,
+						}
+						client.Message <- cardsMessage
+					}
 				}
+				go wait(h)
 			}
 		}
 	}
@@ -108,7 +118,21 @@ func (h *Hub) Run() {
 
 func wait(hub *Hub) {
 	log.Println("wait method.")
-	time.Sleep(time.Second * 5)
+	time.Sleep(WaitTime)
 	hub.Stall <- true
 	close(hub.Stall)
+}
+
+const WaitTime = 10 * time.Second
+
+// Commands
+
+const CommandBettingStarted = "BETTING_STARTED"
+const CommandBettingEnded = "BETTING_ENDED"
+
+// Command Structs
+
+type BetCommand struct {
+	Round  int32 `json:"round"`
+	EndsAt int64 `json:"endsAt"`
 }

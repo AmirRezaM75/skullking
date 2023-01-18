@@ -1,5 +1,7 @@
 // Commands
 const COMMAND_DEAL_CARDS = 'DEAL_CARDS'
+const COMMAND_BETTING_STARTED = 'BETTING_STARTED'
+const COMMAND_BETTING_ENDED = 'BETTING_ENDED'
 
 
 window.addEventListener("load", function (evt) {
@@ -71,11 +73,41 @@ function addCard(color, number, container) {
     container.appendChild(card)
 }
 
+function addBet(number, container) {
+    let betCard = document.createElement("div")
+    betCard.classList.add("bet")
+    let betNumber = document.createElement("span")
+    betNumber.innerText = number
+    betCard.appendChild(betNumber)
+    container.appendChild(betCard)
+}
+
 
 function messageHandler(command, content) {
     let cardsContainer = document.getElementById("cards-container")
-
+    let betsContainer = document.getElementById("bets-container")
+    let timer = document.getElementById("timer")
     if (command === COMMAND_DEAL_CARDS) {
         content.forEach((card) => addCard(card['color'], card['number'], cardsContainer))
+    }
+
+    if (command === COMMAND_BETTING_STARTED) {
+        for (let i = 0; i <= content['round']; i++) {
+            addBet(i, betsContainer)
+        }
+        let endsAt = content['endsAt']
+        let timesRemaining
+        let x = setInterval(() => {
+            let now = new Date().getTime() / 1000 // In seconds
+            timesRemaining = Math.floor(endsAt - now)
+            if (timesRemaining < 0) {
+                clearInterval(x)
+            } else {
+                timer.innerText = timesRemaining.toString()
+            }
+        }, 1000)
+
+
+
     }
 }
