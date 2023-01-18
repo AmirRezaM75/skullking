@@ -11,7 +11,14 @@ type Room struct {
 	Id      string             `json:"id"`
 	Name    string             `json:"name"`
 	Clients map[string]*Client `json:"clients"`
+	Round   int
+	Status  string
 }
+
+const StatusNotStarted = "NOT_STARTED"
+const StatusMakingBid = "MAKING_BID"
+const StatusEndOfAuction = "END_OF_AUCTION"
+const StatusTakingTrick = "TAKING_A_TRICK"
 
 type Hub struct {
 	Rooms      map[string]*Room
@@ -38,9 +45,22 @@ func (h *Hub) Run() {
 			if !ok {
 				h.Stall = nil
 			} else {
+				var userBets []UserBet
 				if expired {
+
+					if _, ok := h.Rooms["xxx-yyy-zzz"]; ok {
+						for _, client := range h.Rooms["xxx-yyy-zzz"].Clients {
+							userBets = append(userBets, UserBet{
+								UserId: client.Id,
+								Bet:    client.Bid,
+							})
+						}
+					}
+
+					content, _ := json.Marshal(userBets)
 					message := &Message{
 						Command: CommandBettingEnded,
+						Content: string(content),
 						RoomId:  "xxx-yyy-zzz",
 					}
 					if _, ok := h.Rooms[message.RoomId]; ok {
@@ -48,6 +68,7 @@ func (h *Hub) Run() {
 							client.Message <- message
 						}
 					}
+					h.Rooms[message.RoomId].Status = StatusEndOfAuction
 				}
 			}
 		case client := <-h.Register:
@@ -72,35 +93,40 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.Broadcast:
-			if _, ok := h.Rooms[message.RoomId]; ok {
+			/*if _, ok := h.Rooms[message.RoomId]; ok {
 				for _, client := range h.Rooms[message.RoomId].Clients {
 					client.Message <- message
 				}
-			}
+			}*/
 
-			if message.Content == "start" {
-				var deck Deck
-				cards := generateCards()
-				deck.cards = cards
-				deck.shuffle()
-				items := deck.deal(len(h.Rooms[message.RoomId].Clients), 3)
+			if message.Command == CommandStart {
 				if _, ok := h.Rooms[message.RoomId]; ok {
+					room := h.Rooms[message.RoomId]
+					room.Round++
+					var deck Deck
+					cards := generateCards()
+					deck.cards = cards
+					deck.shuffle()
+					items := deck.deal(len(room.Clients), 3)
 					index := 0
-					for _, client := range h.Rooms[message.RoomId].Clients {
+					for _, client := range room.Clients {
 						userCards, _ := json.Marshal(items[index])
 						index++
 						cardsMessage := &Message{
 							ContentType: "json",
 							Content:     string(userCards),
-							Command:     "DEAL_CARDS",
+							Command:     CommandDealCards,
 							RoomId:      client.RoomId,
 						}
 						client.Message <- cardsMessage
 					}
 
-					betCommand := BetCommand{Round: 3, EndsAt: time.Now().Add(WaitTime).Unix()}
+					betCommand := BetCommand{
+						Round:  room.Round,
+						EndsAt: time.Now().Add(WaitTime).Unix(),
+					}
 					betCommandJson, _ := json.Marshal(betCommand)
-					for _, client := range h.Rooms[message.RoomId].Clients {
+					for _, client := range room.Clients {
 						cardsMessage := &Message{
 							ContentType: "json",
 							Content:     string(betCommandJson),
@@ -109,6 +135,7 @@ func (h *Hub) Run() {
 						}
 						client.Message <- cardsMessage
 					}
+					room.Status = StatusMakingBid
 				}
 				go wait(h)
 			}
@@ -129,10 +156,18 @@ const WaitTime = 10 * time.Second
 
 const CommandBettingStarted = "BETTING_STARTED"
 const CommandBettingEnded = "BETTING_ENDED"
+const CommandBet = "BET"
+const CommandStart = "START"
+const CommandDealCards = "DEAL_CARDS"
 
 // Command Structs
 
 type BetCommand struct {
-	Round  int32 `json:"round"`
+	Round  int   `json:"round"`
 	EndsAt int64 `json:"endsAt"`
+}
+
+type UserBet struct {
+	UserId string `json:"userId"`
+	Bet    int    `json:"bet"`
 }

@@ -1,13 +1,18 @@
-// Commands
+// Server Commands
 const COMMAND_DEAL_CARDS = 'DEAL_CARDS'
 const COMMAND_BETTING_STARTED = 'BETTING_STARTED'
 const COMMAND_BETTING_ENDED = 'BETTING_ENDED'
 
 
+// Client Commands
+const COMMAND_BET = 'BET'
+const COMMAND_START = 'START'
+
+let ws = null
+
 window.addEventListener("load", function (evt) {
 
     let roomId = "xxx-yyy-zzz"
-    let ws = null
     document.getElementById("form").onsubmit = function (e) {
         e.preventDefault()
         let playerId = document.querySelector('input[name="player"]:checked').value;
@@ -51,15 +56,7 @@ window.addEventListener("load", function (evt) {
     start.onclick = function (e) {
         if (!ws) return
 
-        ws.send("start")
-    }
-
-    let bet = document.getElementById("bet")
-    bet.onclick = function (e) {
-        console.log("Bet")
-        if (!ws) return
-
-        ws.send("bet")
+        ws.send(makeMessage(COMMAND_START))
     }
 })
 
@@ -76,10 +73,17 @@ function addCard(color, number, container) {
 function addBet(number, container) {
     let betCard = document.createElement("div")
     betCard.classList.add("bet")
+    betCard.dataset.value = number
+    betCard.addEventListener('click', betClickHandler)
     let betNumber = document.createElement("span")
     betNumber.innerText = number
     betCard.appendChild(betNumber)
     container.appendChild(betCard)
+}
+
+function betClickHandler(e) {
+    let message = makeMessage(COMMAND_BET, e.target.getAttribute('data-value'))
+    ws.send(message)
 }
 
 
@@ -106,8 +110,12 @@ function messageHandler(command, content) {
                 timer.innerText = timesRemaining.toString()
             }
         }, 1000)
-
-
-
     }
+}
+
+function makeMessage(command, content) {
+    return JSON.stringify({
+        command: command,
+        content: content
+    })
 }

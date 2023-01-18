@@ -1,16 +1,19 @@
 package ws
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
 type Client struct {
 	Connection *websocket.Conn
 	Message    chan *Message
+	Bid        int
 	Id         string `json:"id"`
 	RoomId     string `json:"roomId"`
 }
@@ -37,15 +40,22 @@ func (c *Client) writeMessage() {
 	}
 }
 
+type MessageStruct struct {
+	Command string `json:"command"`
+	Content string `json:"content"`
+}
+
 func (c *Client) readMessage(hub *Hub) {
 	defer func() {
 		hub.Unregister <- c
 		c.Connection.Close()
 	}()
 
+	var message MessageStruct
+
 	for {
 		_, m, err := c.Connection.ReadMessage()
-		fmt.Println(m)
+		//TODO: Validation of command types.
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
@@ -53,9 +63,23 @@ func (c *Client) readMessage(hub *Hub) {
 			break
 		}
 
+		err = json.Unmarshal(m, &message)
+
+		if err != nil {
+			log.Printf("unmarshal error: %v", err)
+			continue
+		}
+
 		msg := &Message{
-			Content: string(m),
+			Command: message.Command,
+			Content: message.Content,
 			RoomId:  c.RoomId,
+		}
+		fmt.Printf("%+v\n", msg)
+
+		if msg.Command == CommandBet && hub.Rooms[c.RoomId].Status == StatusMakingBid {
+			c.Bid, _ = strconv.Atoi(msg.Content)
+			continue
 		}
 
 		hub.Broadcast <- msg
