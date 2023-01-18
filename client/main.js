@@ -1,12 +1,12 @@
-window.addEventListener("load", function(evt) {
+window.addEventListener("load", function (evt) {
+    let roomId = "xxx-yyy-zzz"
     let ws = null
-    document.getElementById("form").onsubmit = function(e) {
+    document.getElementById("form").onsubmit = function (e) {
         e.preventDefault()
         let playerId = document.querySelector('input[name="player"]:checked').value;
         // TODO: Get token after authentication (I'm gonna use token based authentication)
-        let token = playerId == 1 ? "HIGHLY_SECURE_TOKEN" : "POORLY_SECURE_TOKEN"
 
-        ws = new WebSocket("ws://localhost:3000/start?token=" + token)
+        ws = new WebSocket("ws://localhost:3000/ws?roomId=" + roomId + "&userId=" + playerId)
         ws.onopen = function (e) {
             console.log("OPEN");
         }
@@ -15,6 +15,21 @@ window.addEventListener("load", function(evt) {
             // let cards = JSON.parse(e.data)
             console.log(e.data);
         }
+    }
+
+    document.getElementById("create-room").onclick = function (e) {
+        console.log("create-room")
+        e.preventDefault()
+        fetch('http://localhost:3000/rooms', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({"id": roomId, "name": "market"})
+        })
+            .then(response => response.json())
+            .then(response => console.log(JSON.stringify(response)))
     }
 
     let start = document.getElementById("start")

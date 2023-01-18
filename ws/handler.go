@@ -23,12 +23,21 @@ type CreateRoomRequest struct {
 }
 
 func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("id")
-	name := r.FormValue("name")
+	var p struct {
+		Id   string
+		Name string
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&p)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	request := CreateRoomRequest{
-		Id:   id,
-		Name: name,
+		Id:   p.Id,
+		Name: p.Name,
 	}
 
 	h.hub.Rooms[request.Id] = &Room{
@@ -67,20 +76,17 @@ func (h *Handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 	roomId := r.URL.Query().Get("roomId")
 	userId := r.URL.Query().Get("userId")
-	username := r.URL.Query().Get("username")
 
 	client := &Client{
 		Connection: c,
 		Message:    make(chan *Message, 10),
 		Id:         userId,
 		RoomId:     roomId,
-		Username:   username,
 	}
 
 	m := &Message{
-		Content:  fmt.Sprintf("%s joined the room.", username),
-		RoomId:   roomId,
-		Username: username,
+		Content: fmt.Sprintf("user %s joined the room.", userId),
+		RoomId:  roomId,
 	}
 
 	h.hub.Register <- client
@@ -132,8 +138,7 @@ func (h *Handler) GetClients(w http.ResponseWriter, r *http.Request) {
 
 	for _, c := range h.hub.Rooms[roomId].Clients {
 		clients = append(clients, ClientRes{
-			Id:       c.Id,
-			Username: c.Username,
+			Id: c.Id,
 		})
 	}
 	fmt.Println(clients)
