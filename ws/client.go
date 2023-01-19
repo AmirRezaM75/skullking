@@ -13,7 +13,7 @@ import (
 type Client struct {
 	Connection *websocket.Conn
 	Message    chan *Message
-	Bid        int
+	Bid        int    `json:"bid"`
 	Id         string `json:"id"`
 	RoomId     string `json:"roomId"`
 }
@@ -23,6 +23,8 @@ type Message struct {
 	Content     string `json:"content"`
 	Command     string `json:"command"`
 	RoomId      string `json:"roomId"`
+	ReceiverId  string
+	SenderId    string
 }
 
 func (c *Client) writeMessage() {

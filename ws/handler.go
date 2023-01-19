@@ -75,6 +75,7 @@ func (h *Handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	roomId := r.URL.Query().Get("roomId")
+	// TODO: Get token and find user from database + cache
 	userId := r.URL.Query().Get("userId")
 
 	client := &Client{
@@ -96,9 +97,36 @@ func (h *Handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		ContentType: "json",
 		Content:     string(userBytes),
 		RoomId:      roomId,
+		SenderId:    client.Id,
 	}
 
 	h.hub.Register <- client
+	h.hub.Broadcast <- m
+
+	//TODO: Get game state from database
+	var clients []ClientRes
+	game := h.hub.Rooms[client.RoomId]
+	for _, clientRes := range game.Clients {
+		clients = append(clients, ClientRes{
+			Id:       clientRes.Id,
+			Username: "Username #" + clientRes.Id,
+			Bid:      clientRes.Bid,
+		})
+	}
+	gameResponse := GameRes{
+		Round:  game.Round,
+		Status: game.Status,
+		Users:  clients,
+	}
+	gameResponseBytes, _ := json.Marshal(gameResponse)
+	m = &Message{
+		Command:     CommandInitGame,
+		ContentType: "json",
+		Content:     string(gameResponseBytes),
+		RoomId:      roomId,
+		ReceiverId:  client.Id,
+	}
+
 	h.hub.Broadcast <- m
 
 	go client.writeMessage()
@@ -110,7 +138,7 @@ type RoomRes struct {
 	Name string `json:"name"`
 }
 
-func (h *Handler) GetRooms(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetRooms(w http.ResponseWriter, _ *http.Request) {
 	rooms := make([]RoomRes, 0)
 
 	for _, r := range h.hub.Rooms {
@@ -132,9 +160,16 @@ func (h *Handler) GetRooms(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(bytes)
 }
 
+type GameRes struct {
+	Round  int         `json:"round"`
+	Status string      `json:"status"`
+	Users  []ClientRes `json:"users"`
+}
+
 type ClientRes struct {
 	Id       string `json:"id"`
 	Username string `json:"username"`
+	Bid      int    `json:"bid"`
 }
 
 func (h *Handler) GetClients(w http.ResponseWriter, r *http.Request) {

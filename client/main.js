@@ -8,6 +8,7 @@ const COMMAND_DEAL_CARDS = 'DEAL_CARDS'
 const COMMAND_BETTING_STARTED = 'BETTING_STARTED'
 const COMMAND_BETTING_ENDED = 'BETTING_ENDED'
 const COMMAND_PICKING_STARTED = 'PICKING_STARTED'
+const COMMAND_INIT_GAME = 'INIT_GAME'
 
 
 // Client Commands
@@ -63,7 +64,6 @@ window.addEventListener("load", function (evt) {
     }
 
     document.getElementById("create-room").onclick = function (e) {
-        console.log("create-room")
         e.preventDefault()
         fetch('http://localhost:3000/rooms', {
             method: 'POST',
@@ -121,18 +121,22 @@ function betClickHandler(e) {
 
 
 function messageHandler(command, content) {
+    let usersContainer = document.getElementById('users-container')
     let cardsContainer = document.getElementById("cards-container")
     let betsContainer = document.getElementById("bets-container")
     let timer = document.getElementById("timer")
     if (command === COMMAND_USER_JOINED) {
-        let usersContainer = document.getElementById('users-container')
-        let div = document.createElement("div")
-        div.classList.add("user")
-        div.dataset.id = content['id']
-        let p = document.createElement("p")
-        p.innerText = "UserId: " + content['id']
-        div.appendChild(p)
-        usersContainer.appendChild(div)
+
+        addUser(content['id'], usersContainer)
+    }
+
+    if (command === COMMAND_INIT_GAME) {
+
+        game.setRound(content['round'])
+        game.setStatus(content['status'])
+        content['users'].forEach((user) => {
+            addUser(user['id'], usersContainer)
+        })
     }
 
     if (command === COMMAND_DEAL_CARDS) {
@@ -159,7 +163,6 @@ function messageHandler(command, content) {
     if (command === COMMAND_BETTING_ENDED) {
         document.getElementById("bets-container").innerHTML = ""
         let userBets = [];
-        console.log(content)
         content.forEach((userBet) => {
             userBets[userBet['userId']] = userBet['bet']
         })
@@ -184,4 +187,14 @@ function makeMessage(command, content) {
         command: command,
         content: content
     })
+}
+
+function addUser(userId, container) {
+    let div = document.createElement("div")
+    div.classList.add("user")
+    div.dataset.id = userId
+    let p = document.createElement("p")
+    p.innerText = "UserId: " + userId
+    div.appendChild(p)
+    container.appendChild(div)
 }

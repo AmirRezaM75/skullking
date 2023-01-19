@@ -8,9 +8,9 @@ import (
 )
 
 type Room struct {
-	Id      string             `json:"id"`
-	Name    string             `json:"name"`
-	Clients map[string]*Client `json:"clients"`
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	Clients map[string]*Client
 	Round   int
 	Status  string
 }
@@ -94,9 +94,20 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.Broadcast:
+			if message.Command == CommandInitGame {
+				if _, ok := h.Rooms[message.RoomId]; ok {
+					if _, ok := h.Rooms[message.RoomId].Clients[message.ReceiverId]; ok {
+						h.Rooms[message.RoomId].Clients[message.ReceiverId].Message <- message
+					}
+				}
+			}
+
 			if message.Command == CommandUserJoined {
 				if _, ok := h.Rooms[message.RoomId]; ok {
 					for _, client := range h.Rooms[message.RoomId].Clients {
+						if client.Id == message.SenderId {
+							continue
+						}
 						client.Message <- message
 					}
 				}
@@ -163,6 +174,7 @@ const CommandBettingEnded = "BETTING_ENDED"
 const CommandBet = "BET"
 const CommandStart = "START"
 const CommandDealCards = "DEAL_CARDS"
+const CommandInitGame = "INIT_GAME"
 
 // Command Structs
 
