@@ -59,9 +59,10 @@ func (h *Hub) Run() {
 
 					content, _ := json.Marshal(userBets)
 					message := &Message{
-						Command: CommandBettingEnded,
-						Content: string(content),
-						RoomId:  "xxx-yyy-zzz",
+						Command:     CommandBettingEnded,
+						Content:     string(content),
+						ContentType: "json",
+						RoomId:      "xxx-yyy-zzz",
 					}
 					if _, ok := h.Rooms[message.RoomId]; ok {
 						for _, client := range h.Rooms[message.RoomId].Clients {
@@ -93,11 +94,13 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.Broadcast:
-			/*if _, ok := h.Rooms[message.RoomId]; ok {
-				for _, client := range h.Rooms[message.RoomId].Clients {
-					client.Message <- message
+			if message.Command == CommandUserJoined {
+				if _, ok := h.Rooms[message.RoomId]; ok {
+					for _, client := range h.Rooms[message.RoomId].Clients {
+						client.Message <- message
+					}
 				}
-			}*/
+			}
 
 			if message.Command == CommandStart {
 				if _, ok := h.Rooms[message.RoomId]; ok {
@@ -154,6 +157,7 @@ const WaitTime = 10 * time.Second
 
 // Commands
 
+const CommandUserJoined = "USER_JOINED"
 const CommandBettingStarted = "BETTING_STARTED"
 const CommandBettingEnded = "BETTING_ENDED"
 const CommandBet = "BET"

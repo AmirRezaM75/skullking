@@ -84,9 +84,18 @@ func (h *Handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		RoomId:     roomId,
 	}
 
+	user := ClientRes{
+		Id:       userId,
+		Username: "Username #" + userId,
+	}
+
+	userBytes, _ := json.Marshal(user)
+
 	m := &Message{
-		Content: fmt.Sprintf("user %s joined the room.", userId),
-		RoomId:  roomId,
+		Command:     CommandUserJoined,
+		ContentType: "json",
+		Content:     string(userBytes),
+		RoomId:      roomId,
 	}
 
 	h.hub.Register <- client

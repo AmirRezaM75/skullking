@@ -7,6 +7,14 @@
     align-items: center;
 }
 
+#users-container {
+    display: flex;
+}
+
+.card.disabled {
+    cursor: not-allowed;
+}
+
 .bet {
     background-color: gray;
 }
