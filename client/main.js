@@ -32,16 +32,16 @@ class Game {
 }
 
 
-
 let ws = null
 let game = new Game()
+let playerId = 1
 
 window.addEventListener("load", function (evt) {
 
     let roomId = "xxx-yyy-zzz"
     document.getElementById("form").onsubmit = function (e) {
         e.preventDefault()
-        let playerId = document.querySelector('input[name="player"]:checked').value;
+        playerId = document.querySelector('input[name="player"]:checked').value;
         // TODO: Get token after authentication (I'm gonna use token based authentication)
 
         ws = new WebSocket("ws://localhost:3000/ws?roomId=" + roomId + "&userId=" + playerId)
@@ -85,13 +85,14 @@ window.addEventListener("load", function (evt) {
     }
 })
 
-function addCard(color, number, container) {
+function addCard(data, container) {
     let card = document.createElement("div")
-    card.style.backgroundColor = color
+    card.style.backgroundColor = data['color']
     card.classList.add("card", "disabled")
+    card.dataset.id = data['id']
     card.addEventListener('click', cardClickHandler)
     let cardNumber = document.createElement("span")
-    cardNumber.innerText = number
+    cardNumber.innerText = data['number']
     card.appendChild(cardNumber)
     container.appendChild(card)
 }
@@ -140,7 +141,7 @@ function messageHandler(command, content) {
     }
 
     if (command === COMMAND_DEAL_CARDS) {
-        content.forEach((card) => addCard(card['color'], card['number'], cardsContainer))
+        content.forEach((card) => addCard(card, cardsContainer))
     }
 
     if (command === COMMAND_BETTING_STARTED) {
@@ -174,10 +175,14 @@ function messageHandler(command, content) {
     }
 
     if (command === COMMAND_PICKING_STARTED) {
-        document.querySelectorAll('#cards-container .cards').forEach((card) => {
-            // TODO: Write a logic to only enable cards that is pickable in the round
-            card.classList.remove("disabled")
-        })
+        game.setStatus(STATUS_PICKING_CARD)
+        let userId = content['userId']
+        if (userId == playerId) {
+            document.querySelectorAll('#cards-container .card').forEach((card) => {
+                // TODO: Write a logic to only enable cards that is pickable in the round
+                card.classList.remove("disabled")
+            })
+        }
     }
 
 }

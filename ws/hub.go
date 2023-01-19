@@ -8,11 +8,12 @@ import (
 )
 
 type Room struct {
-	Id      string `json:"id"`
-	Name    string `json:"name"`
-	Clients map[string]*Client
-	Round   int
-	Status  string
+	Id                string `json:"id"`
+	Name              string `json:"name"`
+	Clients           map[string]*Client
+	Round             int
+	Status            string
+	LastPickingUserId string
 }
 
 const StatusNotStarted = "NOT_STARTED"
@@ -70,6 +71,31 @@ func (h *Hub) Run() {
 						}
 					}
 					h.Rooms[message.RoomId].Status = StatusEndOfAuction
+
+					game := h.Rooms[message.RoomId]
+
+					// Get first client
+					for userId, _ := range game.Clients {
+						pickingStartedContent := PickingStartedContent{
+							UserId: userId,
+						}
+						content, _ = json.Marshal(pickingStartedContent)
+						message = &Message{
+							Command:     CommandPickingStarted,
+							ContentType: "json",
+							Content:     string(content),
+							// No access to roomId
+							RoomId: "xxx-yyy-zzz",
+						}
+						game.LastPickingUserId = userId
+						break
+					}
+
+					if _, ok = h.Rooms[message.RoomId]; ok {
+						for _, client := range h.Rooms[message.RoomId].Clients {
+							client.Message <- message
+						}
+					}
 				}
 			}
 		case client := <-h.Register:
@@ -102,7 +128,8 @@ func (h *Hub) Run() {
 				}
 			}
 
-			if message.Command == CommandUserJoined {
+			if message.Command == CommandUserJoined ||
+				message.Command == CommandPick {
 				if _, ok := h.Rooms[message.RoomId]; ok {
 					for _, client := range h.Rooms[message.RoomId].Clients {
 						if client.Id == message.SenderId {
@@ -171,10 +198,13 @@ const WaitTime = 10 * time.Second
 const CommandUserJoined = "USER_JOINED"
 const CommandBettingStarted = "BETTING_STARTED"
 const CommandBettingEnded = "BETTING_ENDED"
-const CommandBet = "BET"
-const CommandStart = "START"
 const CommandDealCards = "DEAL_CARDS"
 const CommandInitGame = "INIT_GAME"
+const CommandPickingStarted = "PICKING_STARTED"
+
+const CommandStart = "START"
+const CommandPick = "PICK"
+const CommandBet = "BET"
 
 // Command Structs
 
@@ -186,4 +216,12 @@ type BetCommand struct {
 type UserBet struct {
 	UserId string `json:"userId"`
 	Bet    int    `json:"bet"`
+}
+
+type CommandPickContent struct {
+	CardId int `json:"cardId"`
+}
+
+type PickingStartedContent struct {
+	UserId string `json:"userId"`
 }

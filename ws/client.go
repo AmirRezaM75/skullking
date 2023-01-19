@@ -11,11 +11,12 @@ import (
 )
 
 type Client struct {
-	Connection *websocket.Conn
-	Message    chan *Message
-	Bid        int    `json:"bid"`
-	Id         string `json:"id"`
-	RoomId     string `json:"roomId"`
+	Connection       *websocket.Conn
+	Message          chan *Message
+	Bid              int    `json:"bid"`
+	Id               string `json:"id"`
+	RoomId           string `json:"roomId"`
+	LastPickedCardId int
 }
 
 type Message struct {
@@ -73,9 +74,10 @@ func (c *Client) readMessage(hub *Hub) {
 		}
 
 		msg := &Message{
-			Command: message.Command,
-			Content: message.Content,
-			RoomId:  c.RoomId,
+			Command:  message.Command,
+			Content:  message.Content,
+			RoomId:   c.RoomId,
+			SenderId: c.Id,
 		}
 		fmt.Printf("%+v\n", msg)
 
@@ -84,11 +86,22 @@ func (c *Client) readMessage(hub *Hub) {
 			continue
 		}
 
+		if msg.Command == CommandPick {
+			if hub.Rooms[c.RoomId].LastPickingUserId == c.Id {
+				var content CommandPickContent
+				_ = json.Unmarshal([]byte(msg.Content), &content)
+				c.LastPickedCardId = content.CardId
+			} else {
+				continue
+			}
+		}
+
 		hub.Broadcast <- msg
 	}
 }
 
 type Card struct {
+	Id     int    `json:"id"`
 	Color  string `json:"color"`
 	Number int    `json:"number"`
 }
@@ -97,14 +110,16 @@ func generateCards() []Card {
 	colors := [4]string{"Black", "Red", "Green", "Yellow"}
 
 	var cards []Card
-
+	id := 1
 	for _, color := range colors {
 		for i := 1; i <= 14; i++ {
 			card := Card{
+				Id:     id,
 				Color:  color,
 				Number: i,
 			}
 			cards = append(cards, card)
+			id++
 		}
 	}
 
