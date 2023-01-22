@@ -90,6 +90,8 @@ func (c *Client) readMessage(hub *Hub) {
 		}
 
 		if msg.Command == CommandPick {
+			log.Println("LastPickingUserId", hub.Rooms[c.RoomId].LastPickingUserId)
+			log.Println("ClientId", c.Id)
 			if hub.Rooms[c.RoomId].LastPickingUserId == c.Id {
 				// TODO: Check if cardId is valid and exists in the last dealt cards
 				cardId, _ := strconv.Atoi(msg.Content)

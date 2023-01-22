@@ -191,7 +191,35 @@ func (h *Hub) Run() {
 			}
 
 			if message.Command == CommandPick {
-				
+				game := h.Rooms[message.RoomId]
+				nextUserFound := false
+				var nextUserId string
+				for userId, _ := range game.Clients {
+					if nextUserFound {
+						nextUserId = userId
+					}
+					if userId == game.LastPickingUserId {
+						nextUserFound = true
+					}
+				}
+				pickingStartedContent := PickingStartedContent{
+					UserId: nextUserId,
+				}
+				content, _ := json.Marshal(pickingStartedContent)
+				message = &Message{
+					Command:     CommandPickingStarted,
+					ContentType: "json",
+					Content:     string(content),
+					// No access to roomId
+					RoomId: "xxx-yyy-zzz",
+				}
+				game.LastPickingUserId = nextUserId
+
+				if _, ok := h.Rooms[message.RoomId]; ok {
+					for _, client := range h.Rooms[message.RoomId].Clients {
+						client.Message <- message
+					}
+				}
 			}
 		}
 	}
