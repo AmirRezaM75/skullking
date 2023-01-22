@@ -128,8 +128,8 @@ func (h *Hub) Run() {
 				}
 			}
 
-			if message.Command == CommandUserJoined ||
-				message.Command == CommandPick {
+			// Broadcast to everyone except the sender
+			if message.Command == CommandUserJoined {
 				if _, ok := h.Rooms[message.RoomId]; ok {
 					for _, client := range h.Rooms[message.RoomId].Clients {
 						if client.Id == message.SenderId {
@@ -179,6 +179,19 @@ func (h *Hub) Run() {
 					room.Status = StatusMakingBid
 				}
 				go wait(h)
+			}
+
+			// Broadcast to everyone
+			if message.Command == CommandPick {
+				if _, ok := h.Rooms[message.RoomId]; ok {
+					for _, client := range h.Rooms[message.RoomId].Clients {
+						client.Message <- message
+					}
+				}
+			}
+
+			if message.Command == CommandPick {
+				
 			}
 		}
 	}

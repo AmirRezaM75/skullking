@@ -35,9 +35,10 @@ class Game {
 let ws = null
 let game = new Game()
 let playerId = 1
+let cards = []
 
 window.addEventListener("load", function (evt) {
-
+    cards = generateCards()
     let roomId = "xxx-yyy-zzz"
     document.getElementById("form").onsubmit = function (e) {
         e.preventDefault()
@@ -185,6 +186,12 @@ function messageHandler(command, content) {
         }
     }
 
+    if (command === COMMAND_PICK) {
+        let cardId = parseInt(content)
+        let card = cards[cardId]
+        addCard(card, document.getElementById('picked-cards-container'))
+    }
+
 }
 
 function makeMessage(command, content) {
@@ -202,4 +209,23 @@ function addUser(userId, container) {
     p.innerText = "UserId: " + userId
     div.appendChild(p)
     container.appendChild(div)
+}
+
+function generateCards() {
+    let colors = ["Black", "Red", "Green", "Yellow"]
+
+    let cards = []
+    let id = 1
+    colors.forEach((color) => {
+        for (let i = 1; i <= 14; i++) {
+            cards[id] = {
+                id: id,
+                color: color,
+                number: i
+            };
+            id++
+        }
+    })
+
+    return cards
 }

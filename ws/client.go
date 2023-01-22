@@ -19,6 +19,7 @@ type Client struct {
 	LastPickedCardId int
 }
 
+// Message from server to client
 type Message struct {
 	ContentType string `json:"contentType"`
 	Content     string `json:"content"`
@@ -74,10 +75,12 @@ func (c *Client) readMessage(hub *Hub) {
 		}
 
 		msg := &Message{
-			Command:  message.Command,
-			Content:  message.Content,
-			RoomId:   c.RoomId,
-			SenderId: c.Id,
+			ContentType: "string",
+			Content:     message.Content,
+			Command:     message.Command,
+			RoomId:      c.RoomId,
+			ReceiverId:  "",
+			SenderId:    c.Id,
 		}
 		fmt.Printf("%+v\n", msg)
 
@@ -88,9 +91,9 @@ func (c *Client) readMessage(hub *Hub) {
 
 		if msg.Command == CommandPick {
 			if hub.Rooms[c.RoomId].LastPickingUserId == c.Id {
-				var content CommandPickContent
-				_ = json.Unmarshal([]byte(msg.Content), &content)
-				c.LastPickedCardId = content.CardId
+				// TODO: Check if cardId is valid and exists in the last dealt cards
+				cardId, _ := strconv.Atoi(msg.Content)
+				c.LastPickedCardId = cardId
 			} else {
 				continue
 			}
