@@ -43,9 +43,11 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case expired, ok := <-h.Stall:
+			fmt.Println("after wait.", expired, ok)
 			if !ok {
 				h.Stall = nil
 			} else {
+
 				var userBets []UserBet
 				if expired {
 
@@ -204,6 +206,7 @@ func (h *Hub) Run() {
 				}
 				pickingStartedContent := PickingStartedContent{
 					UserId: nextUserId,
+					EndsAt: time.Now().Add(WaitTime).Unix(),
 				}
 				content, _ := json.Marshal(pickingStartedContent)
 				message = &Message{
@@ -220,6 +223,7 @@ func (h *Hub) Run() {
 						client.Message <- message
 					}
 				}
+				go wait(h)
 			}
 		}
 	}
@@ -229,7 +233,7 @@ func wait(hub *Hub) {
 	log.Println("wait method.")
 	time.Sleep(WaitTime)
 	hub.Stall <- true
-	close(hub.Stall)
+	//close(hub.Stall)
 }
 
 const WaitTime = 10 * time.Second
@@ -265,4 +269,5 @@ type CommandPickContent struct {
 
 type PickingStartedContent struct {
 	UserId string `json:"userId"`
+	EndsAt int64  `json:"endsAt"`
 }
