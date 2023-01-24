@@ -17,6 +17,7 @@ type Client struct {
 	Id               string `json:"id"`
 	RoomId           string `json:"roomId"`
 	LastPickedCardId int
+	CardIds          []int
 }
 
 // Message from server to client
