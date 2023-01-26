@@ -16,10 +16,8 @@ type Room struct {
 	LastPickingUserId string
 }
 
-const StatusNotStarted = "NOT_STARTED"
 const StatusMakingBid = "MAKING_BID"
 const StatusEndOfAuction = "END_OF_AUCTION"
-const StatusTakingTrick = "TAKING_A_TRICK"
 const StatusPickingCard = "PICKING_CARD"
 
 type Hub struct {
