@@ -16,6 +16,10 @@ type Room struct {
 	LastPickingUserId string
 }
 
+const StateBidding = "BIDDING"
+const StatePicking = "PICKING"
+const StateCalculating = "CALCULATING"
+
 const StatusMakingBid = "MAKING_BID"
 const StatusEndOfAuction = "END_OF_AUCTION"
 const StatusPickingCard = "PICKING_CARD"
