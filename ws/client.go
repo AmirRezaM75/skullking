@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -110,6 +111,7 @@ type Card struct {
 	Id     int    `json:"id"`
 	Color  string `json:"color"`
 	Number int    `json:"number"`
+	Group  string `json:"group"`
 }
 
 func generateCards() []Card {
@@ -123,11 +125,50 @@ func generateCards() []Card {
 				Id:     id,
 				Color:  color,
 				Number: i,
+				Group:  strings.ToLower(color),
 			}
 			cards = append(cards, card)
 			id++
 		}
 	}
+
+	for i := 1; i <= 5; i++ {
+		card := Card{
+			Id:     id,
+			Color:  "White",
+			Number: 0,
+			Group:  "Escape",
+		}
+		cards = append(cards, card)
+	}
+
+	for i := 1; i <= 5; i++ {
+		card := Card{
+			Id:     id,
+			Color:  "Brown",
+			Number: 0,
+			Group:  "Pirate",
+		}
+		cards = append(cards, card)
+	}
+
+	for i := 1; i <= 2; i++ {
+		card := Card{
+			Id:     id,
+			Color:  "pink",
+			Number: 0,
+			Group:  "Mermaid",
+		}
+		cards = append(cards, card)
+	}
+
+	card := Card{
+		Id:     id,
+		Color:  "Black",
+		Number: 0,
+		Group:  "SkullKing",
+	}
+	cards = append(cards, card)
 
 	return cards
 }

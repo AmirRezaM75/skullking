@@ -23,6 +23,7 @@ const StateCalculating = "CALCULATING"
 const StatusMakingBid = "MAKING_BID"
 const StatusEndOfAuction = "END_OF_AUCTION"
 const StatusPickingCard = "PICKING_CARD"
+const StatusCalculating = "CALCULATING"
 
 type Hub struct {
 	Rooms      map[string]*Room
@@ -52,7 +53,6 @@ func (h *Hub) Run() {
 				h.Stall = nil
 			} else {
 				if game.Status == StatusPickingCard {
-					fmt.Println(game.LastPickingUserId)
 					if game.Clients[game.LastPickingUserId].LastPickedCardId == 0 {
 						game.Clients[game.LastPickingUserId].LastPickedCardId = game.Clients[game.LastPickingUserId].CardIds[0]
 					}
@@ -70,6 +70,47 @@ func (h *Hub) Run() {
 					for _, client := range game.Clients {
 						client.Message <- message
 					}
+
+					var everyOnePicked = true
+					for _, client := range game.Clients {
+						if client.LastPickedCardId != 0 {
+							continue
+						} else {
+							everyOnePicked = false
+							pickingStartedContent := PickingStartedContent{
+								UserId: client.Id,
+								EndsAt: time.Now().Add(WaitTime).Unix(),
+							}
+							content, _ := json.Marshal(pickingStartedContent)
+							message = &Message{
+								Command:     CommandPickingStarted,
+								ContentType: "json",
+								Content:     string(content),
+								RoomId:      "xxx-yyy-zzz",
+							}
+
+							game.LastPickingUserId = client.Id
+							break
+						}
+					}
+
+					if everyOnePicked != false {
+						// Broadcast to everyone
+						for _, client := range game.Clients {
+							client.Message <- message
+						}
+						go wait(h)
+					} else {
+						game.Status = StatusCalculating
+						// Calculate
+
+						// Reset the game
+						game.LastPickingUserId = ""
+						for _, client := range game.Clients {
+							client.LastPickedCardId = 0
+						}
+					}
+
 				}
 
 				if game.Status == StatusMakingBid {
@@ -105,6 +146,7 @@ func (h *Hub) Run() {
 						for userId, _ := range game.Clients {
 							pickingStartedContent := PickingStartedContent{
 								UserId: userId,
+								EndsAt: time.Now().Add(WaitTime).Unix(),
 							}
 							content, _ = json.Marshal(pickingStartedContent)
 							message = &Message{
@@ -124,6 +166,7 @@ func (h *Hub) Run() {
 							}
 						}
 						h.Rooms[message.RoomId].Status = StatusPickingCard
+						go wait(h)
 					}
 				}
 			}
