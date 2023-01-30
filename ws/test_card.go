@@ -1,0 +1,6 @@
+package ws
+
+func TestWinnerCardId() {
+	//
+
+}

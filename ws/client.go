@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -125,7 +124,7 @@ func generateCards() []Card {
 				Id:     id,
 				Color:  color,
 				Number: i,
-				Group:  strings.ToLower(color),
+				Group:  "parrot",
 			}
 			cards = append(cards, card)
 			id++
@@ -137,7 +136,7 @@ func generateCards() []Card {
 			Id:     id,
 			Color:  "White",
 			Number: 0,
-			Group:  "Escape",
+			Group:  "escape",
 		}
 		cards = append(cards, card)
 	}
@@ -157,7 +156,7 @@ func generateCards() []Card {
 			Id:     id,
 			Color:  "pink",
 			Number: 0,
-			Group:  "Mermaid",
+			Group:  "mermaid",
 		}
 		cards = append(cards, card)
 	}
@@ -166,7 +165,15 @@ func generateCards() []Card {
 		Id:     id,
 		Color:  "Black",
 		Number: 0,
-		Group:  "SkullKing",
+		Group:  "skullKing",
+	}
+	cards = append(cards, card)
+
+	card = Card{
+		Id:     id,
+		Color:  "White",
+		Number: 0,
+		Group:  "Kraken",
 	}
 	cards = append(cards, card)
 
