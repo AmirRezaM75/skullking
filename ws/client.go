@@ -16,8 +16,8 @@ type Client struct {
 	Bid              int    `json:"bid"`
 	Id               string `json:"id"`
 	RoomId           string `json:"roomId"`
-	LastPickedCardId int
-	CardIds          []int
+	LastPickedCardId CardId
+	CardIds          []CardId
 }
 
 // Message from server to client
@@ -96,7 +96,7 @@ func (c *Client) readMessage(hub *Hub) {
 			if hub.Rooms[c.RoomId].LastPickingUserId == c.Id {
 				// TODO: Check if cardId is valid and exists in the last dealt cards
 				cardId, _ := strconv.Atoi(msg.Content)
-				c.LastPickedCardId = cardId
+				c.LastPickedCardId = CardId(cardId)
 			} else {
 				continue
 			}
@@ -104,80 +104,6 @@ func (c *Client) readMessage(hub *Hub) {
 
 		hub.Broadcast <- msg
 	}
-}
-
-type Card struct {
-	Id     int    `json:"id"`
-	Color  string `json:"color"`
-	Number int    `json:"number"`
-	Group  string `json:"group"`
-}
-
-func generateCards() []Card {
-	colors := [4]string{"Black", "Red", "Green", "Yellow"}
-
-	var cards []Card
-	id := 1
-	for _, color := range colors {
-		for i := 1; i <= 14; i++ {
-			card := Card{
-				Id:     id,
-				Color:  color,
-				Number: i,
-				Group:  "parrot",
-			}
-			cards = append(cards, card)
-			id++
-		}
-	}
-
-	for i := 1; i <= 5; i++ {
-		card := Card{
-			Id:     id,
-			Color:  "White",
-			Number: 0,
-			Group:  "escape",
-		}
-		cards = append(cards, card)
-	}
-
-	for i := 1; i <= 5; i++ {
-		card := Card{
-			Id:     id,
-			Color:  "Brown",
-			Number: 0,
-			Group:  "Pirate",
-		}
-		cards = append(cards, card)
-	}
-
-	for i := 1; i <= 2; i++ {
-		card := Card{
-			Id:     id,
-			Color:  "pink",
-			Number: 0,
-			Group:  "mermaid",
-		}
-		cards = append(cards, card)
-	}
-
-	card := Card{
-		Id:     id,
-		Color:  "Black",
-		Number: 0,
-		Group:  "skullKing",
-	}
-	cards = append(cards, card)
-
-	card = Card{
-		Id:     id,
-		Color:  "White",
-		Number: 0,
-		Group:  "Kraken",
-	}
-	cards = append(cards, card)
-
-	return cards
 }
 
 type Deck struct {

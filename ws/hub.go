@@ -58,7 +58,7 @@ func (h *Hub) Run() {
 					}
 					userPickedCard := UserPickedCard{
 						UserId: game.LastPickingUserId,
-						CardId: game.Clients[game.LastPickingUserId].LastPickedCardId,
+						CardId: int(game.Clients[game.LastPickingUserId].LastPickedCardId),
 					}
 					contentBytes, _ := json.Marshal(userPickedCard)
 					message := &Message{
@@ -217,13 +217,14 @@ func (h *Hub) Run() {
 					room := h.Rooms[message.RoomId]
 					room.Round++
 					var deck Deck
-					cards := generateCards()
-					deck.cards = cards
+					for _, card := range cards {
+						deck.cards = append(deck.cards, card)
+					}
 					deck.shuffle()
 					items := deck.deal(len(room.Clients), 3)
 					index := 0
 					for _, client := range room.Clients {
-						var userCardIds []int
+						var userCardIds []CardId
 						for _, userCard := range items[index] {
 							userCardIds = append(userCardIds, userCard.Id)
 						}

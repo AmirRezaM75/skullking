@@ -1,6 +1,0 @@
-package ws
-
-func TestWinnerCardId() {
-	//
-
-}
