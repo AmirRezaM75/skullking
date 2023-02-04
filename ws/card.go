@@ -525,6 +525,7 @@ var cards = map[CardId]Card{
 
 func winner(cardIds []CardId) CardId {
 	var lead Card
+
 	for _, id := range cardIds {
 		card := cards[id]
 		if lead.Id == 0 {
@@ -537,8 +538,14 @@ func winner(cardIds []CardId) CardId {
 				lead = card
 			}
 		} else {
+
+			if (card.Group == "parrot" || card.Group == "map" || card.Group == "chest") &&
+				lead.Group == "escape" {
+				lead = card
+			}
+
 			if (card.Group == "roger" || card.Group == "mermaid" || card.Group == "pirate" || card.Group == "king") &&
-				(lead.Group == "parrot" || lead.Group == "map" || lead.Group == "chest") {
+				(lead.Group == "parrot" || lead.Group == "map" || lead.Group == "chest" || lead.Group == "escape") {
 				lead = card
 			}
 

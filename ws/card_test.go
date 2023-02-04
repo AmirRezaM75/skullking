@@ -73,3 +73,35 @@ func TestWinnerCardId9(t *testing.T) {
 		t.Errorf("Wrong winner card.")
 	}
 }
+
+func TestWinnerCardId10(t *testing.T) {
+	CardIds := []CardId{Escape3, Escape1, Escape2, Escape5}
+	cardId := winner(CardIds)
+	if Escape3 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestWinnerCardId11(t *testing.T) {
+	CardIds := []CardId{Chest1, Escape1, Escape2, Escape5}
+	cardId := winner(CardIds)
+	if Chest1 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestWinnerCardId12(t *testing.T) {
+	CardIds := []CardId{Escape1, Chest1, Escape2, Escape5}
+	cardId := winner(CardIds)
+	if Chest1 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestWinnerCardId13(t *testing.T) {
+	CardIds := []CardId{Escape1, Chest1, Escape2, Pirate2}
+	cardId := winner(CardIds)
+	if Pirate2 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
