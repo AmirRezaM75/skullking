@@ -105,3 +105,19 @@ func TestWinnerCardId13(t *testing.T) {
 		t.Errorf("Wrong winner card.")
 	}
 }
+
+func TestWinnerCardId14(t *testing.T) {
+	CardIds := []CardId{Escape1, Chest2, Escape2, Whale, Roger1, Pirate2}
+	cardId := winner(CardIds)
+	if Chest2 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestWinnerCardId15(t *testing.T) {
+	CardIds := []CardId{Pirate1, Pirate2, Escape2, Mermaid2, SkullKing, Pirate3, Whale}
+	cardId := winner(CardIds)
+	if 0 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
