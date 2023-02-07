@@ -525,14 +525,16 @@ var cards = map[CardId]Card{
 
 func winner(cardIds []CardId) CardId {
 	var lead Card
-	var numberedCardLead Card
+
+	// Suit cards are the numbered cards, 1-14, in four colors.
+	var suitCardLead Card
 
 	for _, id := range cardIds {
 		card := cards[id]
 
 		if card.Group == "parrot" || card.Group == "map" || card.Group == "chest" || card.Group == "roger" {
-			if numberedCardLead.Id == 0 || numberedCardLead.Number < card.Number {
-				numberedCardLead = card
+			if suitCardLead.Id == 0 || suitCardLead.Number < card.Number {
+				suitCardLead = card
 			}
 		}
 
@@ -577,7 +579,7 @@ func winner(cardIds []CardId) CardId {
 	}
 
 	if lead.Group == "whale" {
-		return numberedCardLead.Id
+		return suitCardLead.Id
 	}
 
 	return lead.Id
