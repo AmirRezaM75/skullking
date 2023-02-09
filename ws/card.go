@@ -636,5 +636,9 @@ func winner(cardIds []CardId) CardId {
 		return suitLead.Id
 	}
 
+	if lead.isKraken() {
+		return 0
+	}
+
 	return lead.Id
 }

@@ -2,7 +2,7 @@ package ws
 
 import "testing"
 
-func TestWinnerCardId1(t *testing.T) {
+func TestHigherNumberOfSameTypeWins(t *testing.T) {
 	CardIds := []CardId{Parrot1, Parrot4, Parrot2}
 	cardId := winner(CardIds)
 	if Parrot4 != cardId {
@@ -10,7 +10,7 @@ func TestWinnerCardId1(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId2(t *testing.T) {
+func TestHigherNumberOfLeadCardWins(t *testing.T) {
 	CardIds := []CardId{Parrot1, Parrot4, Map12}
 	cardId := winner(CardIds)
 	if Parrot4 != cardId {
@@ -34,7 +34,7 @@ func TestWinnerCardId4(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId5(t *testing.T) {
+func TestPirateWinsSuitCards(t *testing.T) {
 	CardIds := []CardId{Map13, Chest2, Roger1, Pirate2, Parrot6}
 	cardId := winner(CardIds)
 	if Pirate2 != cardId {
@@ -42,7 +42,7 @@ func TestWinnerCardId5(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId6(t *testing.T) {
+func TestPirateWinsMermaid(t *testing.T) {
 	CardIds := []CardId{Map13, Mermaid2, Roger1, Pirate2, Parrot6}
 	cardId := winner(CardIds)
 	if Pirate2 != cardId {
@@ -50,7 +50,7 @@ func TestWinnerCardId6(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId7(t *testing.T) {
+func TestMermaidWinsSuitCard(t *testing.T) {
 	CardIds := []CardId{Map13, Mermaid2, Roger1, Parrot6}
 	cardId := winner(CardIds)
 	if Mermaid2 != cardId {
@@ -58,7 +58,7 @@ func TestWinnerCardId7(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId8(t *testing.T) {
+func TestSkullKingWinsPirate(t *testing.T) {
 	CardIds := []CardId{Map13, Pirate2, Roger1, SkullKing, Pirate4}
 	cardId := winner(CardIds)
 	if SkullKing != cardId {
@@ -66,7 +66,7 @@ func TestWinnerCardId8(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId9(t *testing.T) {
+func TestMermaidWinsSkullKing(t *testing.T) {
 	CardIds := []CardId{Map13, Pirate2, Roger1, SkullKing, Pirate4, Mermaid1}
 	cardId := winner(CardIds)
 	if Mermaid1 != cardId {
@@ -74,7 +74,7 @@ func TestWinnerCardId9(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId10(t *testing.T) {
+func TestFirstEscapeCardWinsWhenAllCardsAreEscape(t *testing.T) {
 	CardIds := []CardId{Escape3, Escape1, Escape2, Escape5}
 	cardId := winner(CardIds)
 	if Escape3 != cardId {
@@ -82,7 +82,7 @@ func TestWinnerCardId10(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId11(t *testing.T) {
+func TestEscapeCardsNeverWin(t *testing.T) {
 	CardIds := []CardId{Chest1, Escape1, Escape2, Escape5}
 	cardId := winner(CardIds)
 	if Chest1 != cardId {
@@ -90,7 +90,7 @@ func TestWinnerCardId11(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId12(t *testing.T) {
+func TestEscapeCardsNeverWin2(t *testing.T) {
 	CardIds := []CardId{Escape1, Chest1, Escape2, Escape5}
 	cardId := winner(CardIds)
 	if Chest1 != cardId {
@@ -98,7 +98,7 @@ func TestWinnerCardId12(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId13(t *testing.T) {
+func TestEscapeCardsNeverWin3(t *testing.T) {
 	CardIds := []CardId{Escape1, Chest1, Escape2, Pirate2}
 	cardId := winner(CardIds)
 	if Pirate2 != cardId {
@@ -106,7 +106,15 @@ func TestWinnerCardId13(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId14(t *testing.T) {
+func TestEscapeCardsNeverWin4(t *testing.T) {
+	CardIds := []CardId{Escape1, Chest1, Escape2, Chest2, Escape3}
+	cardId := winner(CardIds)
+	if Chest2 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestHigherNumberWinsWhenWhaleIsLead(t *testing.T) {
 	CardIds := []CardId{Escape1, Chest2, Escape2, Whale, Roger1, Pirate2}
 	cardId := winner(CardIds)
 	if Chest2 != cardId {
@@ -114,10 +122,26 @@ func TestWinnerCardId14(t *testing.T) {
 	}
 }
 
-func TestWinnerCardId15(t *testing.T) {
+func TestNoWinnerWhenWhaleCardIsLeadAndThereIsNoSuitCard(t *testing.T) {
 	CardIds := []CardId{Pirate1, Pirate2, Escape2, Mermaid2, SkullKing, Pirate3, Whale}
 	cardId := winner(CardIds)
 	if 0 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestNoWinnerWhenKrakenCardIsLead(t *testing.T) {
+	CardIds := []CardId{Pirate1, Mermaid1, Escape1, SkullKing, Kraken, Parrot1}
+	cardId := winner(CardIds)
+	if 0 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestWhaleCardIsLeadWhenKrakenIsPickedBefore(t *testing.T) {
+	CardIds := []CardId{Pirate1, Mermaid1, Escape1, SkullKing, Kraken, Parrot1, Whale}
+	cardId := winner(CardIds)
+	if Parrot1 != cardId {
 		t.Errorf("Wrong winner card.")
 	}
 }
