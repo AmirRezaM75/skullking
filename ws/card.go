@@ -1,12 +1,67 @@
 package ws
 
 type Card struct {
-	// TODO: Change to CardId
 	Id     CardId `json:"id"`
 	Color  string `json:"color"`
 	Number int    `json:"number"`
-	Group  string `json:"group"`
+	Type   string `json:"type"`
 }
+
+// Suit cards are the numbered cards, 1-14, in four colors.
+func (c Card) isSuit() bool {
+	return c.isParrot() || c.isMap() || c.isChest() || c.isRoger()
+}
+
+func (c Card) isKing() bool {
+	return c.Type == TypeKing
+}
+
+func (c Card) isWhale() bool {
+	return c.Type == TypeWhale
+}
+
+func (c Card) isKraken() bool {
+	return c.Type == TypeKraken
+}
+
+func (c Card) isMermaid() bool {
+	return c.Type == TypeMermaid
+}
+
+func (c Card) isParrot() bool {
+	return c.Type == TypeParrot
+}
+
+func (c Card) isMap() bool {
+	return c.Type == TypeMap
+}
+
+func (c Card) isChest() bool {
+	return c.Type == TypeChest
+}
+
+func (c Card) isRoger() bool {
+	return c.Type == TypeRoger
+}
+
+func (c Card) isPirate() bool {
+	return c.Type == TypePirate
+}
+
+func (c Card) isEscape() bool {
+	return c.Type == TypeEscape
+}
+
+const TypeKing string = "king"
+const TypeWhale string = "whale"
+const TypeKraken string = "kraken"
+const TypeMermaid string = "mermaid"
+const TypeParrot string = "parrot"
+const TypeMap string = "map"
+const TypeChest string = "chest"
+const TypeRoger string = "roger"
+const TypePirate string = "pirate"
+const TypeEscape string = "escape"
 
 type CardId int
 
@@ -93,448 +148,447 @@ var cards = map[CardId]Card{
 		Id:     SkullKing,
 		Color:  "#000",
 		Number: 0,
-		Group:  "king",
+		Type:   TypeKing,
 	},
 	Whale: {
 		Id:     Whale,
 		Color:  "#fff",
 		Number: 0,
-		Group:  "whale",
+		Type:   TypeWhale,
 	},
 	Kraken: {
 		Id:     Kraken,
 		Color:  "#ff1760",
 		Number: 0,
-		Group:  "kraken",
+		Type:   TypeKraken,
 	},
 	Mermaid1: {
 		Id:     Mermaid1,
 		Color:  "#fffded",
 		Number: 0,
-		Group:  "mermaid",
+		Type:   TypeMermaid,
 	},
 	Mermaid2: {
 		Id:     Mermaid2,
 		Color:  "#fffded",
 		Number: 0,
-		Group:  "mermaid",
+		Type:   TypeMermaid,
 	},
 	// 14 Parrots
 	Parrot1: {
 		Id:     Parrot1,
 		Color:  "#69ff69",
 		Number: 1,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot2: {
 		Id:     Parrot2,
 		Color:  "#69ff69",
 		Number: 2,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot3: {
 		Id:     Parrot3,
 		Color:  "#69ff69",
 		Number: 3,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot4: {
 		Id:     Parrot4,
 		Color:  "#69ff69",
 		Number: 4,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot5: {
 		Id:     Parrot5,
 		Color:  "#69ff69",
 		Number: 5,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot6: {
 		Id:     Parrot6,
 		Color:  "#69ff69",
 		Number: 6,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot7: {
 		Id:     Parrot7,
 		Color:  "#69ff69",
 		Number: 7,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot8: {
 		Id:     Parrot8,
 		Color:  "#69ff69",
 		Number: 8,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot9: {
 		Id:     Parrot9,
 		Color:  "#69ff69",
 		Number: 9,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot10: {
 		Id:     Parrot10,
 		Color:  "#69ff69",
 		Number: 10,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot11: {
 		Id:     Parrot11,
 		Color:  "#69ff69",
 		Number: 11,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot12: {
 		Id:     Parrot12,
 		Color:  "#69ff69",
 		Number: 12,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot13: {
 		Id:     Parrot13,
 		Color:  "#69ff69",
 		Number: 13,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	Parrot14: {
 		Id:     Parrot14,
 		Color:  "#69ff69",
 		Number: 14,
-		Group:  "parrot",
+		Type:   TypeParrot,
 	},
 	// 14 Pirate Maps
 	Map1: {
 		Id:     Map1,
 		Color:  "#6e5eff",
 		Number: 1,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map2: {
 		Id:     Map2,
 		Color:  "#6e5eff",
 		Number: 2,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map3: {
 		Id:     Map3,
 		Color:  "#6e5eff",
 		Number: 3,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map4: {
 		Id:     Map4,
 		Color:  "#6e5eff",
 		Number: 4,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map5: {
 		Id:     Map5,
 		Color:  "#6e5eff",
 		Number: 5,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map6: {
 		Id:     Map6,
 		Color:  "#6e5eff",
 		Number: 6,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map7: {
 		Id:     Map7,
 		Color:  "#6e5eff",
 		Number: 7,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map8: {
 		Id:     Map8,
 		Color:  "#6e5eff",
 		Number: 8,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map9: {
 		Id:     Map9,
 		Color:  "#6e5eff",
 		Number: 9,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map10: {
 		Id:     Map10,
 		Color:  "#6e5eff",
 		Number: 10,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map11: {
 		Id:     Map11,
 		Color:  "#6e5eff",
 		Number: 11,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map12: {
 		Id:     Map12,
 		Color:  "#6e5eff",
 		Number: 12,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map13: {
 		Id:     Map13,
 		Color:  "#6e5eff",
 		Number: 13,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	Map14: {
 		Id:     Map14,
 		Color:  "#6e5eff",
 		Number: 14,
-		Group:  "map",
+		Type:   TypeMap,
 	},
 	// 14 Treasure Chests
 	Chest1: {
 		Id:     Chest1,
 		Color:  "#ffeb57",
 		Number: 1,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest2: {
 		Id:     Chest2,
 		Color:  "#ffeb57",
 		Number: 2,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest3: {
 		Id:     Chest3,
 		Color:  "#ffeb57",
 		Number: 3,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest4: {
 		Id:     Chest4,
 		Color:  "#ffeb57",
 		Number: 4,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest5: {
 		Id:     Chest5,
 		Color:  "#ffeb57",
 		Number: 5,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest6: {
 		Id:     Chest6,
 		Color:  "#ffeb57",
 		Number: 6,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest7: {
 		Id:     Chest7,
 		Color:  "#ffeb57",
 		Number: 7,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest8: {
 		Id:     Chest8,
 		Color:  "#ffeb57",
 		Number: 8,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest9: {
 		Id:     Chest9,
 		Color:  "#ffeb57",
 		Number: 9,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest10: {
 		Id:     Chest10,
 		Color:  "#ffeb57",
 		Number: 10,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest11: {
 		Id:     Chest11,
 		Color:  "#ffeb57",
 		Number: 11,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest12: {
 		Id:     Chest12,
 		Color:  "#ffeb57",
 		Number: 12,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest13: {
 		Id:     Chest13,
 		Color:  "#ffeb57",
 		Number: 13,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	Chest14: {
 		Id:     Chest14,
 		Color:  "#ffeb57",
 		Number: 14,
-		Group:  "chest",
+		Type:   TypeChest,
 	},
 	// 14 Jolly Roger cards
 	Roger1: {
 		Id:     Roger1,
 		Color:  "#000",
 		Number: 1,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger2: {
 		Id:     Roger2,
 		Color:  "#000",
 		Number: 2,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger3: {
 		Id:     Roger3,
 		Color:  "#000",
 		Number: 3,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger4: {
 		Id:     Roger4,
 		Color:  "#000",
 		Number: 4,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger5: {
 		Id:     Roger5,
 		Color:  "#000",
 		Number: 5,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger6: {
 		Id:     Roger6,
 		Color:  "#000",
 		Number: 6,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger7: {
 		Id:     Roger7,
 		Color:  "#000",
 		Number: 7,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger8: {
 		Id:     Roger8,
 		Color:  "#000",
 		Number: 8,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger9: {
 		Id:     Roger9,
 		Color:  "#000",
 		Number: 9,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger10: {
 		Id:     Roger10,
 		Color:  "#000",
 		Number: 10,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger11: {
 		Id:     Roger11,
 		Color:  "#000",
 		Number: 11,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger12: {
 		Id:     Roger12,
 		Color:  "#000",
 		Number: 12,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger13: {
 		Id:     Roger13,
 		Color:  "#000",
 		Number: 13,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	Roger14: {
 		Id:     Roger14,
 		Color:  "#000",
 		Number: 14,
-		Group:  "roger",
+		Type:   TypeRoger,
 	},
 	// 5 Pirates
 	Pirate1: {
 		Id:     Pirate1,
 		Color:  "#b53564",
 		Number: 0,
-		Group:  "pirate",
+		Type:   TypePirate,
 	},
 	Pirate2: {
 		Id:     Pirate2,
 		Color:  "#b53564",
 		Number: 0,
-		Group:  "pirate",
+		Type:   TypePirate,
 	},
 	Pirate3: {
 		Id:     Pirate3,
 		Color:  "#b53564",
 		Number: 0,
-		Group:  "pirate",
+		Type:   TypePirate,
 	},
 	Pirate4: {
 		Id:     Pirate4,
 		Color:  "#b53564",
 		Number: 0,
-		Group:  "pirate",
+		Type:   TypePirate,
 	},
 	Pirate5: {
 		Id:     Pirate5,
 		Color:  "#b53564",
 		Number: 0,
-		Group:  "pirate",
+		Type:   TypePirate,
 	},
 	// 5 Escape cards
 	Escape1: {
 		Id:     Escape1,
 		Color:  "#fffded",
 		Number: 0,
-		Group:  "escape",
+		Type:   TypeEscape,
 	},
 	Escape2: {
 		Id:     Escape2,
 		Color:  "#fffded",
 		Number: 0,
-		Group:  "escape",
+		Type:   TypeEscape,
 	},
 	Escape3: {
 		Id:     Escape3,
 		Color:  "#fffded",
 		Number: 0,
-		Group:  "escape",
+		Type:   TypeEscape,
 	},
 	Escape4: {
 		Id:     Escape4,
 		Color:  "#fffded",
 		Number: 0,
-		Group:  "escape",
+		Type:   TypeEscape,
 	},
 	Escape5: {
 		Id:     Escape5,
 		Color:  "#fffded",
 		Number: 0,
-		Group:  "escape",
+		Type:   TypeEscape,
 	},
 }
 
 func winner(cardIds []CardId) CardId {
 	var lead Card
 
-	// Suit cards are the numbered cards, 1-14, in four colors.
-	var suitCardLead Card
+	var suitLead Card
 
 	for _, id := range cardIds {
 		card := cards[id]
 
-		if card.Group == "parrot" || card.Group == "map" || card.Group == "chest" || card.Group == "roger" {
-			if suitCardLead.Id == 0 || suitCardLead.Number < card.Number {
-				suitCardLead = card
+		if card.isSuit() {
+			if suitLead.Id == 0 || suitLead.Number < card.Number {
+				suitLead = card
 			}
 		}
 
@@ -543,43 +597,43 @@ func winner(cardIds []CardId) CardId {
 			continue
 		}
 
-		if lead.Group == card.Group {
+		if lead.Type == card.Type {
 			if lead.Number < card.Number {
 				lead = card
 			}
 		} else {
 
-			if card.Group == "whale" || card.Group == "kraken" {
+			if card.isWhale() || card.isKraken() {
 				lead = card
 			}
 
-			if (card.Group == "parrot" || card.Group == "map" || card.Group == "chest") &&
-				lead.Group == "escape" {
+			if (card.isParrot() || card.isMap() || card.isChest()) &&
+				lead.isEscape() {
 				lead = card
 			}
 
-			if (card.Group == "roger" || card.Group == "mermaid" || card.Group == "pirate" || card.Group == "king") &&
-				(lead.Group == "parrot" || lead.Group == "map" || lead.Group == "chest" || lead.Group == "escape") {
+			if (card.isRoger() || card.isMermaid() || card.isPirate() || card.isKing()) &&
+				(lead.isParrot() || lead.isMap() || lead.isChest() || lead.isEscape()) {
 				lead = card
 			}
 
-			if card.Group == "pirate" &&
-				(lead.Group == "roger" || lead.Group == "mermaid") {
+			if card.isPirate() &&
+				(lead.isRoger() || lead.isMermaid()) {
 				lead = card
 			}
 
-			if card.Group == "king" && lead.Group == "pirate" {
+			if card.isKing() && lead.isPirate() {
 				lead = card
 			}
 
-			if card.Group == "mermaid" && lead.Group == "king" {
+			if card.isMermaid() && lead.isKing() {
 				lead = card
 			}
 		}
 	}
 
-	if lead.Group == "whale" {
-		return suitCardLead.Id
+	if lead.isWhale() {
+		return suitLead.Id
 	}
 
 	return lead.Id
