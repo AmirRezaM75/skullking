@@ -166,7 +166,7 @@ func (s Server) start(w http.ResponseWriter, r *http.Request) {
 			wg.Done()
 		case expired := <-betting:
 			if expired {
-				for userId, _ := range s.connections {
+				for userId := range s.connections {
 					_, exists := bets[userId]
 					if !exists {
 						bets[userId] = 2

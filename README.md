@@ -41,10 +41,6 @@ if you play black suit it trumps standard suit regardless of its value
 
 # Rules
 
-If a suit card is played first in a trick (lead), all players must
-‘follow suit’ and play that same suit (if they are going to
-play a numbered card). If you don’t have the suit that was
-lead, you may play any other suit.
 
 Special cards allow you to break the rules governing
 numbered cards
@@ -59,8 +55,14 @@ the Mermaid always wins the trick, regardless of order of play.
 Only the Mermaid capturing the Skull King bonus is earned.
 
 
-When you lead a trick, you may choose to play either a suit
-card or a special card.
+When you lead a trick, you may choose to play either a suit card or a special card.
+
+## When a suit card is led
+
+If a suit card is played first in a trick (lead), all players must
+‘follow suit’ and play that same suit (if they are going to
+play a numbered card). If you don’t have the suit that was
+lead, you may play any other suit.
 
 ## When a special card is led
 

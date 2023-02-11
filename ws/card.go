@@ -9,7 +9,13 @@ type Card struct {
 
 // Suit cards are the numbered cards, 1-14, in four colors.
 func (c Card) isSuit() bool {
-	return c.isParrot() || c.isMap() || c.isChest() || c.isRoger()
+	return c.isStandardSuit() || c.isRoger()
+}
+
+// There are three standard suits; Parrot (green), Treasure Chest (yellow), Treasure Map (purple),
+// and the trump suit: Jolly Roger (Black)
+func (c Card) isStandardSuit() bool {
+	return c.isParrot() || c.isMap() || c.isChest()
 }
 
 func (c Card) isKing() bool {
@@ -583,13 +589,35 @@ func winner(cardIds []CardId) CardId {
 
 	var suitLead Card
 
+	var mermaidLead Card
+
+	hasPirate := false
+
+	hasKing := false
+
 	for _, id := range cardIds {
 		card := cards[id]
 
+		// Instead of traversing card items more than once
+		// We update existence flag of specific cards here.
+
+		if card.isPirate() {
+			hasPirate = true
+		}
+
+		if card.isKing() {
+			hasKing = true
+		}
+
+		// Define leaders
 		if card.isSuit() {
 			if suitLead.Id == 0 || suitLead.Number < card.Number {
 				suitLead = card
 			}
+		}
+
+		if card.isMermaid() && mermaidLead.Id == 0 {
+			mermaidLead = card
 		}
 
 		if lead.Id == 0 {
@@ -613,7 +641,7 @@ func winner(cardIds []CardId) CardId {
 			}
 
 			if (card.isRoger() || card.isMermaid() || card.isPirate() || card.isKing()) &&
-				(lead.isParrot() || lead.isMap() || lead.isChest() || lead.isEscape()) {
+				(lead.isStandardSuit() || lead.isEscape()) {
 				lead = card
 			}
 
@@ -622,11 +650,13 @@ func winner(cardIds []CardId) CardId {
 				lead = card
 			}
 
-			if card.isKing() && lead.isPirate() {
+			if card.isKing() &&
+				(lead.isPirate() || lead.isRoger()) {
 				lead = card
 			}
 
-			if card.isMermaid() && lead.isKing() {
+			if card.isMermaid() &&
+				lead.isKing() {
 				lead = card
 			}
 		}
@@ -638,6 +668,10 @@ func winner(cardIds []CardId) CardId {
 
 	if lead.isKraken() {
 		return 0
+	}
+
+	if mermaidLead.Id != 0 && hasPirate && hasKing {
+		return mermaidLead.Id
 	}
 
 	return lead.Id

@@ -145,3 +145,27 @@ func TestWhaleCardIsLeadWhenKrakenIsPickedBefore(t *testing.T) {
 		t.Errorf("Wrong winner card.")
 	}
 }
+
+func TestMermaidWinsIfPirateAndSkullKingAreAllPlayed1(t *testing.T) {
+	CardIds := []CardId{Pirate1, Mermaid1, Escape1, SkullKing, Parrot1}
+	cardId := winner(CardIds)
+	if Mermaid1 != cardId {
+		t.Errorf("Wrong winner card (%d).", cardId)
+	}
+}
+
+func TestMermaidWinsIfPirateAndSkullKingAreAllPlayed2(t *testing.T) {
+	CardIds := []CardId{Mermaid1, Pirate1, Escape1, SkullKing, Parrot1}
+	cardId := winner(CardIds)
+	if Mermaid1 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestSkullKingWinsJollyRoger(t *testing.T) {
+	CardIds := []CardId{Parrot3, Roger2, SkullKing, Parrot1}
+	cardId := winner(CardIds)
+	if SkullKing != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
