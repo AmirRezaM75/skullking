@@ -106,6 +106,7 @@ func (c *Client) readMessage(hub *Hub) {
 	}
 }
 
+// Deck A complete pack, or deck, includes 14 cards in each suit + special cards
 type Deck struct {
 	cards []Card
 }

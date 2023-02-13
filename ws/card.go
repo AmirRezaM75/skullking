@@ -7,6 +7,10 @@ type Card struct {
 	Type   string `json:"type"`
 }
 
+func (c Card) fromId(id CardId) Card {
+	return cards[id]
+}
+
 // Suit cards are the numbered cards, 1-14, in four colors.
 func (c Card) isSuit() bool {
 	return c.isStandardSuit() || c.isRoger()
@@ -32,6 +36,10 @@ func (c Card) isKraken() bool {
 
 func (c Card) isMermaid() bool {
 	return c.Type == TypeMermaid
+}
+
+func (c Card) isSpecial() bool {
+	return c.isKing() || c.isMermaid() || c.isPirate() || c.isEscape() || c.isKraken() || c.isWhale()
 }
 
 func (c Card) isParrot() bool {
@@ -147,6 +155,7 @@ const (
 	Escape5
 )
 
+// TODO: Should be part of Deck struct
 // I found it more performant to predefine cards before starting game,
 // Instead of generating them whenever I need to filter...
 var cards = map[CardId]Card{
@@ -584,6 +593,7 @@ var cards = map[CardId]Card{
 	},
 }
 
+// TODO: Should have Table struct as receiver
 func winner(cardIds []CardId) CardId {
 	var lead Card
 
@@ -675,4 +685,41 @@ func winner(cardIds []CardId) CardId {
 	}
 
 	return lead.Id
+}
+
+type Table struct {
+	cards []Card
+}
+
+func (t Table) suit() Card {
+	var suit Card
+
+	for _, card := range t.cards {
+		if card.isSuit() {
+			suit = card
+		}
+	}
+
+	return suit
+}
+
+// Set Owned user's cards
+type Set struct {
+	cards []Card
+}
+
+func (s Set) pickables(t Table) []CardId {
+	var suit Card
+
+	var options []CardId
+
+	suit = t.suit()
+
+	for _, card := range s.cards {
+		if suit.Id == 0 || card.Type == suit.Type || card.isSpecial() {
+			options = append(options, card.Id)
+		}
+	}
+
+	return options
 }
