@@ -709,17 +709,32 @@ type Set struct {
 }
 
 func (s Set) pickables(t Table) []CardId {
-	var suit Card
+	var specialIds []CardId
+
+	var cardIds []CardId
 
 	var options []CardId
+
+	var suit Card
 
 	suit = t.suit()
 
 	for _, card := range s.cards {
-		if suit.Id == 0 || card.Type == suit.Type || card.isSpecial() {
+
+		cardIds = append(cardIds, card.Id)
+
+		if card.isSpecial() {
+			specialIds = append(specialIds, card.Id)
+		}
+
+		if card.Type == suit.Type {
 			options = append(options, card.Id)
 		}
 	}
 
-	return options
+	if len(options) == 0 {
+		return cardIds
+	}
+
+	return append(options, specialIds...)
 }

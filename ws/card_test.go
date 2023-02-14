@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -195,7 +196,7 @@ func TestPickableCardWhenTableIsEmpty(t *testing.T) {
 	}
 
 	options := set.pickables(table)
-
+	fmt.Println(options)
 	if !reflect.DeepEqual(expected, options) {
 		t.Error("Wrong pickable cards.")
 	}
@@ -221,6 +222,38 @@ func TestPickableCardWhenFirstCardOnTableIsSuit(t *testing.T) {
 	expected := []CardId{
 		Parrot2,
 		SkullKing,
+	}
+
+	options := set.pickables(table)
+
+	if !reflect.DeepEqual(expected, options) {
+		t.Error("Wrong pickable cards.")
+	}
+}
+
+func TestUserCanPickAnyCardIfNoCardMatchesTheSuit(t *testing.T) {
+	var table Table
+	var set Set
+	var card Card
+
+	table.cards = []Card{
+		card.fromId(Parrot3),
+	}
+
+	set.cards = []Card{
+		card.fromId(Chest1),
+		card.fromId(Roger5),
+		card.fromId(Pirate1),
+		card.fromId(Map3),
+		card.fromId(Map2),
+	}
+
+	expected := []CardId{
+		Chest1,
+		Roger5,
+		Pirate1,
+		Map3,
+		Map2,
 	}
 
 	options := set.pickables(table)
