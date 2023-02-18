@@ -1,337 +1,106 @@
 package ws
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"time"
 )
 
-type Room struct {
-	Id                string `json:"id"`
-	Name              string `json:"name"`
-	Clients           map[string]*Client
-	Round             int
-	Status            string
-	LastPickingUserId string
+type Hub struct {
+	games      map[string]*Game
+	register   chan *Player
+	unregister chan *Player
+	dispatch   chan *ServerMessage
+	remind     chan Reminder
 }
 
+type Reminder struct {
+	gameId string
+}
+
+const StatePending = "PENDING"
 const StateBidding = "BIDDING"
 const StatePicking = "PICKING"
 const StateCalculating = "CALCULATING"
 
-const StatusMakingBid = "MAKING_BID"
-const StatusEndOfAuction = "END_OF_AUCTION"
-const StatusPickingCard = "PICKING_CARD"
-const StatusCalculating = "CALCULATING"
-
-type Hub struct {
-	Rooms      map[string]*Room
-	Register   chan *Client
-	Unregister chan *Client
-	Broadcast  chan *Message
-	Stall      chan bool
-}
-
 func NewHub() *Hub {
 	return &Hub{
-		Rooms:      make(map[string]*Room),
-		Register:   make(chan *Client),
-		Unregister: make(chan *Client),
-		Broadcast:  make(chan *Message),
-		Stall:      make(chan bool),
+		games:      make(map[string]*Game),
+		register:   make(chan *Player),
+		unregister: make(chan *Player),
+		dispatch:   make(chan *ServerMessage),
+		remind:     make(chan Reminder),
 	}
 }
 
 func (h *Hub) Run() {
 	for {
 		select {
-		case expired, ok := <-h.Stall:
-			game := h.Rooms["xxx-yyy-zzz"]
-			fmt.Println(game.Status)
+		case reminder, ok := <-h.remind:
+			game := h.games[reminder.gameId]
 			if !ok {
-				h.Stall = nil
+				h.remind = nil
 			} else {
-				if game.Status == StatusPickingCard {
-					if game.Clients[game.LastPickingUserId].LastPickedCardId == 0 {
-						game.Clients[game.LastPickingUserId].LastPickedCardId = game.Clients[game.LastPickingUserId].CardIds[0]
-					}
-					userPickedCard := UserPickedCard{
-						UserId: game.LastPickingUserId,
-						CardId: int(game.Clients[game.LastPickingUserId].LastPickedCardId),
-					}
-					contentBytes, _ := json.Marshal(userPickedCard)
-					message := &Message{
-						Command:     CommandUserPicked,
-						Content:     string(contentBytes),
-						ContentType: "json",
-						RoomId:      "xxx-yyy-zzz",
-					}
-					for _, client := range game.Clients {
-						client.Message <- message
-					}
-
-					var everyOnePicked = true
-					for _, client := range game.Clients {
-						if client.LastPickedCardId != 0 {
-							continue
-						} else {
-							everyOnePicked = false
-							pickingStartedContent := PickingStartedContent{
-								UserId: client.Id,
-								EndsAt: time.Now().Add(WaitTime).Unix(),
-							}
-							content, _ := json.Marshal(pickingStartedContent)
-							message = &Message{
-								Command:     CommandPickingStarted,
-								ContentType: "json",
-								Content:     string(content),
-								RoomId:      "xxx-yyy-zzz",
-							}
-
-							game.LastPickingUserId = client.Id
-							break
-						}
-					}
-
-					if everyOnePicked != false {
-						// Broadcast to everyone
-						for _, client := range game.Clients {
-							client.Message <- message
-						}
-						go wait(h)
-					} else {
-						game.Status = StatusCalculating
-						// Calculate
-
-						// Reset the game
-						game.LastPickingUserId = ""
-						for _, client := range game.Clients {
-							client.LastPickedCardId = 0
-						}
-					}
-
-				}
-
-				if game.Status == StatusMakingBid {
-					var userBets []UserBet
-					if expired {
-
-						if _, ok := h.Rooms["xxx-yyy-zzz"]; ok {
-							for _, client := range h.Rooms["xxx-yyy-zzz"].Clients {
-								userBets = append(userBets, UserBet{
-									UserId: client.Id,
-									Bet:    client.Bid,
-								})
-							}
-						}
-
-						content, _ := json.Marshal(userBets)
-						message := &Message{
-							Command:     CommandBettingEnded,
-							Content:     string(content),
-							ContentType: "json",
-							RoomId:      "xxx-yyy-zzz",
-						}
-						if _, ok := h.Rooms[message.RoomId]; ok {
-							for _, client := range h.Rooms[message.RoomId].Clients {
-								client.Message <- message
-							}
-						}
-						h.Rooms[message.RoomId].Status = StatusEndOfAuction
-
-						game := h.Rooms[message.RoomId]
-
-						// Get first client
-						for userId, _ := range game.Clients {
-							pickingStartedContent := PickingStartedContent{
-								UserId: userId,
-								EndsAt: time.Now().Add(WaitTime).Unix(),
-							}
-							content, _ = json.Marshal(pickingStartedContent)
-							message = &Message{
-								Command:     CommandPickingStarted,
-								ContentType: "json",
-								Content:     string(content),
-								// No access to roomId
-								RoomId: "xxx-yyy-zzz",
-							}
-							game.LastPickingUserId = userId
-							break
-						}
-
-						if _, ok = h.Rooms[message.RoomId]; ok {
-							for _, client := range h.Rooms[message.RoomId].Clients {
-								client.Message <- message
-							}
-						}
-						h.Rooms[message.RoomId].Status = StatusPickingCard
-						go wait(h)
-					}
+				if game.state == StatePicking {
+					endPicking(game, h)
 				}
 			}
-		case client := <-h.Register:
-			if _, ok := h.Rooms[client.RoomId]; ok {
-				room := h.Rooms[client.RoomId]
-				if _, ok = room.Clients[client.Id]; !ok {
-					room.Clients[client.Id] = client
-				}
+		case player := <-h.register:
+			if _, ok := h.games[player.gameId]; ok {
+				h.games[player.gameId].players[player.id] = player
 			}
-		case client := <-h.Unregister:
-			if _, ok := h.Rooms[client.RoomId]; ok {
-				clients := h.Rooms[client.RoomId].Clients
-				if _, ok = clients[client.Id]; ok {
-					if len(h.Rooms[client.RoomId].Clients) != 0 {
-						h.Broadcast <- &Message{
-							Content: fmt.Sprintf("%s left the room.", client.Id),
-							RoomId:  client.RoomId,
-						}
-					}
-					delete(clients, client.Id)
-					close(client.Message)
-				}
-			}
-		case message := <-h.Broadcast:
-			if message.Command == CommandInitGame {
-				if _, ok := h.Rooms[message.RoomId]; ok {
-					if _, ok := h.Rooms[message.RoomId].Clients[message.ReceiverId]; ok {
-						h.Rooms[message.RoomId].Clients[message.ReceiverId].Message <- message
-					}
-				}
-			}
+		case _ = <-h.unregister:
+			// Not going to remove player from game
+			// because it should continue playing till the end
+			// close(player.ServerMessage)
+			// If every one left the game delete the game.
 
-			// Broadcast to everyone except the sender
-			if message.Command == CommandUserJoined {
-				if _, ok := h.Rooms[message.RoomId]; ok {
-					for _, client := range h.Rooms[message.RoomId].Clients {
-						if client.Id == message.SenderId {
-							continue
-						}
-						client.Message <- message
+		case message := <-h.dispatch:
+			// If there is no specific receiver broadcast it to all players
+			if _, ok := h.games[message.gameId]; ok {
+				var game = h.games[message.gameId]
+				if message.receiverId == 0 {
+					for _, player := range game.players {
+						player.message <- message
+					}
+				} else {
+					if _, ok = game.players[message.receiverId]; ok {
+						game.players[message.receiverId].message <- message
 					}
 				}
-			}
-
-			if message.Command == CommandStart {
-				if _, ok := h.Rooms[message.RoomId]; ok {
-					room := h.Rooms[message.RoomId]
-					room.Round++
-					var deck Deck
-					for _, card := range cards {
-						deck.cards = append(deck.cards, card)
-					}
-					deck.shuffle()
-					items := deck.deal(len(room.Clients), 3)
-					index := 0
-					for _, client := range room.Clients {
-						var userCardIds []CardId
-						for _, userCard := range items[index] {
-							userCardIds = append(userCardIds, userCard.Id)
-						}
-						client.CardIds = userCardIds
-						userCards, _ := json.Marshal(items[index])
-
-						index++
-						cardsMessage := &Message{
-							ContentType: "json",
-							Content:     string(userCards),
-							Command:     CommandDealCards,
-							RoomId:      client.RoomId,
-						}
-						client.Message <- cardsMessage
-					}
-
-					betCommand := BetCommand{
-						Round:  room.Round,
-						EndsAt: time.Now().Add(WaitTime).Unix(),
-					}
-					betCommandJson, _ := json.Marshal(betCommand)
-					for _, client := range room.Clients {
-						cardsMessage := &Message{
-							ContentType: "json",
-							Content:     string(betCommandJson),
-							Command:     CommandBettingStarted,
-							RoomId:      client.RoomId,
-						}
-						client.Message <- cardsMessage
-					}
-					room.Status = StatusMakingBid
-				}
-				go wait(h)
-			}
-
-			// Broadcast to everyone
-			if message.Command == CommandPick {
-				if _, ok := h.Rooms[message.RoomId]; ok {
-					for _, client := range h.Rooms[message.RoomId].Clients {
-						client.Message <- message
-					}
-				}
-			}
-
-			if message.Command == CommandPick {
-				game := h.Rooms[message.RoomId]
-				nextUserFound := false
-				var nextUserId string
-				for userId, _ := range game.Clients {
-					if nextUserFound {
-						nextUserId = userId
-					}
-					if userId == game.LastPickingUserId {
-						nextUserFound = true
-					}
-				}
-				pickingStartedContent := PickingStartedContent{
-					UserId: nextUserId,
-					EndsAt: time.Now().Add(WaitTime).Unix(),
-				}
-				content, _ := json.Marshal(pickingStartedContent)
-				message = &Message{
-					Command:     CommandPickingStarted,
-					ContentType: "json",
-					Content:     string(content),
-					// No access to roomId
-					RoomId: "xxx-yyy-zzz",
-				}
-				game.LastPickingUserId = nextUserId
-
-				if _, ok := h.Rooms[message.RoomId]; ok {
-					for _, client := range h.Rooms[message.RoomId].Clients {
-						client.Message <- message
-					}
-				}
-				go wait(h)
 			}
 		}
 	}
 }
 
-func wait(hub *Hub) {
-	log.Println("wait method.")
+func (h *Hub) newReminder(gameId string) {
 	time.Sleep(WaitTime)
-	hub.Stall <- true
-	//close(hub.Stall)
+
+	h.remind <- Reminder{
+		gameId: gameId,
+	}
+
+	//close(hub.remind)
 }
 
 const WaitTime = 10 * time.Second
 
 // Commands
 
-const CommandUserJoined = "USER_JOINED"
-const CommandBettingStarted = "BETTING_STARTED"
-const CommandBettingEnded = "BETTING_ENDED"
-const CommandDealCards = "DEAL_CARDS"
-const CommandInitGame = "INIT_GAME"
+const CommandJoined = "JOINED"
+const CommandBiddingStarted = "BIDDING_STARTED"
+const CommandBiddingEnded = "BIDDING_ENDED"
 const CommandPickingStarted = "PICKING_STARTED"
-const CommandUserPicked = "PICKED_CARD"
+const CommandPickingEnded = "PICKING_ENDED"
+const CommandDeal = "DEAL"
+const CommandInit = "INIT"
+const CommandPicked = "PICKED"
+
+// These commands coming from players
 
 const CommandStart = "START"
 const CommandPick = "PICK"
-const CommandBet = "BET"
+const CommandBid = "BID"
 
-// Command Structs
-
-type BetCommand struct {
+type BiddingStartedContent struct {
 	Round  int   `json:"round"`
 	EndsAt int64 `json:"endsAt"`
 }
@@ -351,6 +120,6 @@ type CommandPickContent struct {
 }
 
 type PickingStartedContent struct {
-	UserId string `json:"userId"`
-	EndsAt int64  `json:"endsAt"`
+	UserId int   `json:"userId"`
+	EndsAt int64 `json:"endsAt"`
 }

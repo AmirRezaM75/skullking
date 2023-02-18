@@ -1,5 +1,10 @@
 package ws
 
+import (
+	"math/rand"
+	"time"
+)
+
 type Card struct {
 	Id     CardId `json:"id"`
 	Color  string `json:"color"`
@@ -737,4 +742,42 @@ func (s Set) pickables(t Table) []CardId {
 	}
 
 	return append(options, specialIds...)
+}
+
+// Deck A complete pack, or deck, includes 14 cards in each suit + special cards
+type Deck struct {
+	cards []Card
+}
+
+func (d Deck) shuffle() {
+	cards := d.cards
+
+	for i := range cards {
+		source := rand.NewSource(time.Now().UnixNano())
+		r := rand.New(source)
+		j := r.Intn(len(d.cards) - 1)
+		cards[i], cards[j] = cards[j], cards[i]
+	}
+}
+
+func (d Deck) deal(count, size int) [][]CardId {
+	var output [][]CardId
+
+	index := 0
+
+	for i := 0; i < count; i++ {
+		var cardIds []CardId
+
+		cards := d.cards[index : size+index]
+
+		for _, card := range cards {
+			cardIds = append(cardIds, card.Id)
+		}
+
+		output = append(output, cardIds)
+
+		index = size + index
+	}
+
+	return output
 }

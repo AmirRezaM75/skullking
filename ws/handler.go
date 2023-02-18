@@ -3,9 +3,13 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"strconv"
 )
+
+const MaxPlayers = 8
 
 type Handler struct {
 	hub *Hub
@@ -17,36 +21,20 @@ func NewHandler(h *Hub) *Handler {
 	}
 }
 
-type CreateRoomRequest struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
+func (h *Handler) Create(w http.ResponseWriter, _ *http.Request) {
 
-func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	var p struct {
-		Id   string
-		Name string
+	gameId := uuid.New().String()
+
+	h.hub.games[gameId] = &Game{
+		id:      gameId,
+		players: make(map[int]*Player, MaxPlayers),
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&p)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	request := CreateRoomRequest{
-		Id:   p.Id,
-		Name: p.Name,
-	}
-
-	h.hub.Rooms[request.Id] = &Room{
-		Id:      request.Id,
-		Name:    request.Name,
-		Clients: make(map[string]*Client),
-	}
-
-	bytes, err := json.Marshal(request)
+	response, err := json.Marshal(struct {
+		Id string `json:"id"`
+	}{
+		Id: gameId,
+	})
 
 	if err != nil {
 		http.Error(w, "JSON marshal failed", 500)
@@ -55,18 +43,18 @@ func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	_, _ = w.Write(bytes)
+	_, _ = w.Write(response)
 }
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+func (h *Handler) Join(w http.ResponseWriter, r *http.Request) {
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 
-func (h *Handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
@@ -74,126 +62,38 @@ func (h *Handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomId := r.URL.Query().Get("roomId")
+	gameId := r.URL.Query().Get("gameId")
 	// TODO: Get token and find user from database + cache
-	userId := r.URL.Query().Get("userId")
+	userId, _ := strconv.Atoi(r.URL.Query().Get("userId"))
 
-	client := &Client{
-		Connection: c,
-		Message:    make(chan *Message, 10),
-		Id:         userId,
-		RoomId:     roomId,
+	player := &Player{
+		connection: c,
+		message:    make(chan *ServerMessage, 10),
+		id:         userId,
+		gameId:     gameId,
+		// Assign each player an avatar
 	}
 
-	user := ClientRes{
+	content, _ := json.Marshal(struct {
+		Id       int    `json:"id"`
+		Username string `json:"username"`
+	}{
 		Id:       userId,
-		Username: "Username #" + userId,
-	}
+		Username: fmt.Sprintf("Username #%d", userId),
+	})
 
-	userBytes, _ := json.Marshal(user)
+	h.hub.register <- player
 
-	m := &Message{
-		Command:     CommandUserJoined,
+	m := &ServerMessage{
+		Command:     CommandJoined,
 		ContentType: "json",
-		Content:     string(userBytes),
-		RoomId:      roomId,
-		SenderId:    client.Id,
+		Content:     string(content),
+		gameId:      gameId,
+		SenderId:    userId,
 	}
 
-	h.hub.Register <- client
-	h.hub.Broadcast <- m
+	h.hub.dispatch <- m
 
-	//TODO: Get game state from database
-	var clients []ClientRes
-	game := h.hub.Rooms[client.RoomId]
-	for _, clientRes := range game.Clients {
-		clients = append(clients, ClientRes{
-			Id:       clientRes.Id,
-			Username: "Username #" + clientRes.Id,
-			Bid:      clientRes.Bid,
-		})
-	}
-	gameResponse := GameRes{
-		Round:  game.Round,
-		Status: game.Status,
-		Users:  clients,
-	}
-	gameResponseBytes, _ := json.Marshal(gameResponse)
-	m = &Message{
-		Command:     CommandInitGame,
-		ContentType: "json",
-		Content:     string(gameResponseBytes),
-		RoomId:      roomId,
-		ReceiverId:  client.Id,
-	}
-
-	h.hub.Broadcast <- m
-
-	go client.writeMessage()
-	client.readMessage(h.hub)
-}
-
-type RoomRes struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
-func (h *Handler) GetRooms(w http.ResponseWriter, _ *http.Request) {
-	rooms := make([]RoomRes, 0)
-
-	for _, r := range h.hub.Rooms {
-		rooms = append(rooms, RoomRes{
-			Id:   r.Id,
-			Name: r.Name,
-		})
-	}
-
-	bytes, err := json.Marshal(rooms)
-
-	if err != nil {
-		http.Error(w, "JSON marshal failed", 500)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	_, _ = w.Write(bytes)
-}
-
-type GameRes struct {
-	Round  int         `json:"round"`
-	Status string      `json:"status"`
-	Users  []ClientRes `json:"users"`
-}
-
-type ClientRes struct {
-	Id       string `json:"id"`
-	Username string `json:"username"`
-	Bid      int    `json:"bid"`
-}
-
-func (h *Handler) GetClients(w http.ResponseWriter, r *http.Request) {
-	var clients []ClientRes
-	roomId := r.URL.Query().Get("roomId")
-
-	if _, ok := h.hub.Rooms[roomId]; !ok {
-		http.NotFound(w, r)
-	}
-
-	for _, c := range h.hub.Rooms[roomId].Clients {
-		clients = append(clients, ClientRes{
-			Id: c.Id,
-		})
-	}
-	fmt.Println(clients)
-	bytes, err := json.Marshal(clients)
-
-	if err != nil {
-		http.Error(w, "JSON marshal failed", 500)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	_, _ = w.Write(bytes)
+	go player.writeMessage()
+	player.readMessage(h.hub)
 }
