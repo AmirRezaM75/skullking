@@ -1,4 +1,3 @@
-.card,
 .bet {
     width: 120px;
     height: 200px;
@@ -19,8 +18,31 @@
     background-color: gray;
 }
 
-.cards-container,
 .bets-container {
     display: flex;
     gap: 12px;
+}
+
+.cards-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: calc(-240px / 2);
+    left: 0;
+    width: 100%;
+}
+
+.card {
+    width: 170px;
+    height: 240px;
+    background-color: #a9ff98;
+    border-radius: 20px;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.card:hover {
+    transform: translateY(calc((-240px / 2) - 10px));
 }
