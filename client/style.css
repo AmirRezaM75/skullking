@@ -43,6 +43,38 @@
     transition: .2s;
 }
 
+
 .card:hover {
     transform: translateY(calc((-240px / 2) - 10px));
+}
+
+/* TODO: Also without @- */
+@-webkit-keyframes dealing {
+    0% {
+        -webkit-transform: translateY(-1200px) scale(0.7);
+        transform: translateY(-1200px) scale(0.7);
+    }
+    20% {
+        -webkit-transform: translateY(-400px)  scale(0.7);
+        transform: translateY(-400px) scale(0.7);
+    }
+    50% {
+        -webkit-transform: translateY(-400px) scale(1.2) rotateY(180deg);
+        transform: translateY(-400px) scale(1.2) rotateY(180deg);
+    }
+    80% {
+        -webkit-transform: translateY(-400px) scale(1.2) rotateY(180deg);
+        transform: translateY(-400px) scale(1.2) rotateY(180deg);
+    }
+    to {
+        -webkit-transform: translateY(0) scale(1) rotateY(180deg);
+        transform: translateY(0) scale(1) rotateY(180deg);
+    }
+}
+
+.dealing-card-animation{
+    -webkit-animation-name: dealing;
+    animation-name: dealing;
+    -webkit-animation-duration: 2s;
+    animation-duration: 2s;
 }
