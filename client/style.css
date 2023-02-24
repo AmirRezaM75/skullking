@@ -1,3 +1,46 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+}
+.user {
+    display: flex;
+    align-items: center;
+    height: fit-content;
+    padding: 20px 10px;
+    border-bottom: 1px solid #414141;
+}
+.user img {
+    max-width: 100%;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.user .info {
+    padding-left: 10px;
+    flex: 1;
+}
+
+.user .info .username {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.user .info .action {
+    color: #414141;
+}
+
+.user .score {
+    font-weight: bold;
+    font-size: 1.5rem;
+    padding-right: 20px;
+}
+
+
 .bet {
     width: 120px;
     height: 200px;
@@ -7,7 +50,10 @@
 }
 
 #users-container {
-    display: flex;
+    width: 300px;
+    height: 100vh;
+    background-color: #ddd;
+    padding: 0 20px;
 }
 
 .card.disabled {
