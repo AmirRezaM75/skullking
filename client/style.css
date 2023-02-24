@@ -13,11 +13,68 @@ body {
     padding: 20px 10px;
     border-bottom: 1px solid #414141;
 }
+/*https://codepen.io/furkangulsen/pen/GYMWqO*/
+
+.image {
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+
+.image-container {
+    border: 3px solid #1e1e1e;
+    border-top: 3px solid #ffff00;
+    border-left: 3px solid #ffff00;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    animation: ani1 3s linear infinite;
+    top: -3px;
+    left: -3px;
+    z-index: 2;
+}
+
+.image-container .circle {
+    position: absolute;
+    top: calc(50% - 1px);
+    left: 50%;
+    width: 50%;
+    height: 2px;
+    transform-origin: left;
+    transform: rotate(-45deg);
+}
+
+.image-container .circle:before{
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: -4px;
+    right: -6px;
+    background:#ffff00;
+    box-shadow: 0 0 20px #ff0,0 0 40px #ff0,0 0 60px #ff0,0 0 80px #ff0,
+    0 0 100px #ff0,0 0 0 5px rgba(255,255,0,.1);
+}
+
+@keyframes ani1{
+    0%{
+        transform:rotate(0deg);
+    }
+    100%{
+        transform:rotate(360deg);
+    }
+}
+
 .user img {
     max-width: 100%;
     width: 50px;
     height: 50px;
     border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .user .info {
@@ -52,7 +109,7 @@ body {
 #users-container {
     width: 300px;
     height: 100vh;
-    background-color: #ddd;
+    background-color: #1e1e1e;
     padding: 0 20px;
 }
 
