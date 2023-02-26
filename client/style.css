@@ -4,16 +4,17 @@
 }
 
 body {
+    background-color: #212121;
     overflow: hidden;
+    font-family: 'Rosebud', sans-serif;
 }
 .user {
     display: flex;
     align-items: center;
     height: fit-content;
     padding: 20px 10px;
-    border-bottom: 1px solid #414141;
+    border-bottom: 1px solid #a6a6a62b;
 }
-/*https://codepen.io/furkangulsen/pen/GYMWqO*/
 
 .image {
     position: relative;
@@ -78,23 +79,26 @@ body {
 }
 
 .user .info {
-    padding-left: 10px;
+    padding-left: 20px;
     flex: 1;
 }
 
 .user .info .username {
+    color: white;
     font-size: 1.3rem;
     font-weight: bold;
 }
 
 .user .info .action {
-    color: #414141;
+    color: #d2aeae;
 }
 
 .user .score {
+    color: white;
     font-weight: bold;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     padding-right: 20px;
+    margin-top: 5px;
 }
 
 
