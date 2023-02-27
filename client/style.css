@@ -1,3 +1,7 @@
+
+:root {
+  --red-color: #ff9898;
+}
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +10,7 @@
 body {
     background-color: #212121;
     overflow: hidden;
-    font-family: 'Rosebud', sans-serif;
+    font-family: 'Cinzel Decorative', cursive;
 }
 .user {
     display: flex;
@@ -85,19 +89,20 @@ body {
 
 .user .info .username {
     color: white;
-    font-size: 1.3rem;
+    font-size: 1.375rem;
     font-weight: bold;
 }
 
 .user .info .action {
-    color: #d2aeae;
+    color: var(--red-color);
+    font-size: 1rem;
+    font-weight: 400;
 }
 
 .user .score {
     color: white;
     font-weight: bold;
-    font-size: 1.8rem;
-    padding-right: 20px;
+    font-size: 2rem;
     margin-top: 5px;
 }
 
