@@ -229,3 +229,19 @@ function generateCards() {
 
     return cards
 }
+setTimer(10)
+function setTimer(seconds) {
+    document.querySelectorAll('.countdown-card-animation').forEach((elem) => {
+        elem.style["-webkit-animation-duration"] = seconds + "s"
+        elem.style["animation-duration"] = seconds + "s"
+    })
+    var timesRemaining = seconds
+    let x = setInterval(() => {
+        timesRemaining -= 1
+        if (timesRemaining < 0) {
+            clearInterval(x)
+        } else {
+            document.getElementById('js-timer').innerText = timesRemaining.toString()
+        }
+    }, 1000)
+}

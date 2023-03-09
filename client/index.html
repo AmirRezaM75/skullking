@@ -3,75 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <title>Skull King</title>
-    <link rel="stylesheet" href="style.css">
-<!--    <link href="https://fonts.cdnfonts.com/css/rosebud" rel="stylesheet">-->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-<!--<form id="form">
-    <label>
-        <span>Twitch</span>
-        <input name="player" type="radio" value="1" checked>
-    </label>
-    <label>
-        <span>Thresh</span>
-        <input name="player" type="radio" value="2">
-    </label>
-    <input type="submit" value="Join">
-</form>
-
-<button id="start" type="button">Start</button>
-<button id="bet" type="button">Bet</button>
-<button id="create-room" type="button">Create Room</button>-->
-
-<div id="users-container">
-    <div class="user">
-        <div class="image">
-            <div class="image-container">
-                <div class="circle"></div>
+<div class="screen">
+    <div id="users-container">
+        <div class="user">
+            <div class="image">
+                <div class="image-container">
+                    <div class="circle"></div>
+                </div>
+                <img src="images/avatars/3.jpg" alt="">
             </div>
-            <img src="images/avatars/3.jpg" alt="">
+            <div class="info">
+                <div class="username">AmirReza</div>
+                <div class="action">Picking ...</div>
+            </div>
+            <div class="score">20</div>
         </div>
-        <div class="info">
-            <div class="username">AmirReza</div>
-            <div class="action">Picking ...</div>
+        <div class="user">
+            <div class="image">
+                <!--<div class="image-container">
+                    <div class="circle"></div>
+                </div>-->
+                <img src="images/avatars/1.jpg" alt="">
+            </div>
+            <div class="info">
+                <div class="username">Vahid</div>
+                <div class="action">Bids: 2</div>
+            </div>
+            <div class="score">85</div>
         </div>
-        <div class="score">20</div>
+
+        <!--JS-->
     </div>
-    <div class="user">
-        <div class="image">
-            <!--<div class="image-container">
-                <div class="circle"></div>
-            </div>-->
-            <img src="images/avatars/1.jpg" alt="">
+    <div class="right">
+        <div class="notifier">
+            <p>Pick your card</p>
+            <div class="countdown">
+                <div class="progress-bar-container">
+                    <div class="progress-bar countdown-card-animation"></div>
+                </div>
+                <div id="js-timer" class="timer">10</div>
+                <div class="progress-bar-container flipY">
+                    <div class="progress-bar countdown-card-animation"></div>
+                </div>
+            </div>
         </div>
-        <div class="info">
-            <div class="username">Vahid</div>
-            <div class="action">Bids: 2</div>
+        <div id="cards-container" class="cards-container">
+            <div class="card dealing-card-animation"></div>
+            <div class="card"></div>
+            <!--JS-->
         </div>
-        <div class="score">85</div>
     </div>
-
-    <!--JS-->
 </div>
-<div class="table">
-
-</div>
-<div id="cards-container" class="cards-container">
-    <div class="card dealing-card-animation"></div>
-    <div class="card"></div>
-    <!--JS-->
-</div>
-<!--<div id="bets-container" class="bets-container">
-    &lt;!&ndash;JS&ndash;&gt;
-</div>-->
-
-<!--<div id="picked-cards-container" class="cards-container">
-    &lt;!&ndash;JS&ndash;&gt;
-</div>-->
-<div>
-    <p id="timer"></p>
-</div>
-<script src="main.js" type="text/javascript"></script>
+<script src="assets/js/main.js" type="text/javascript"></script>
 </body>
 </html>
