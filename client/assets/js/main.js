@@ -40,7 +40,15 @@ let cards = []
 window.addEventListener("load", function (evt) {
     cards = generateCards()
     let roomId = "xxx-yyy-zzz"
-    document.getElementById("form").onsubmit = function (e) {
+    document.querySelectorAll(".cards-container .card").forEach((card) => {
+        card.addEventListener('click', async (e) => {
+
+            e.target.classList.add('pick-card-animation')
+            await sleep(1000)
+            e.target.remove();
+        })
+    })
+    /*document.getElementById("form").onsubmit = function (e) {
         e.preventDefault()
         playerId = document.querySelector('input[name="player"]:checked').value;
         // TODO: Get token after authentication (I'm gonna use token based authentication)
@@ -62,9 +70,9 @@ window.addEventListener("load", function (evt) {
 
             messageHandler(command, content);
         }
-    }
+    }*/
 
-    document.getElementById("create-room").onclick = function (e) {
+    /*document.getElementById("create-room").onclick = function (e) {
         e.preventDefault()
         fetch('http://localhost:3000/rooms', {
             method: 'POST',
@@ -76,14 +84,14 @@ window.addEventListener("load", function (evt) {
         })
             .then(response => response.json())
             .then(response => console.log(JSON.stringify(response)))
-    }
+    }*/
 
     let start = document.getElementById("start")
-    start.onclick = function (e) {
+    /*start.onclick = function (e) {
         if (!ws) return
 
         ws.send(makeMessage(COMMAND_START))
-    }
+    }*/
 })
 
 function addCard(data, container) {
@@ -244,4 +252,8 @@ function setTimer(seconds) {
             document.getElementById('js-timer').innerText = timesRemaining.toString()
         }
     }, 1000)
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
