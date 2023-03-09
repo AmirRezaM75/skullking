@@ -31,9 +31,15 @@
 :root {
     --red-color: #ff9898;
     --grey-900: #060D14;
-    --blue-100: #CDFAFA;
-    --blue-400: #005A82;
-    --blue-700: #0A1428;
+    --red-100: #ffbaba; /*rgb(255 186 186)*/
+    --red-200: #eb9e62; /*rgb(235, 158, 98)*/
+    --red-300: #e60000; /*rgb(230, 0, 0)*/
+    --red-400: #870000; /*rgb(135, 0, 0)*/
+    /* https://brand.riotgames.com/en-us/league-of-legends/color/ */
+    --blue-100: #CDFAFA; /*rgb(205, 250, 250)*/
+    --blue-200: #0AC8B9; /*rgb(10, 200, 185)*/
+    --blue-300: #0397AB; /*rgb(3, 151, 171)*/
+    --blue-400: #005A82; /*rgb(0, 90, 130)*/
 }
 
 * {
@@ -83,16 +89,31 @@ body {
 .countdown .progress-bar {
     border-radius: 1px;
     height: 10px;
+    float: right;
+}
+
+.progress-bar.red {
     background: rgb(205, 250, 250);
     background: linear-gradient(
             90deg,
-            rgba(205, 250, 250, 1) 0%,
-            rgba(10, 200, 185, 1) 12%,
-            rgba(3, 151, 171, 1) 35%,
-            rgba(0, 90, 130, 1) 100%
+            var(--red-100) 0%,
+            var(--red-200) 15%,
+            var(--red-300) 35%,
+            var(--red-400) 100%
     );
-    box-shadow: 0 0 20px #005A82;
-    float: right;
+    /*box-shadow: 0 0 10px #005A82;*/
+}
+
+.progress-bar.blue {
+    background: rgb(205, 250, 250);
+    background: linear-gradient(
+            90deg,
+            var(--blue-100) 0%,
+            var(--blue-200) 15%,
+            var(--blue-300) 35%,
+            var(--blue-400) 100%
+    );
+    /*box-shadow: 0 0 10px #005A82;*/
 }
 
 .flipY {
@@ -104,6 +125,7 @@ body {
     font-size: 2rem;
     text-align: center;
     text-transform: uppercase;
+    font-weight: bold;
 }
 
 .user {
