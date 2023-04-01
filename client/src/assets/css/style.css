@@ -403,3 +403,86 @@ body {
     -webkit-animation-duration: 1s;
     animation-duration: 1s;
 }
+
+
+/** Auth */
+
+.register-section {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-section h2 {
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    padding: 30px 0;
+}
+
+form label {
+    color: white;
+    display: block;
+}
+
+form input {
+    background-color: rgb(9 0 42);
+    border-radius: 5px;
+    padding: 10px 20px;
+    border: solid 2px rgb(40, 30, 77);
+    width: 100%;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.form-inner {
+    width: 100%;
+    padding: 30px;
+    max-width: 400px;
+}
+
+@media screen and (min-width: 768px) {
+    .form-inner {
+        width: 60%;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .form-inner {
+        width: 30%;
+    }
+}
+
+.transition-all {
+    transition-duration: .15s;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+}
+
+input:hover,
+input:focus,
+:focus-visible {
+    border-color: rgb(177 84 240);
+}
+
+.btn {
+    padding: 10px 30px;
+    font-size: 16px;
+    color: white;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background: rgb(177 84 240);
+}
+
+.btn:hover {
+    background: rgb(156, 17, 255);
+}
+
+.btn {
+    font-family: 'Cinzel Decorative', cursive !important;
+    font-weight: bold;
+    box-shadow: 0 0 20px 5px #430096;   
+}
