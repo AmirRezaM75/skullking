@@ -11,3 +11,19 @@ services:
       - .:/app
     ports:
       - "3000:3000"
+  mongodb:
+    container_name: mongo
+    image: mongo
+    restart: always
+    ports:
+      - ${MONGODB_PORT:-27017}:27017
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+
+
+volumes:
+  mongodb-data:
+    driver: local
