@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: skull-king
+    image: skull-king
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"

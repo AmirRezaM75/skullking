@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: "Barlow", sans-serif;
+}
+
+form {
+    input {
+        @apply
+            bg-transparent
+            text-gray-300 text-sm
+            border-2 border-violet-950 hover:border-fuchsia-500 focus:border-fuchsia-500
+            rounded-lg
+            block
+            w-full
+            p-2.5
+            focus:outline-none
+            transition-all;
+    }
+    button[type=submit] {
+        @apply
+        text-violet-950
+        font-bold
+        border-2 border-violet-950
+        bg-fuchsia-300
+        hover:bg-fuchsia-400
+        transition-all
+        focus:outline-none
+        rounded-lg
+        w-full
+        sm:w-auto
+        px-5
+        py-2.5
+        text-center
+    }
+}
