@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/user"
+	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
+	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
+	_userService "github.com/AmirRezaM75/skull-king/user/service"
 	"github.com/AmirRezaM75/skull-king/ws"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,7 +29,7 @@ func main() {
 	defer cancel()
 
 	var mongoURI = fmt.Sprintf("mongodb://%s:%s", os.Getenv("MONGODB_HOST"), os.Getenv("MONGODB_PORT"))
-	var credentials options.Credential = options.Credential{
+	var credentials = options.Credential{
 		AuthSource: os.Getenv("MONGODB_AUTH_SOURCE"),
 		Username:   os.Getenv("MONGODB_USERNAME"),
 		Password:   os.Getenv("MONGODB_PASSWORD"),
@@ -46,21 +48,13 @@ func main() {
 		panic(err)
 	}
 
-	type Person struct {
-		Name string
-		Age  int
-	}
+	var userRepository = _userRepository.NewMongoUserRepository(
+		client.Database(os.Getenv("MONGODB_DATABASE")),
+	)
 
-	collection := client.Database(os.Getenv("MONGODB_DATABASE")).Collection("people")
+	var userService = _userService.NewUserService(userRepository)
 
-	person := Person{"John Doe", 30}
-	_, err = collection.InsertOne(context.Background(), person)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println("Inserted a document!")
+	_userHandler.NewUserHandler(userService)
 
 	hub := ws.NewHub()
 
@@ -73,10 +67,6 @@ func main() {
 	http.Handle("/", fs)
 
 	http.HandleFunc("/ws/join", wsHandler.Join)
-
-	authHandler := user.NewHandler()
-
-	http.HandleFunc("/register", authHandler.Register)
 
 	fmt.Println("Listening on port 3000")
 
