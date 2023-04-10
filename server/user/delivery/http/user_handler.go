@@ -35,5 +35,20 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	userHandler.Service.Create(payload.Email, payload.Username, payload.Password)
+	user, err := userHandler.Service.Create(payload.Email, payload.Username, payload.Password)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	var response struct {
+		User struct {
+			Email    string `json:"email"`
+			Username string `json:"username"`
+		} `json:"user"`
+		Token string `json:"token"`
+	}
+
+	response.User.Email = user.Email
+	response.User.Username = user.Username
+	response.Token = "123"
+	json.NewEncoder(w).Encode(response)
 }
