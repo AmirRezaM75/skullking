@@ -1,2 +1,4 @@
 .idea
 .env
+private.key
+public.key

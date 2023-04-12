@@ -1,7 +1,9 @@
 package domain
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type User struct {
-	Id        string `bson:"omitempty"`
+	Id        primitive.ObjectID `bson:"_id,omitempty"`
 	Username  string
 	Email     string
 	Password  string
@@ -10,8 +12,10 @@ type User struct {
 
 type UserRepository interface {
 	Create(u User) (*User, error)
+	FindByUsername(username string) *User
 }
 
 type UserService interface {
 	Create(email, username, password string) (*User, error)
+	FindByUsername(username string) *User
 }

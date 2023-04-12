@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/AmirRezaM75/skull-king/domain"
-	"github.com/AmirRezaM75/skull-king/pkg/password"
+	"github.com/AmirRezaM75/skull-king/pkg/support"
 )
 
 type UserService struct {
@@ -16,7 +16,7 @@ func NewUserService(userRepository domain.UserRepository) domain.UserService {
 }
 
 func (service UserService) Create(email, username, rawPassword string) (*domain.User, error) {
-	hashedPassword, err := password.Hash(rawPassword)
+	hashedPassword, err := support.Hash(rawPassword)
 
 	if err != nil {
 		return nil, err
@@ -29,4 +29,8 @@ func (service UserService) Create(email, username, rawPassword string) (*domain.
 	}
 
 	return service.repository.Create(user)
+}
+
+func (service UserService) FindByUsername(username string) *domain.User {
+	return service.repository.FindByUsername(username)
 }
