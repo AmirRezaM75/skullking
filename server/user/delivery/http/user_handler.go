@@ -3,7 +3,10 @@ package http
 import (
 	"encoding/json"
 	"github.com/AmirRezaM75/skull-king/domain"
+	"github.com/golang-jwt/jwt/v5"
+	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type UserHandler struct {
@@ -46,9 +49,23 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 		} `json:"user"`
 		Token string `json:"token"`
 	}
+	claims := jwt.RegisteredClaims{
+		ID:        user.Id,
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		Issuer:    "https://skullking.com",
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	key, _ := ioutil.ReadFile("storage/private.key")
+	signedToken, err := token.SignedString(key)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	response.User.Email = user.Email
 	response.User.Username = user.Username
-	response.Token = "123"
+	response.Token = signedToken
 	json.NewEncoder(w).Encode(response)
 }
