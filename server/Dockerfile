@@ -13,4 +13,4 @@ RUN go install github.com/cespare/reflex@latest
 
 EXPOSE 3000
 
-CMD reflex -g '*.go' go run main.go --start-service
+CMD reflex -r '\.go$' go run main.go --start-service
