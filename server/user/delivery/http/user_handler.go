@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/AmirRezaM75/skull-king/domain"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	"net/http"
 )
 
@@ -12,12 +13,14 @@ type ErrorResponse struct {
 }
 
 type UserHandler struct {
-	Service domain.UserService
+	Service   domain.UserService
+	validator validator.Validator
 }
 
-func NewUserHandler(userService domain.UserService) {
+func NewUserHandler(userService domain.UserService, validator validator.Validator) {
 	var handler = UserHandler{
-		Service: userService,
+		Service:   userService,
+		validator: validator,
 	}
 
 	http.HandleFunc("/register", handler.register)
@@ -25,20 +28,30 @@ func NewUserHandler(userService domain.UserService) {
 
 }
 
+type CreateUserRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Username string `json:"username" validate:"required,min=3,max=255"`
+	Password string `json:"password" validate:"required,min=6,max=255"`
+}
+
 func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) {
-	payload := struct {
-		Email    string `json:"email"`
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}{}
+	w.Header().Set("Content-Type", "application/json")
+
+	var payload CreateUserRequest
 
 	if err := decoder(&payload, w, r); err != nil {
 		return
 	}
 
-	user, err := userHandler.Service.Create(payload.Email, payload.Username, payload.Password)
+	validationError := userHandler.validator.ValidateStruct(payload)
 
-	w.Header().Set("Content-Type", "application/json")
+	if validationError != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		json.NewEncoder(w).Encode(validationError)
+		return
+	}
+
+	user, err := userHandler.Service.Create(payload.Email, payload.Username, payload.Password)
 
 	var response struct {
 		User struct {
@@ -124,7 +137,11 @@ func decoder(payload any, w http.ResponseWriter, r *http.Request) error {
 	err := d.Decode(payload)
 
 	if err != nil {
-		http.Error(w, "Can't decode payload.", http.StatusBadRequest)
+		var response = ErrorResponse{
+			Message: "Can't decode payload.",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
 		return err
 	}
 

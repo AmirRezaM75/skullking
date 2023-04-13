@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/app"
+	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
 	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
 	_userService "github.com/AmirRezaM75/skull-king/user/service"
@@ -28,7 +29,9 @@ func main() {
 
 	var userService = _userService.NewUserService(userRepository)
 
-	_userHandler.NewUserHandler(userService)
+	v := validator.NewValidator()
+
+	_userHandler.NewUserHandler(userService, v)
 
 	hub := ws.NewHub()
 
