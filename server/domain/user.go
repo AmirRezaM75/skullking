@@ -7,7 +7,7 @@ type User struct {
 	Username  string
 	Email     string
 	Password  string
-	CreatedAt int64 `bson:"created_at"`
+	CreatedAt primitive.DateTime `bson:"created_at"`
 }
 
 type UserRepository interface {

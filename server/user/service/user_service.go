@@ -16,7 +16,7 @@ func NewUserService(userRepository domain.UserRepository) domain.UserService {
 }
 
 func (service UserService) Create(email, username, rawPassword string) (*domain.User, error) {
-	hashedPassword, err := support.Hash(rawPassword)
+	hashedPassword, err := support.HashPassword(rawPassword)
 
 	if err != nil {
 		return nil, err

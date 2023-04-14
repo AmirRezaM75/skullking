@@ -23,7 +23,7 @@ func NewMongoUserRepository(db *mongo.Database) domain.UserRepository {
 }
 
 func (ur mongoUserRepository) Create(user domain.User) (*domain.User, error) {
-	user.CreatedAt = int64(primitive.NewDateTimeFromTime(time.Now()))
+	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	result, err := ur.db.Collection(UsersTable).InsertOne(context.Background(), user)
 

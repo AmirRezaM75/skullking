@@ -22,6 +22,12 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+  mailhog:
+    container_name: mailhog
+    image: mailhog/mailhog
+    ports:
+      - '${MAILHOG_PORT:-1025}:1025'
+      - '${MAILHOG_DASHBOARD_PORT:-8025}:8025'
 
 
 volumes:

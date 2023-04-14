@@ -56,6 +56,7 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 
 	if usernameExists || emailExists {
 		w.WriteHeader(http.StatusBadRequest)
+
 		var r = struct {
 			Message string            `json:"message"`
 			Errors  map[string]string `json:"errors"`
@@ -122,7 +123,7 @@ func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := support.CompareHashAndPassword(user.Password, payload.Password)
+	err := support.VerifyPassword(user.Password, payload.Password)
 
 	if err != nil {
 		var response = ErrorResponse{

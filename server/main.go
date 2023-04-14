@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/app"
+	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
 	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
@@ -17,6 +18,12 @@ func main() {
 	application := app.App{}
 
 	application.LoadEnvironments()
+	m := support.Mail{
+		To:      []string{"amir@gmail.com"},
+		Subject: "Register",
+		Body:    "Hello world",
+	}
+	m.Send()
 
 	client, cancel, disconnect := application.InitDatabase()
 
@@ -38,10 +45,6 @@ func main() {
 	wsHandler := ws.NewHandler(hub)
 
 	go hub.Run()
-
-	fs := http.FileServer(http.Dir("client"))
-
-	http.Handle("/", fs)
 
 	http.HandleFunc("/ws/join", wsHandler.Join)
 
