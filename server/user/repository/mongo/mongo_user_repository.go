@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -46,4 +47,32 @@ func (ur mongoUserRepository) FindByUsername(username string) *domain.User {
 	}
 
 	return &user
+}
+
+func (ur mongoUserRepository) ExistsByUsername(username string) bool {
+	count, err := ur.db.Collection(UsersTable).CountDocuments(
+		context.Background(),
+		bson.D{{"username", username}},
+		options.Count().SetLimit(1),
+	)
+
+	if err != nil {
+		return false
+	}
+
+	return count != 0
+}
+
+func (ur mongoUserRepository) ExistsByEmail(email string) bool {
+	count, err := ur.db.Collection(UsersTable).CountDocuments(
+		context.Background(),
+		bson.D{{"email", email}},
+		options.Count().SetLimit(1),
+	)
+
+	if err != nil {
+		return false
+	}
+
+	return count != 0
 }

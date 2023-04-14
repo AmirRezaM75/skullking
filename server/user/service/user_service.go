@@ -34,3 +34,11 @@ func (service UserService) Create(email, username, rawPassword string) (*domain.
 func (service UserService) FindByUsername(username string) *domain.User {
 	return service.repository.FindByUsername(username)
 }
+
+func (service UserService) ExistsByUsername(username string) bool {
+	return service.repository.ExistsByUsername(username)
+}
+
+func (service UserService) ExistsByEmail(email string) bool {
+	return service.repository.ExistsByEmail(email)
+}

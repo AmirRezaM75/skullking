@@ -13,9 +13,13 @@ type User struct {
 type UserRepository interface {
 	Create(u User) (*User, error)
 	FindByUsername(username string) *User
+	ExistsByUsername(username string) bool
+	ExistsByEmail(email string) bool
 }
 
 type UserService interface {
 	Create(email, username, password string) (*User, error)
 	FindByUsername(username string) *User
+	ExistsByUsername(username string) bool
+	ExistsByEmail(email string) bool
 }

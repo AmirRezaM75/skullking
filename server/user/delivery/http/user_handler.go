@@ -51,6 +51,31 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	usernameExists := userHandler.Service.ExistsByUsername(payload.Username)
+	emailExists := userHandler.Service.ExistsByEmail(payload.Email)
+
+	if usernameExists || emailExists {
+		w.WriteHeader(http.StatusBadRequest)
+		var r = struct {
+			Message string            `json:"message"`
+			Errors  map[string]string `json:"errors"`
+		}{
+			Message: "The given data is invalid.",
+			Errors:  map[string]string{},
+		}
+
+		if emailExists {
+			r.Errors["email"] = "The email has already been taken."
+		}
+
+		if usernameExists {
+			r.Errors["username"] = "The username has already been taken."
+		}
+
+		json.NewEncoder(w).Encode(r)
+		return
+	}
+
 	user, err := userHandler.Service.Create(payload.Email, payload.Username, payload.Password)
 
 	var response struct {
