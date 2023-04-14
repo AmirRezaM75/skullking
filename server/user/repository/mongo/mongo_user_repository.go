@@ -49,10 +49,10 @@ func (ur mongoUserRepository) FindByUsername(username string) *domain.User {
 	return &user
 }
 
-func (ur mongoUserRepository) ExistsByUsername(username string) bool {
+func (ur mongoUserRepository) exists(filter bson.D) bool {
 	count, err := ur.db.Collection(UsersTable).CountDocuments(
 		context.Background(),
-		bson.D{{"username", username}},
+		filter,
 		options.Count().SetLimit(1),
 	)
 
@@ -63,16 +63,10 @@ func (ur mongoUserRepository) ExistsByUsername(username string) bool {
 	return count != 0
 }
 
+func (ur mongoUserRepository) ExistsByUsername(username string) bool {
+	return ur.exists(bson.D{{"username", username}})
+}
+
 func (ur mongoUserRepository) ExistsByEmail(email string) bool {
-	count, err := ur.db.Collection(UsersTable).CountDocuments(
-		context.Background(),
-		bson.D{{"email", email}},
-		options.Count().SetLimit(1),
-	)
-
-	if err != nil {
-		return false
-	}
-
-	return count != 0
+	return ur.exists(bson.D{{"email", email}})
 }
