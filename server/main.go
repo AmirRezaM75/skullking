@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/app"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
@@ -9,6 +10,7 @@ import (
 	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
 	_userService "github.com/AmirRezaM75/skull-king/user/service"
 	"github.com/AmirRezaM75/skull-king/ws"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -18,11 +20,22 @@ func main() {
 	application := app.App{}
 
 	application.LoadEnvironments()
+
+	var body bytes.Buffer
+	t, err := template.ParseFiles("index.html")
+
+	if err != nil {
+		fmt.Println("Can't parse HTML file.")
+	}
+
+	t.Execute(&body, nil)
+
 	m := support.Mail{
 		To:      []string{"amir@gmail.com"},
 		Subject: "Register",
-		Body:    "Hello world",
+		Body:    body.String(),
 	}
+
 	m.Send()
 
 	client, cancel, disconnect := application.InitDatabase()
