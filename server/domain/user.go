@@ -22,4 +22,5 @@ type UserService interface {
 	FindByUsername(username string) *User
 	ExistsByUsername(username string) bool
 	ExistsByEmail(email string) bool
+	SendEmailVerificationNotification(userId int, email string) error
 }

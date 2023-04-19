@@ -1,16 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/app"
-	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
 	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
 	_userService "github.com/AmirRezaM75/skull-king/user/service"
 	"github.com/AmirRezaM75/skull-king/ws"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -18,25 +15,7 @@ import (
 
 func main() {
 	application := app.App{}
-
 	application.LoadEnvironments()
-
-	var body bytes.Buffer
-	t, err := template.ParseFiles("index.html")
-
-	if err != nil {
-		fmt.Println("Can't parse HTML file.")
-	}
-
-	t.Execute(&body, nil)
-
-	m := support.Mail{
-		To:      []string{"amir@gmail.com"},
-		Subject: "Register",
-		Body:    body.String(),
-	}
-
-	m.Send()
 
 	client, cancel, disconnect := application.InitDatabase()
 
@@ -48,7 +27,8 @@ func main() {
 	)
 
 	var userService = _userService.NewUserService(userRepository)
-
+	_ = userService.SendEmailVerificationNotification(1, "amir@gmail.com")
+	return
 	v := validator.NewValidator()
 
 	_userHandler.NewUserHandler(userService, v)
