@@ -74,7 +74,7 @@ func (service UserService) SendEmailVerificationNotification(userId int, email s
 
 	verificationURL, _ := urlGenerator.TemporarySignedRoute(
 		path,
-		map[string]string{"state": "online"}, //TODO: It must be present before signature
+		map[string]string{},
 		time.Now().Add(time.Hour),
 	)
 

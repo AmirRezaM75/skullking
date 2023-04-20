@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -26,9 +27,7 @@ func (ug UrlGenerator) TemporarySignedRoute(path string, parameters map[string]s
 
 	parameters["expires"] = strconv.FormatInt(expiration.Unix(), 10)
 
-	p := ksort(parameters)
-
-	u, err := ug.url(path, p)
+	u, err := ug.buildURL(path, parameters)
 
 	if err != nil {
 		return "", err
@@ -38,9 +37,9 @@ func (ug UrlGenerator) TemporarySignedRoute(path string, parameters map[string]s
 
 	h.Write([]byte(u.String()))
 
-	p["signature"] = hex.EncodeToString(h.Sum(nil))
+	parameters["signature"] = hex.EncodeToString(h.Sum(nil))
 
-	u, err = ug.url(path, p)
+	u, err = ug.buildURL(path, parameters)
 
 	if err != nil {
 		return "", err
@@ -64,7 +63,7 @@ func (ug UrlGenerator) ensureSignedRouteParametersAreNotReserved(parameters map[
 	return nil
 }
 
-func (ug UrlGenerator) url(path string, parameters map[string]string) (*url.URL, error) {
+func (ug UrlGenerator) buildURL(path string, parameters map[string]string) (*url.URL, error) {
 
 	u, err := ug.joinPath(path)
 
@@ -81,10 +80,18 @@ func (ug UrlGenerator) url(path string, parameters map[string]string) (*url.URL,
 }
 
 func (ug UrlGenerator) buildQuery(parameters map[string]string) url.Values {
+	keys := make([]string, 0, len(parameters))
+
+	for key := range parameters {
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+
 	q := url.Values{}
 
-	for k, v := range parameters {
-		q.Add(k, v)
+	for _, k := range keys {
+		q.Add(k, parameters[k])
 	}
 
 	return q
@@ -100,4 +107,30 @@ func (ug UrlGenerator) joinPath(p string) (*url.URL, error) {
 	u.Path = path.Join(u.Path, p)
 
 	return u, nil
+}
+
+func (ug UrlGenerator) HasValidSignature(u *url.URL) bool {
+	return ug.hasCorrectSignature(u) && ug.signatureHasNotExpired(u)
+}
+
+func (ug UrlGenerator) hasCorrectSignature(u *url.URL) bool {
+	q := u.Query()
+	signature := q.Get("signature")
+	q.Del("signature")
+	u.RawQuery = q.Encode()
+
+	h := hmac.New(sha256.New, []byte(ug.SecretKey))
+
+	h.Write([]byte(u.String()))
+
+	return signature == hex.EncodeToString(h.Sum(nil))
+
+}
+
+func (ug UrlGenerator) signatureHasNotExpired(u *url.URL) bool {
+	expires := u.Query().Get("expires")
+
+	timestamp, _ := strconv.Atoi(expires)
+
+	return expires != "" && int64(timestamp) < time.Now().Unix()
 }
