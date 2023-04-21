@@ -1,4 +1,4 @@
-package support
+package url_generator
 
 import (
 	"crypto/hmac"
@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"path"
 	"sort"
 	"strconv"
@@ -16,6 +17,14 @@ import (
 type UrlGenerator struct {
 	SecretKey string
 	BaseURL   string
+}
+
+func NewUrlGenerator() UrlGenerator {
+	return UrlGenerator{
+		// TODO: Not good practice to access env in packages
+		SecretKey: os.Getenv("APP_KEY"),
+		BaseURL:   os.Getenv("APP_URL"),
+	}
 }
 
 func (ug UrlGenerator) TemporarySignedRoute(path string, parameters map[string]string, expiration time.Time) (string, error) {
@@ -121,7 +130,8 @@ func (ug UrlGenerator) hasCorrectSignature(u *url.URL) bool {
 
 	h := hmac.New(sha256.New, []byte(ug.SecretKey))
 
-	h.Write([]byte(u.String()))
+	// TODO: Concatenation is not reasonable here
+	h.Write([]byte(os.Getenv("APP_URL") + u.String()))
 
 	return signature == hex.EncodeToString(h.Sum(nil))
 
@@ -132,5 +142,5 @@ func (ug UrlGenerator) signatureHasNotExpired(u *url.URL) bool {
 
 	timestamp, _ := strconv.Atoi(expires)
 
-	return expires != "" && int64(timestamp) < time.Now().Unix()
+	return expires != "" && int64(timestamp) > time.Now().Unix()
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/app"
+	"github.com/AmirRezaM75/skull-king/pkg/router"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
 	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
@@ -27,11 +28,12 @@ func main() {
 	)
 
 	var userService = _userService.NewUserService(userRepository)
-	_ = userService.SendEmailVerificationNotification(1, "amir@gmail.com")
-	return
+
 	v := validator.NewValidator()
 
-	_userHandler.NewUserHandler(userService, v)
+	r := router.NewRouter()
+
+	_userHandler.NewUserHandler(userService, v, r)
 
 	hub := ws.NewHub()
 
@@ -43,5 +45,5 @@ func main() {
 
 	fmt.Println("Listening on port 3000")
 
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	log.Fatal(http.ListenAndServe(":3000", r))
 }

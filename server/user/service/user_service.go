@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/domain"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/pkg/url_generator"
 	"html/template"
 	"os"
 	"time"
@@ -51,23 +52,20 @@ func (service UserService) ExistsByEmail(email string) bool {
 	return service.repository.ExistsByEmail(email)
 }
 
-func (service UserService) SendEmailVerificationNotification(userId int, email string) error {
+func (service UserService) SendEmailVerificationNotification(userId string, email string) error {
 	t, err := template.ParseFiles("index.html")
 
 	if err != nil {
 		return errors.New("can't parse HTML file")
 	}
 
-	urlGenerator := support.UrlGenerator{
-		SecretKey: os.Getenv("APP_KEY"),
-		BaseURL:   os.Getenv("APP_URL"),
-	}
+	urlGenerator := url_generator.NewUrlGenerator()
 
 	h := sha1.New()
 	h.Write([]byte(email))
 
 	path := fmt.Sprintf(
-		"verify-email/%d/%s",
+		"verify-email/%s/%s",
 		userId,
 		base64.URLEncoding.EncodeToString(h.Sum(nil)),
 	)

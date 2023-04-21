@@ -2,7 +2,10 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/AmirRezaM75/skull-king/app/middlewares"
 	"github.com/AmirRezaM75/skull-king/domain"
+	"github.com/AmirRezaM75/skull-king/pkg/router"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	"net/http"
@@ -17,15 +20,15 @@ type UserHandler struct {
 	validator validator.Validator
 }
 
-func NewUserHandler(userService domain.UserService, validator validator.Validator) {
+func NewUserHandler(userService domain.UserService, validator validator.Validator, r *router.Router) {
 	var handler = UserHandler{
 		Service:   userService,
 		validator: validator,
 	}
 
-	http.HandleFunc("/register", handler.register)
-	http.HandleFunc("/login", handler.login)
-
+	r.Get("/verify-email/:id/:hash", handler.verifyEmail).Middleware(middlewares.ValidateSignature{})
+	r.Post("/register", handler.register)
+	r.Post("/login", handler.register)
 }
 
 type CreateUserRequest struct {
@@ -78,6 +81,8 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 	}
 
 	user, err := userHandler.Service.Create(payload.Email, payload.Username, payload.Password)
+
+	_ = userHandler.Service.SendEmailVerificationNotification(user.Id.Hex(), user.Email)
 
 	var response struct {
 		User struct {
@@ -153,6 +158,12 @@ func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
 	response.User.Username = user.Username
 	response.Token = token
 	json.NewEncoder(w).Encode(response)
+}
+
+func (userHandler UserHandler) verifyEmail(w http.ResponseWriter, r *http.Request) {
+	params := r.Context().Value("params").(map[string]string)
+	userId := params["id"]
+	fmt.Println(userId)
 }
 
 func decoder(payload any, w http.ResponseWriter, r *http.Request) error {
