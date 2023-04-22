@@ -44,6 +44,10 @@ func (service UserService) FindByUsername(username string) *domain.User {
 	return service.repository.FindByUsername(username)
 }
 
+func (service UserService) FindById(id string) *domain.User {
+	return service.repository.FindById(id)
+}
+
 func (service UserService) ExistsByUsername(username string) bool {
 	return service.repository.ExistsByUsername(username)
 }
@@ -101,4 +105,8 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 	m.Send()
 
 	return nil
+}
+
+func (service UserService) MarkEmailAsVerified(userId string) {
+	service.repository.UpdateEmailVerifiedAtByUserId(userId, time.Now())
 }

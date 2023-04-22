@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 )
@@ -23,8 +22,7 @@ func (route Route) match(request *http.Request) map[string]string {
 		// TODO: 405
 		return nil
 	}
-	fmt.Println(request.URL.Path)
-	fmt.Println("^" + route.path + "$")
+
 	r := regexp.MustCompile("^" + route.path + "$")
 	matches := r.FindStringSubmatch(request.URL.Path)
 

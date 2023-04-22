@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/AmirRezaM75/skull-king/app/middlewares"
 	"github.com/AmirRezaM75/skull-king/domain"
 	"github.com/AmirRezaM75/skull-king/pkg/router"
@@ -163,7 +162,8 @@ func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
 func (userHandler UserHandler) verifyEmail(w http.ResponseWriter, r *http.Request) {
 	params := r.Context().Value("params").(map[string]string)
 	userId := params["id"]
-	fmt.Println(userId)
+	userHandler.Service.FindById(userId)
+	userHandler.Service.MarkEmailAsVerified(userId)
 }
 
 func decoder(payload any, w http.ResponseWriter, r *http.Request) error {

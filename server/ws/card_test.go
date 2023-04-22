@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -196,7 +195,7 @@ func TestPickableCardWhenTableIsEmpty(t *testing.T) {
 	}
 
 	options := set.pickables(table)
-	fmt.Println(options)
+
 	if !reflect.DeepEqual(expected, options) {
 		t.Error("Wrong pickable cards.")
 	}

@@ -49,6 +49,26 @@ func (ur mongoUserRepository) FindByUsername(username string) *domain.User {
 	return &user
 }
 
+func (ur mongoUserRepository) FindById(userId string) *domain.User {
+	id, err := primitive.ObjectIDFromHex(userId)
+
+	if err != nil {
+		return nil
+	}
+
+	filter := bson.M{"_id": id}
+
+	var user domain.User
+
+	err = ur.db.Collection(UsersTable).FindOne(context.Background(), filter).Decode(&user)
+
+	if err != nil {
+		return nil
+	}
+
+	return &user
+}
+
 func (ur mongoUserRepository) exists(filter bson.D) bool {
 	count, err := ur.db.Collection(UsersTable).CountDocuments(
 		context.Background(),
@@ -69,4 +89,21 @@ func (ur mongoUserRepository) ExistsByUsername(username string) bool {
 
 func (ur mongoUserRepository) ExistsByEmail(email string) bool {
 	return ur.exists(bson.D{{"email", email}})
+}
+
+func (ur mongoUserRepository) UpdateEmailVerifiedAtByUserId(userId string, datetime time.Time) bool {
+	id, err := primitive.ObjectIDFromHex(userId)
+
+	if err != nil {
+		return false
+	}
+
+	update := bson.D{{
+		"$set",
+		bson.D{{"email_verified_at", primitive.NewDateTimeFromTime(datetime)}},
+	}}
+
+	result, err := ur.db.Collection(UsersTable).UpdateByID(context.Background(), id, update)
+
+	return result.ModifiedCount > 0
 }
