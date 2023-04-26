@@ -26,8 +26,8 @@ func NewUserHandler(userService domain.UserService, validator validator.Validato
 	}
 
 	r.Get("/verify-email/:id/:hash", handler.verifyEmail).Middleware(middlewares.ValidateSignature{})
-	r.Post("/register", handler.register)
-	r.Post("/login", handler.register)
+	r.Post("/register", handler.register).Middleware(middlewares.CorsPolicy{})
+	r.Post("/login", handler.login)
 }
 
 type CreateUserRequest struct {
@@ -57,7 +57,7 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 	emailExists := userHandler.Service.ExistsByEmail(payload.Email)
 
 	if usernameExists || emailExists {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 
 		var r = struct {
 			Message string            `json:"message"`

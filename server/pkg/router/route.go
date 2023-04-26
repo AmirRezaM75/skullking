@@ -18,7 +18,7 @@ func (route *Route) Middleware(m Middleware) *Route {
 }
 
 func (route Route) match(request *http.Request) map[string]string {
-	if route.method != request.Method {
+	if request.Method != http.MethodOptions && route.method != request.Method {
 		// TODO: 405
 		return nil
 	}
