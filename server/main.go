@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/app"
+	"github.com/AmirRezaM75/skull-king/app/middlewares"
 	"github.com/AmirRezaM75/skull-king/pkg/router"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
@@ -32,6 +33,7 @@ func main() {
 	v := validator.NewValidator()
 
 	r := router.NewRouter()
+	r.Middleware(middlewares.CorsPolicy{})
 
 	_userHandler.NewUserHandler(userService, v, r)
 

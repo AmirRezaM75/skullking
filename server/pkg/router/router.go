@@ -7,11 +7,17 @@ import (
 )
 
 type Router struct {
-	routes []*Route
+	routes      []*Route
+	middlewares []Middleware
 }
 
 func NewRouter() *Router {
 	return &Router{}
+}
+
+func (router *Router) Middleware(m Middleware) *Router {
+	router.middlewares = append(router.middlewares, m)
+	return router
 }
 
 func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -22,13 +28,23 @@ func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		// Execute global middlewares
+		for _, m := range router.middlewares {
+			err := m.Execute(w, r)
+			if err != nil {
+				return
+			}
+		}
+
 		ctx := context.WithValue(r.Context(), "params", params)
 		r = r.WithContext(ctx)
 
-		err := route.runMiddlewares(w, r)
-
-		if err != nil {
-			return
+		// Execute route middlewares
+		for _, m := range route.middlewares {
+			err := m.Execute(w, r)
+			if err != nil {
+				return
+			}
 		}
 
 		route.handler(w, r)

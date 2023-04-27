@@ -45,26 +45,3 @@ func (route Route) match(request *http.Request) map[string]string {
 
 	return params
 }
-
-func (route Route) chainMiddlewares() {
-	for k, m := range route.middlewares {
-		if len(route.middlewares)-2 == k {
-			break
-		}
-
-		m.Next(route.middlewares[k+1])
-	}
-}
-
-func (route Route) runMiddlewares(w http.ResponseWriter, r *http.Request) error {
-	if len(route.middlewares) == 0 {
-		return nil
-	}
-
-	if len(route.middlewares) > 1 {
-		route.chainMiddlewares()
-	}
-
-	m := route.middlewares[0]
-	return m.Execute(w, r)
-}

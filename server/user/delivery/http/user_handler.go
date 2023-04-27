@@ -26,7 +26,7 @@ func NewUserHandler(userService domain.UserService, validator validator.Validato
 	}
 
 	r.Get("/verify-email/:id/:hash", handler.verifyEmail).Middleware(middlewares.ValidateSignature{})
-	r.Post("/register", handler.register).Middleware(middlewares.CorsPolicy{})
+	r.Post("/register", handler.register)
 	r.Post("/login", handler.login)
 }
 
