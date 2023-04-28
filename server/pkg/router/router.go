@@ -36,6 +36,12 @@ func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Handles preflight requests
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
 		ctx := context.WithValue(r.Context(), "params", params)
 		r = r.WithContext(ctx)
 
