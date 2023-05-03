@@ -1,13 +1,18 @@
 <script lang="ts">
+	// TODO: define ./@src/ as root
+	// https://stackoverflow.com/questions/73754777/svelte-import-by-absolute-path-does-not-work
+	import ServerValidationError from '../../utils/ServerValidationError';
+
 	let username: string = '';
 	let email: string = '';
 	let password: string = '';
+	let errors = new ServerValidationError();
 
 	async function register() {
 		const response = await fetch('http://localhost:3000/register', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
 				username,
@@ -15,6 +20,25 @@
 				password
 			})
 		});
+
+		const data = await response.json();
+
+		if (response.status === 422) {
+			Object.keys(data.errors).forEach((key) => {
+				errors.add(key, data.errors[key]);
+			});
+
+			errors = errors;
+		}
+	}
+
+	function clearError(event: Event) {
+		const element = event.target as HTMLInputElement
+		const id = element.getAttribute('id')
+		if (id) {
+			errors.clear(id)
+		}
+		errors = errors
 	}
 </script>
 
@@ -23,22 +47,51 @@
 <div class="w-screen h-screen flex items-center justify-center bg-gray-900">
 	<div class="w-80 max-w-lg">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Register</h1>
-		<form on:submit={register}>
+		<form on:submit={register} on:keydown={clearError}>
 			<div class="mb-3">
-				<label for="email" class="block mb-2 text-sm font-medium text-gray-300">Email</label>
-				<input type="email" id="email" bind:value={email} autofocus required />
-			</div>
-			<div class="mb-3">
-				<label for="username" class="block mb-2 text-sm font-medium text-gray-300">Username</label>
-				<input type="text" id="username" bind:value={username} required />
+				<label for="email">Email</label>
+				<input
+					type="email"
+					id="email"
+					bind:value={email}
+					class:border-red-500={errors.has('email')}
+					autofocus
+					required
+				/>
+				{#if errors.has('email')}
+					<small class="text-red-500">{errors.get('email')}</small>
+				{/if}
 			</div>
 
 			<div class="mb-3">
-				<label for="password" class="block mb-2 text-sm font-medium text-gray-300">Password</label>
-				<input type="password" id="password" bind:value={password} required />
+				<label for="username">Username</label>
+				<input
+					type="text"
+					id="username"
+					bind:value={username}
+					class:border-red-500={errors.has('username')}
+					required
+				/>
+				{#if errors.has('username')}
+					<small class="text-red-500">{errors.get('username')}</small>
+				{/if}
 			</div>
 
-			<button type="submit">Register</button>
+			<div class="mb-3">
+				<label for="password">Password</label>
+				<input
+					type="password"
+					id="password"
+					bind:value={password}
+					class:border-red-500={errors.has('password')}
+					required
+				/>
+				{#if errors.has('password')}
+					<small class="text-red-500">{errors.get('password')}</small>
+				{/if}
+			</div>
+
+			<button type="submit">Join the crew</button>
 		</form>
 	</div>
 </div>
