@@ -22,22 +22,24 @@ form {
             focus:outline-none
             transition-all;
     }
-    
-    button[type="submit"] {
-        @apply text-gray-900
-        font-medium
-        uppercase
-        border-2
-        border-green-600
-        hover:border-green-700
-        bg-lime-primary
-        focus:outline-none
-        rounded-lg
-        w-full
-        sm:w-auto
-        px-5
-        py-2.5
-        text-center
-        transition-all;
-    }
+}
+
+.btn {
+    @apply text-gray-900
+    font-medium
+    uppercase
+    hover:bg-green-400
+    bg-lime-primary
+    focus:outline-none
+    rounded-lg
+    w-full
+    sm:w-auto
+    px-5
+    py-2.5
+    text-center
+    transition-all;
+}
+
+.card {
+    @apply p-6 rounded-xl bg-slate-800 flex flex-col bg-clip-border;
 }

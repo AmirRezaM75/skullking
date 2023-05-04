@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AuthService from '../../services/AuthService';
+	import type { User } from '../../types';
 	// TODO: define ./@src/ as root
 	// https://stackoverflow.com/questions/73754777/svelte-import-by-absolute-path-does-not-work
 	import ServerValidationError from '../../utils/ServerValidationError';
@@ -21,7 +23,11 @@
 			})
 		});
 
+		// TODO: Refactor and use this format:
+		// .then(response => response.json())
+		// .then(data => {})
 		const data = await response.json();
+		console.log(data);
 
 		if (response.status === 422) {
 			Object.keys(data.errors).forEach((key) => {
@@ -30,21 +36,32 @@
 
 			errors = errors;
 		}
+
+		if (response.status === 201) {
+			const authService = new AuthService();
+			const user: User = {
+				username: data.user.username,
+				email: data.user.email,
+				verified: data.user.verified,
+				token: data.token
+			};
+			authService.save(user);
+
+			window.location.href = '/verify-email';
+		}
 	}
 
 	function clearError(event: Event) {
-		const element = event.target as HTMLInputElement
-		const id = element.getAttribute('id')
+		const element = event.target as HTMLInputElement;
+		const id = element.getAttribute('id');
 		if (id) {
-			errors.clear(id)
+			errors.clear(id);
+			errors = errors;
 		}
-		errors = errors
 	}
 </script>
 
-<!-- #6DFA84 -->
-
-<div class="w-screen h-screen flex items-center justify-center bg-gray-900">
+<div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	<div class="w-80 max-w-lg">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Register</h1>
 		<form on:submit={register} on:keydown={clearError}>
@@ -91,7 +108,7 @@
 				{/if}
 			</div>
 
-			<button type="submit">Join the crew</button>
+			<button type="submit" class="btn">Join the crew</button>
 		</form>
 	</div>
 </div>
