@@ -87,6 +87,7 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 		User struct {
 			Email    string `json:"email"`
 			Username string `json:"username"`
+			Verified bool   `json:"verified"`
 		} `json:"user"`
 		Token string `json:"token"`
 	}
@@ -100,7 +101,10 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 
 	response.User.Email = user.Email
 	response.User.Username = user.Username
+	response.User.Verified = false
 	response.Token = token
+
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 }
 
