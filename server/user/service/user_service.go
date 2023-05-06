@@ -11,16 +11,19 @@ import (
 	"github.com/AmirRezaM75/skull-king/pkg/url_generator"
 	"html/template"
 	"os"
+	"strconv"
 	"time"
 )
 
 type UserService struct {
-	repository domain.UserRepository
+	userRepository  domain.UserRepository
+	tokenRepository domain.TokenRepository
 }
 
-func NewUserService(userRepository domain.UserRepository) domain.UserService {
+func NewUserService(userRepository domain.UserRepository, tokenRepository domain.TokenRepository) domain.UserService {
 	return UserService{
-		repository: userRepository,
+		userRepository:  userRepository,
+		tokenRepository: tokenRepository,
 	}
 }
 
@@ -37,27 +40,27 @@ func (service UserService) Create(email, username, rawPassword string) (*domain.
 		Password: hashedPassword,
 	}
 
-	return service.repository.Create(user)
+	return service.userRepository.Create(user)
 }
 
 func (service UserService) FindByUsername(username string) *domain.User {
-	return service.repository.FindByUsername(username)
+	return service.userRepository.FindByUsername(username)
 }
 
 func (service UserService) FindById(id string) *domain.User {
-	return service.repository.FindById(id)
+	return service.userRepository.FindById(id)
 }
 
 func (service UserService) ExistsByUsername(username string) bool {
-	return service.repository.ExistsByUsername(username)
+	return service.userRepository.ExistsByUsername(username)
 }
 
 func (service UserService) ExistsByEmail(email string) bool {
-	return service.repository.ExistsByEmail(email)
+	return service.userRepository.ExistsByEmail(email)
 }
 
 func (service UserService) SendEmailVerificationNotification(userId string, email string) error {
-	t, err := template.ParseFiles("index.html")
+	t, err := template.ParseFiles("app/resources/views/email/email-verification.html")
 
 	if err != nil {
 		return errors.New("can't parse HTML file")
@@ -108,5 +111,79 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 }
 
 func (service UserService) MarkEmailAsVerified(userId string) {
-	service.repository.UpdateEmailVerifiedAtByUserId(userId, time.Now())
+	service.userRepository.UpdateEmailVerifiedAtByUserId(userId, time.Now())
+}
+
+func (service UserService) SendResetLink(email string) error {
+	templateFile, err := template.ParseFiles("app/resources/views/email/reset-password-notification.html")
+
+	if err != nil {
+		return errors.New("can't parse reset password notification file")
+	}
+
+	user := service.userRepository.FindByEmail(email)
+
+	if user == nil {
+		return errors.New("we can't find a user with that email address")
+	}
+
+	t := service.tokenRepository.FindByEmail(email)
+
+	if t != "" {
+		return errors.New("you have exceeded the rate limit. please try again later")
+	}
+
+	str := support.Str{}
+	token := support.HashHmac(str.Random(40))
+
+	hash, err := support.HashPassword(token)
+
+	if err != nil {
+		return err
+	}
+
+	lifetime, _ := strconv.Atoi(os.Getenv("RESET_PASSWORD_LINK_LIFETIME"))
+	expiration := time.Duration(lifetime) * time.Minute
+	err = service.tokenRepository.Create(email, hash, expiration)
+
+	if err != nil {
+		return errors.New("couldn't persist token in redis")
+	}
+
+	resetPasswordLink := fmt.Sprintf(
+		"%s/password-reset?token=%s&email=%s",
+		os.Getenv("FRONTEND_URL"),
+		token,
+		email,
+	)
+
+	payload := struct {
+		Lifetime int
+		Link     string
+	}{
+		lifetime,
+		resetPasswordLink,
+	}
+
+	var body bytes.Buffer
+
+	err = templateFile.Execute(&body, payload)
+
+	if err != nil {
+		return err
+	}
+
+	mail := support.Mail{
+		To:      []string{email},
+		Subject: "Reset Password Notification",
+		Body:    body.String(),
+	}
+
+	err = mail.Send()
+
+	if err != nil {
+		return errors.New("could not send reset password notification")
+	}
+
+	return nil
 }

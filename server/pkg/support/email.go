@@ -13,7 +13,7 @@ type Mail struct {
 	Body    string
 }
 
-func (mail Mail) Send() {
+func (mail Mail) Send() error {
 	var auth smtp.Auth
 
 	username := os.Getenv("MAIL_USERNAME")
@@ -35,14 +35,7 @@ func (mail Mail) Send() {
 
 	body := []byte(mail.buildMessage())
 
-	err := smtp.SendMail(address, auth, os.Getenv("MAIL_FROM_ADDRESS"), mail.To, body)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println("Email Sent Successfully!")
+	return smtp.SendMail(address, auth, os.Getenv("MAIL_FROM_ADDRESS"), mail.To, body)
 }
 
 func (mail Mail) buildMessage() string {

@@ -28,8 +28,14 @@ services:
     ports:
       - '${MAILHOG_PORT:-1025}:1025'
       - '${MAILHOG_DASHBOARD_PORT:-8025}:8025'
-
+  redis:
+    container_name: redis
+    image: redis:alpine
+    volumes:
+      - redis-data:/data
 
 volumes:
   mongodb-data:
+    driver: local
+  redis-data:
     driver: local

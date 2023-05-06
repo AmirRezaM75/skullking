@@ -16,11 +16,17 @@ type User struct {
 
 type UserRepository interface {
 	Create(u User) (*User, error)
+	FindByEmail(email string) *User
 	FindByUsername(username string) *User
 	FindById(id string) *User
 	ExistsByUsername(username string) bool
 	ExistsByEmail(email string) bool
 	UpdateEmailVerifiedAtByUserId(userId string, datetime time.Time) bool
+}
+
+type TokenRepository interface {
+	FindByEmail(email string) string
+	Create(email, token string, expiration time.Duration) error
 }
 
 type UserService interface {
@@ -31,4 +37,5 @@ type UserService interface {
 	ExistsByEmail(email string) bool
 	SendEmailVerificationNotification(userId string, email string) error
 	MarkEmailAsVerified(userId string)
+	SendResetLink(email string) error
 }

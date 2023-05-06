@@ -15,19 +15,20 @@ type ErrorResponse struct {
 }
 
 type UserHandler struct {
-	Service   domain.UserService
+	service   domain.UserService
 	validator validator.Validator
 }
 
 func NewUserHandler(userService domain.UserService, validator validator.Validator, r *router.Router) {
 	var handler = UserHandler{
-		Service:   userService,
+		service:   userService,
 		validator: validator,
 	}
 
 	r.Get("/verify-email/:id/:hash", handler.verifyEmail).Middleware(middlewares.ValidateSignature{})
 	r.Post("/register", handler.register)
 	r.Post("/login", handler.login)
+	r.Post("/forgot-password", handler.forgotPassword) // TODO: Guest middleware
 }
 
 type CreateUserRequest struct {
@@ -53,8 +54,8 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	usernameExists := userHandler.Service.ExistsByUsername(payload.Username)
-	emailExists := userHandler.Service.ExistsByEmail(payload.Email)
+	usernameExists := userHandler.service.ExistsByUsername(payload.Username)
+	emailExists := userHandler.service.ExistsByEmail(payload.Email)
 
 	if usernameExists || emailExists {
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -79,9 +80,9 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user, err := userHandler.Service.Create(payload.Email, payload.Username, payload.Password)
+	user, err := userHandler.service.Create(payload.Email, payload.Username, payload.Password)
 
-	_ = userHandler.Service.SendEmailVerificationNotification(user.Id.Hex(), user.Email)
+	_ = userHandler.service.SendEmailVerificationNotification(user.Id.Hex(), user.Email)
 
 	var response struct {
 		User struct {
@@ -120,7 +121,7 @@ func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := userHandler.Service.FindByUsername(payload.Username)
+	user := userHandler.service.FindByUsername(payload.Username)
 
 	if user == nil {
 		var response = ErrorResponse{
@@ -166,8 +167,8 @@ func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
 func (userHandler UserHandler) verifyEmail(w http.ResponseWriter, r *http.Request) {
 	params := r.Context().Value("params").(map[string]string)
 	userId := params["id"]
-	userHandler.Service.FindById(userId)
-	userHandler.Service.MarkEmailAsVerified(userId)
+	userHandler.service.FindById(userId)
+	userHandler.service.MarkEmailAsVerified(userId)
 }
 
 func decoder(payload any, w http.ResponseWriter, r *http.Request) error {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -48,4 +49,12 @@ func (app App) LoadEnvironments() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+}
+
+func (app App) InitRedis() *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
 }

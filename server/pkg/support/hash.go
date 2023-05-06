@@ -1,6 +1,12 @@
 package support
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"golang.org/x/crypto/bcrypt"
+	"os"
+)
 
 func HashPassword(raw string) (string, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(raw), bcrypt.DefaultCost)
@@ -12,4 +18,12 @@ func HashPassword(raw string) (string, error) {
 
 func VerifyPassword(hash, pass string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(pass))
+}
+
+func HashHmac(data string) string {
+	h := hmac.New(sha256.New, []byte(os.Getenv("APP_KEY")))
+
+	h.Write([]byte(data))
+
+	return base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
