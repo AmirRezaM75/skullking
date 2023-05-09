@@ -31,3 +31,9 @@ func (tr redisTokenRepository) Create(email, token string, expiration time.Durat
 
 	return tr.db.Set(context.Background(), key, token, expiration).Err()
 }
+
+func (tr redisTokenRepository) DeleteByEmail(email string) error {
+	key := TokenKey + email
+
+	return tr.db.Del(context.Background(), key).Err()
+}

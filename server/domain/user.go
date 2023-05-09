@@ -22,11 +22,13 @@ type UserRepository interface {
 	ExistsByUsername(username string) bool
 	ExistsByEmail(email string) bool
 	UpdateEmailVerifiedAtByUserId(userId string, datetime time.Time) bool
+	UpdatePasswordByEmail(email, password string) bool
 }
 
 type TokenRepository interface {
 	FindByEmail(email string) string
 	Create(email, token string, expiration time.Duration) error
+	DeleteByEmail(email string) error
 }
 
 type UserService interface {
@@ -38,4 +40,5 @@ type UserService interface {
 	SendEmailVerificationNotification(userId string, email string) error
 	MarkEmailAsVerified(userId string)
 	SendResetLink(email string) error
+	ResetPassword(email, password, token string) error
 }

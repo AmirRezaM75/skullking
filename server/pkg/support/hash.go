@@ -25,5 +25,10 @@ func HashHmac(data string) string {
 
 	h.Write([]byte(data))
 
-	return base64.URLEncoding.EncodeToString(h.Sum(nil))
+	/*
+	 * The RawURLEncoding encoding uses the URL and filename-safe base64 alphabet,
+	 * which replaces the + and / characters with - and _ respectively,
+	 * and omits the padding = character at the end of the string.
+	 */
+	return base64.RawURLEncoding.EncodeToString(h.Sum(nil))
 }

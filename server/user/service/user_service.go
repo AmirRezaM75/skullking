@@ -187,3 +187,34 @@ func (service UserService) SendResetLink(email string) error {
 
 	return nil
 }
+
+func (service UserService) ResetPassword(email, password, token string) error {
+	hash := service.tokenRepository.FindByEmail(email)
+
+	if hash == "" {
+		return errors.New("the password reset email is invalid")
+	}
+
+	err := support.VerifyPassword(hash, token)
+
+	if err != nil {
+		fmt.Println(err)
+		return errors.New("the password reset token is invalid")
+	}
+
+	p, err := support.HashPassword(password)
+
+	if err != nil {
+		return errors.New("couldn't not hash password")
+	}
+
+	result := service.userRepository.UpdatePasswordByEmail(email, p)
+
+	if result == false {
+		return errors.New("couldn't update password")
+	}
+
+	_ = service.tokenRepository.DeleteByEmail(email)
+
+	return nil
+}

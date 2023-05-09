@@ -29,6 +29,7 @@ func NewUserHandler(userService domain.UserService, validator validator.Validato
 	r.Post("/register", handler.register)
 	r.Post("/login", handler.login)
 	r.Post("/forgot-password", handler.forgotPassword) // TODO: Guest middleware
+	r.Post("/reset-password", handler.resetPassword)   // TODO: Guest middleware
 }
 
 type CreateUserRequest struct {

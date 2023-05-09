@@ -121,3 +121,17 @@ func (ur mongoUserRepository) UpdateEmailVerifiedAtByUserId(userId string, datet
 
 	return result.ModifiedCount > 0
 }
+
+func (ur mongoUserRepository) UpdatePasswordByEmail(email, password string) bool {
+	filter := bson.M{"email": email}
+
+	update := bson.M{"$set": bson.M{"password": password}}
+
+	result, err := ur.db.Collection(UsersTable).UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return false
+	}
+
+	return result.ModifiedCount > 0
+}
