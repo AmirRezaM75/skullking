@@ -34,7 +34,7 @@
 				<form on:submit={submit}>
 					<div class="mt-3">
 						<label for="email">Email</label>
-						<input type="text" id="email" bind:value={email} required />
+						<input type="email" id="email" bind:value={email} required />
 					</div>
 
 					{#if message != ''}

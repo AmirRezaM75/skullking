@@ -27,7 +27,6 @@
 		// .then(response => response.json())
 		// .then(data => {})
 		const data = await response.json();
-		console.log(data);
 
 		if (response.status === 422) {
 			Object.keys(data.errors).forEach((key) => {
