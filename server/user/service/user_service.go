@@ -151,7 +151,7 @@ func (service UserService) SendResetLink(email string) error {
 	}
 
 	resetPasswordLink := fmt.Sprintf(
-		"%s/password-reset?token=%s&email=%s",
+		"%s/reset-password?token=%s&email=%s",
 		os.Getenv("FRONTEND_URL"),
 		token,
 		email,

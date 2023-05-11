@@ -28,6 +28,7 @@ func NewUserHandler(userService domain.UserService, validator validator.Validato
 	r.Get("/verify-email/:id/:hash", handler.verifyEmail).Middleware(middlewares.ValidateSignature{})
 	r.Post("/register", handler.register)
 	r.Post("/login", handler.login)
+	r.Post("/email/verification-notification", handler.emailVerificationNotification).Middleware(middlewares.Authenticate{})
 	r.Post("/forgot-password", handler.forgotPassword) // TODO: Guest middleware
 	r.Post("/reset-password", handler.resetPassword)   // TODO: Guest middleware
 }
@@ -148,6 +149,7 @@ func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
 		User struct {
 			Email    string `json:"email"`
 			Username string `json:"username"`
+			Verified bool   `json:"verified"`
 		} `json:"user"`
 		Token string `json:"token"`
 	}
@@ -161,6 +163,7 @@ func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
 
 	response.User.Email = user.Email
 	response.User.Username = user.Username
+	response.User.Verified = user.EmailVerifiedAt != nil
 	response.Token = token
 	json.NewEncoder(w).Encode(response)
 }
