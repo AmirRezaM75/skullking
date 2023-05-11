@@ -28,7 +28,8 @@ func NewUserHandler(userService domain.UserService, validator validator.Validato
 	r.Get("/verify-email/:id/:hash", handler.verifyEmail).Middleware(middlewares.ValidateSignature{})
 	r.Post("/register", handler.register)
 	r.Post("/login", handler.login)
-	r.Post("/email/verification-notification", handler.emailVerificationNotification).Middleware(middlewares.Authenticate{})
+	r.Post("/email/verification-notification", handler.emailVerificationNotification).
+		Middleware(middlewares.Authenticate{UserService: userService})
 	r.Post("/forgot-password", handler.forgotPassword) // TODO: Guest middleware
 	r.Post("/reset-password", handler.resetPassword)   // TODO: Guest middleware
 }

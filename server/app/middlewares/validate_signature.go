@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"errors"
 	"github.com/AmirRezaM75/skull-king/pkg/url_generator"
 	"net/http"
 )
@@ -9,16 +8,18 @@ import (
 type ValidateSignature struct {
 }
 
-func (vs ValidateSignature) Execute(w http.ResponseWriter, r *http.Request) error {
-	urlGenerator := url_generator.NewUrlGenerator()
-	valid := urlGenerator.HasValidSignature(r.URL)
+func (vs ValidateSignature) Handle(next http.Handler) http.Handler {
 
-	if valid {
-		return nil
-	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		urlGenerator := url_generator.NewUrlGenerator()
+		valid := urlGenerator.HasValidSignature(r.URL)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusUnauthorized)
+		if valid {
+			next.ServeHTTP(w, r)
+			return
+		}
 
-	return errors.New("invalid signature")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+	})
 }

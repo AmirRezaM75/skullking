@@ -8,7 +8,7 @@ import (
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
 	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
-	tokenRepository "github.com/AmirRezaM75/skull-king/user/repository/redis"
+	_tokenRepository "github.com/AmirRezaM75/skull-king/user/repository/redis"
 	_userService "github.com/AmirRezaM75/skull-king/user/service"
 	"github.com/AmirRezaM75/skull-king/ws"
 	"log"
@@ -31,7 +31,7 @@ func main() {
 		client.Database(os.Getenv("MONGODB_DATABASE")),
 	)
 
-	var tokenRepository = tokenRepository.NewRedisTokenRepository(redis)
+	var tokenRepository = _tokenRepository.NewRedisTokenRepository(redis)
 
 	var userService = _userService.NewUserService(userRepository, tokenRepository)
 

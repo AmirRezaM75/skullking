@@ -28,32 +28,22 @@ func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Execute global middlewares
-		for _, m := range router.middlewares {
-			err := m.Execute(w, r)
-			if err != nil {
-				return
-			}
-		}
-
-		// Handles preflight requests
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
 		ctx := context.WithValue(r.Context(), "params", params)
 		r = r.WithContext(ctx)
 
-		// Execute route middlewares
-		for _, m := range route.middlewares {
-			err := m.Execute(w, r)
-			if err != nil {
-				return
-			}
+		// It merges global middlewares and route middlewares
+		// To make it easier to loop through in reverse order.
+		var middlewares []Middleware
+		middlewares = append(middlewares, router.middlewares...)
+		middlewares = append(middlewares, route.middlewares...)
+
+		h := http.Handler(route.handler)
+
+		for i := range middlewares {
+			h = middlewares[len(middlewares)-1-i].Handle(h)
 		}
 
-		route.handler(w, r)
+		h.ServeHTTP(w, r)
 
 		return
 	}
