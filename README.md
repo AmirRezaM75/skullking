@@ -27,23 +27,14 @@ the Seven Seas!
 
 > **Loot** and **Tigress** cards are not implemented duo to complexity.
 
-If multiple pirates are played in a trick, the first player who plays one wins it
-
-
-# Terms
-## Taking a trick
-Highest card wins
-shuffle the deck
-get your bid
-A standard suit out of suit loses no matter how high your number is 
-if you play black suit it trumps standard suit regardless of its value
-
 
 # Rules
 
 
 Special cards allow you to break the rules governing
 numbered cards
+
+If multiple pirates are played in a trick, the first player who plays one wins it
 
 In the rare event that each player plays
 an escape card, Tigress as an escape, or a loot card, in the
