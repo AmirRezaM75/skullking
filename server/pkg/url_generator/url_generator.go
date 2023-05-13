@@ -3,11 +3,10 @@ package url_generator
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/url"
-	"os"
 	"path"
 	"sort"
 	"strconv"
@@ -19,11 +18,10 @@ type UrlGenerator struct {
 	BaseURL   string
 }
 
-func NewUrlGenerator() UrlGenerator {
+func NewUrlGenerator(baseURL, secretKey string) UrlGenerator {
 	return UrlGenerator{
-		// TODO: Not good practice to access env in packages
-		SecretKey: os.Getenv("APP_KEY"),
-		BaseURL:   os.Getenv("APP_URL"),
+		SecretKey: secretKey,
+		BaseURL:   baseURL,
 	}
 }
 
@@ -44,9 +42,9 @@ func (ug UrlGenerator) TemporarySignedRoute(path string, parameters map[string]s
 
 	h := hmac.New(sha256.New, []byte(ug.SecretKey))
 
-	h.Write([]byte(u.String()))
+	h.Write([]byte(u.Path + "?" + u.RawQuery))
 
-	parameters["signature"] = hex.EncodeToString(h.Sum(nil))
+	parameters["signature"] = base64.RawURLEncoding.EncodeToString(h.Sum(nil))
 
 	u, err = ug.buildURL(path, parameters)
 
@@ -130,10 +128,9 @@ func (ug UrlGenerator) hasCorrectSignature(u *url.URL) bool {
 
 	h := hmac.New(sha256.New, []byte(ug.SecretKey))
 
-	// TODO: Concatenation is not reasonable here
-	h.Write([]byte(os.Getenv("APP_URL") + u.String()))
+	h.Write([]byte(u.String()))
 
-	return signature == hex.EncodeToString(h.Sum(nil))
+	return signature == base64.RawURLEncoding.EncodeToString(h.Sum(nil))
 
 }
 

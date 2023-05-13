@@ -66,7 +66,10 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 		return errors.New("can't parse HTML file")
 	}
 
-	urlGenerator := url_generator.NewUrlGenerator()
+	urlGenerator := url_generator.NewUrlGenerator(
+		os.Getenv("FRONTEND_URL"),
+		os.Getenv("APP_KEY"),
+	)
 
 	h := sha1.New()
 	h.Write([]byte(email))
@@ -74,7 +77,7 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 	path := fmt.Sprintf(
 		"verify-email/%s/%s",
 		userId,
-		base64.URLEncoding.EncodeToString(h.Sum(nil)),
+		base64.RawURLEncoding.EncodeToString(h.Sum(nil)),
 	)
 
 	verificationURL, _ := urlGenerator.TemporarySignedRoute(
@@ -101,7 +104,7 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 
 	m := support.Mail{
 		To:      []string{email},
-		Subject: "Register",
+		Subject: "Email Verification",
 		Body:    body.String(),
 	}
 
