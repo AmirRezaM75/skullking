@@ -42,3 +42,102 @@ form {
 .card {
     @apply p-6 rounded-xl bg-slate-800 flex flex-col bg-clip-border;
 }
+
+.circle-loader {
+    @apply border-2 border-gray-500 w-40 h-40 rounded-full border-l-yellow-500 relative;
+    animation: loader 1.2s infinite linear;
+    .checkmark {
+        @apply hidden;
+        &:after {
+            @apply h-20 w-10 border-r-lime-primary border-t-lime-primary absolute border-r border-t left-10 top-20;
+            content: "";
+            transform-origin: left top;
+            animation-duration: 800ms;
+            animation-timing-function: ease;
+            animation-name: checkmark;
+            transform: scaleX(-1) rotate(135deg);
+        }
+    }
+
+    .cross {
+        @apply hidden scale-75 w-full h-full relative;
+
+        &:after {
+            --cross-rotation: -45deg;
+        }
+
+        &:before {
+            --cross-rotation: 45deg;
+        }
+
+        &:before,
+        &:after {
+            @apply absolute bg-red-500 rounded-sm w-full h-1 top-1/2 left-1/2 ease-linear;
+            content: "";
+            transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(var(--cross-scale, 1));
+            animation-duration: 300ms;
+            animation-name: crossmark;
+        }
+    }
+
+    &.succeeded,
+    &.failed {
+        @apply animate-none;
+        transition: border 500ms ease-out;
+    }
+
+    &.succeeded {
+        .checkmark {
+            @apply block;
+        }
+        @apply border-lime-primary;
+    }
+
+    &.failed {
+        .cross {
+            @apply block;
+        }
+        @apply border-red-500;
+    }
+}
+
+@keyframes loader {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes checkmark {
+    0% {
+        height: 0;
+        width: 0;
+        opacity: 1;
+    }
+    20% {
+        height: 0;
+        width: 2.5rem;
+        opacity: 1;
+    }
+    40% {
+        height: 5rem;
+        width: 2.5rem;
+        opacity: 1;
+    }
+    100% {
+        height: 5rem;
+        width: 2.5rem;
+        opacity: 1;
+    }
+}
+
+@keyframes crossmark {
+    0% {
+        transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(0);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(1);
+    }
+}
