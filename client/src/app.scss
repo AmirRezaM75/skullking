@@ -2,8 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --lime-primary: #6dfa84;
+    --lime-secondary: #3dff7e;
+}
+
 body {
     font-family: "Barlow", sans-serif;
+    // Icon credit: https://www.flaticon.com/authors/pongsakornred
+    cursor: url("/images/sword.png"), auto;
 }
 
 form {
@@ -27,16 +34,23 @@ form {
 .btn {
     @apply text-gray-900
     font-medium
-    uppercase
-    hover:bg-green-400
+    hover:bg-lime-secondary
     bg-lime-primary
-    focus:outline-none
+    outline-none
     rounded-lg
     w-full
     px-5
     py-2.5
     text-center
-    transition-all;
+    transition-all
+    select-none;
+
+    appearance: button;
+    backface-visibility: hidden;
+    box-shadow: rgba(50, 50, 93, 0.1) 0 0 0 1px inset, rgba(50, 50, 93, 0.1) 0 2px 5px 0,
+        rgba(0, 0, 0, 0.07) 0 1px 1px 0;
+    box-sizing: border-box;
+    touch-action: manipulation;
 }
 
 .card {
@@ -140,4 +154,27 @@ form {
     100% {
         transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(1);
     }
+}
+
+.background {
+    @apply w-screen h-screen bg-slate-900 bg-center bg-cover bg-no-repeat;
+    background-image: url("/images/bg1.jpg");
+    .inner {
+        @apply w-full text-center lg:text-left lg:w-2/3 h-full flex justify-center items-center;
+        background: rgba(0, 0, 0, 0.5);
+        @screen lg {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+    }
+}
+
+.btn-secondary {
+    @apply text-white font-bold text-xl text-center uppercase py-4 px-12 tracking-widest border-4 border-white rounded-3xl transition-all duration-300;
+    background: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+}
+
+.title-primary {
+    @apply text-white text-9xl font-bold;
+
+    text-shadow: -1px 5px 0px var(--lime-secondary);
 }

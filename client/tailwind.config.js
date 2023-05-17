@@ -5,7 +5,8 @@ export default {
     extend: {
       colors: {
         lime: {
-          primary: "#6DFA84"
+          primary: "var(--lime-primary)",
+          secondary: "var(--lime-secondary)",
         }
       }
     },
