@@ -1,4 +1,16 @@
 <script lang="ts">
+
+	async function resend() {
+
+		const response = await fetch('http://localhost:3000/email/verification-notification', {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${data.token}`,
+				'Content-Type': 'application/json'
+			},
+		});
+
+	}
 	export let data;
 </script>
 
@@ -11,7 +23,7 @@
 				bottle to <span class="text-fuchsia-500">{data.email}</span>. If ye can't find it, check yer
 				spam or junk folder. Thank ye for choosing to sail with us on the high seas of the internet.
 			</p>
-			<button type="button" class="btn mt-4">Resend</button>
+			<button type="button" class="btn mt-4" on:click={resend}>Resend</button>
 		</div>
 	</div>
 </div>
