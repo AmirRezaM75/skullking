@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ApiService from '../../services/ApiService';
 	import AuthService from '../../services/AuthService';
 	import type { User } from '../../types';
 	// TODO: define ./@src/ as root
@@ -11,21 +12,9 @@
 	let errors = new ServerValidationError();
 
 	async function register() {
-		const response = await fetch('http://localhost:3000/register', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				username,
-				email,
-				password
-			})
-		});
+		const apiService = new ApiService();
+		const response = await apiService.register(username, email, password);
 
-		// TODO: Refactor and use this format:
-		// .then(response => response.json())
-		// .then(data => {})
 		const data = await response.json();
 
 		if (response.status === 422) {

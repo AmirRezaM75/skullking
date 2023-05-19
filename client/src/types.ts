@@ -4,3 +4,8 @@ export type User = {
 	verified: boolean;
 	token: string;
 };
+
+export type CreateGameResponse = {
+	id: string
+	statusCode: number
+}

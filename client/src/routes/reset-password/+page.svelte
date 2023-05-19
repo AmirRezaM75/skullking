@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ApiService from '../../services/ApiService';
 	import ServerValidationError from '../../utils/ServerValidationError';
 
 	let password = '';
@@ -7,25 +8,21 @@
 	let errors = new ServerValidationError();
 
 	async function submit(e: Event) {
-        e.preventDefault()
+		e.preventDefault();
 		const params = new URLSearchParams(window.location.search);
+		const email = params.get('email');
+		const token = params.get('token');
 
-		const response = await fetch('http://localhost:3000/reset-password', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				email: params.get('email'),
-				token: params.get('token'),
-				password
-			})
-		});
+		if (!email || !token) {
+			return;
+		}
 
-        if (response.status == 200) {
-            console.log("aaa")
+		const apiService = new ApiService();
+		const response = await apiService.resetPassword(email, token, password);
+
+		if (response.status == 200) {
 			window.location.href = '/login';
-            return
+			return;
 		}
 
 		const data = await response.json();
@@ -37,8 +34,6 @@
 
 			errors = errors;
 		}
-
-		
 	}
 
 	function clearError(event: Event) {

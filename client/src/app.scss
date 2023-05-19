@@ -43,7 +43,10 @@ form {
     py-2.5
     text-center
     transition-all
-    select-none;
+    select-none
+    inline-flex
+    items-center
+    justify-center;
 
     appearance: button;
     backface-visibility: hidden;
@@ -51,6 +54,10 @@ form {
         rgba(0, 0, 0, 0.07) 0 1px 1px 0;
     box-sizing: border-box;
     touch-action: manipulation;
+
+    .circle-loader {
+        @apply w-4 h-4 inline-block border-black border-l-yellow-400;
+    }
 }
 
 .card {
@@ -169,8 +176,12 @@ form {
 }
 
 .btn-secondary {
-    @apply text-white font-bold text-xl text-center uppercase py-4 px-12 tracking-widest border-4 border-white rounded-3xl transition-all duration-300;
+    @apply inline-flex justify-center items-center text-white font-bold text-xl text-center uppercase py-4 px-12 tracking-widest border-4 border-white rounded-3xl transition-all duration-300;
     background: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+
+    .circle-loader {
+        @apply w-5 h-5 inline-block border-white border-l-fuchsia-500;
+    }
 }
 
 .title-primary {

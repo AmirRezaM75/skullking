@@ -1,25 +1,25 @@
 <script lang="ts">
+	import ApiService from '../../services/ApiService';
+
 	let email = '';
 	let message = '';
 	let sent = false;
+	let loading = false;
 
 	async function submit() {
-		const response = await fetch('http://localhost:3000/forgot-password', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				email
-			})
-		});
+		if (loading) return;
+
+		loading = true;
+
+		const apiService = new ApiService();
+		const response = await apiService.forgotPassword(email);
 
 		if (response.status == 202) {
 			sent = true;
 		} else {
-			const data = await response.json();
-			message = data.message;
+			response.json().then((data) => (message = data.message));
 		}
+		loading = false;
 	}
 </script>
 
@@ -41,7 +41,12 @@
 						<small class="text-red-500">{message}</small>
 					{/if}
 
-					<button type="submit" class="btn mt-4">Submit</button>
+					<button type="submit" class="btn mt-4">
+						{#if loading}
+							<span class="circle-loader mr-2" />
+						{/if}
+						<span>Submit</span>
+					</button>
 				</form>
 			</div>
 		</div>

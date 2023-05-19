@@ -1,17 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import ApiService from '../../../../services/ApiService';
 
 	let status = 'loading';
 
 	onMount(async () => {
-        const URL = 'http://localhost:3000' + window.location.pathname + window.location.search
-		const response = await fetch(URL, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
-
+		const apiService = new ApiService
+		const response = await apiService.verifyEmail(window.location.pathname + window.location.search)
         
         if (response.status === 200) {
             status = 'succeeded'

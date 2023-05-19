@@ -1,15 +1,18 @@
 <script lang="ts">
+	import ApiService from '../services/ApiService.js';
+	let loading = false;
 	async function createGame() {
-		const response = await fetch('http://localhost:3000/games', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
+		if (loading == true) {
+			return;
+		}
 
-		const data = await response.json();
-		const gameId = data.id;
-		window.location.href = `games/${gameId}`;
+		loading = true;
+		const apiService = new ApiService();
+		const response = await apiService.createGame();
+		response.json().then((data) => {
+			loading = false;
+			window.location.href = `games/${data.id}`;
+		});
 	}
 
 	export let data;
@@ -22,7 +25,10 @@
 			<h1 class="title-primary">Skull King</h1>
 			<div class="mt-10">
 				{#if data.action == 'play'}
-					<button type="button" on:click={createGame} class="btn-secondary">
+					<button type="button" on:click={createGame} class="btn-secondary" class:cursor-wait={loading}>
+						{#if loading}
+							<span class="circle-loader mr-2" />
+						{/if}
 						<span>Play</span>
 					</button>
 				{:else}

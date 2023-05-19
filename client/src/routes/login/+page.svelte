@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ApiService from '../../services/ApiService';
 	import AuthService from '../../services/AuthService';
 	import type { User } from '../../types';
 	// TODO: define ./@src/ as root
@@ -11,16 +12,8 @@
 	let message: string = '';
 
 	async function login() {
-		const response = await fetch('http://localhost:3000/login', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				username,
-				password
-			})
-		});
+		const apiService = new ApiService();
+		const response = await apiService.login(username, password);
 
 		const data = await response.json();
 
@@ -33,7 +26,7 @@
 		}
 
 		if (response.status === 400) {
-			message = data.message
+			message = data.message;
 		}
 
 		if (response.status === 200) {
