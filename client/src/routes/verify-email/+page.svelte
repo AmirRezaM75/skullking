@@ -1,15 +1,35 @@
 <script lang="ts">
+	import ApiService from '../../services/ApiService.js';
+	let loading = false;
+
+	let response: {
+		success: boolean;
+		message: string;
+	} | null;
+	response = null;
 
 	async function resend() {
+		if (loading) return;
 
-		const response = await fetch('http://localhost:3000/email/verification-notification', {
-			method: 'POST',
-			headers: {
-				'Authorization': `Bearer ${data.token}`,
-				'Content-Type': 'application/json'
-			},
-		});
+		loading = true;
 
+		const apiService = new ApiService();
+
+		const r = await apiService.sendEmailVerificationNotification();
+
+		if (r.status == 202) {
+			response = {
+				success: true,
+				message: 'Email verification notification has been sent.'
+			};
+		} else {
+			response = {
+				success: false,
+				message: 'Something goes wrong!'
+			};
+		}
+
+		loading = false;
 	}
 	export let data;
 </script>
@@ -23,7 +43,20 @@
 				bottle to <span class="text-fuchsia-500">{data.email}</span>. If ye can't find it, check yer
 				spam or junk folder. Thank ye for choosing to sail with us on the high seas of the internet.
 			</p>
-			<button type="button" class="btn mt-4" on:click={resend}>Resend</button>
+			{#if response}
+				<p class="mt-3 {response.success ? 'text-lime-primary' : 'text-red-500'}">
+					{response.message}
+				</p>
+			{/if}
+
+			{#if !response || !response.success}
+				<button type="button" class="btn mt-4" on:click={resend}>
+					{#if loading}
+						<span class="circle-loader mr-2" />
+					{/if}
+					<span>Resend</span>
+				</button>
+			{/if}
 		</div>
 	</div>
 </div>
