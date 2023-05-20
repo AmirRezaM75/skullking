@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"github.com/AmirRezaM75/skull-king/pkg/url_generator"
+	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"net/http"
 	"os"
 )
@@ -12,7 +12,7 @@ type ValidateSignature struct {
 func (vs ValidateSignature) Handle(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		urlGenerator := url_generator.NewUrlGenerator(
+		urlGenerator := support.NewUrlGenerator(
 			os.Getenv("APP_URL"),
 			os.Getenv("APP_KEY"),
 		)

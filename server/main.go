@@ -2,45 +2,42 @@ package main
 
 import (
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/app"
-	"github.com/AmirRezaM75/skull-king/app/middlewares"
+	ws "github.com/AmirRezaM75/skull-king/game/hub"
+	"github.com/AmirRezaM75/skull-king/handlers"
+	"github.com/AmirRezaM75/skull-king/middlewares"
 	"github.com/AmirRezaM75/skull-king/pkg/router"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
-	_userHandler "github.com/AmirRezaM75/skull-king/user/delivery/http"
-	_userRepository "github.com/AmirRezaM75/skull-king/user/repository/mongo"
-	_tokenRepository "github.com/AmirRezaM75/skull-king/user/repository/redis"
-	_userService "github.com/AmirRezaM75/skull-king/user/service"
-	"github.com/AmirRezaM75/skull-king/ws"
+	"github.com/AmirRezaM75/skull-king/repositories"
+	"github.com/AmirRezaM75/skull-king/services"
 	"log"
 	"net/http"
 	"os"
 )
 
 func main() {
-	application := app.App{}
-	application.LoadEnvironments()
+	loadEnvironments()
 
-	client, cancel, disconnect := application.InitDatabase()
+	client, cancel, disconnect := initDatabase()
 
-	redis := application.InitRedis()
+	redis := initRedis()
 
 	defer cancel()
 	defer disconnect()
 
-	var userRepository = _userRepository.NewMongoUserRepository(
+	var userRepository = repositories.NewUserRepository(
 		client.Database(os.Getenv("MONGODB_DATABASE")),
 	)
 
-	var tokenRepository = _tokenRepository.NewRedisTokenRepository(redis)
+	var tokenRepository = repositories.NewTokenRepository(redis)
 
-	var userService = _userService.NewUserService(userRepository, tokenRepository)
+	var userService = services.NewUserService(userRepository, tokenRepository)
 
 	v := validator.NewValidator()
 
 	r := router.NewRouter()
 	r.Middleware(middlewares.CorsPolicy{})
 
-	_userHandler.NewUserHandler(userService, v, r)
+	handlers.NewUserHandler(userService, v, r)
 
 	hub := ws.NewHub()
 

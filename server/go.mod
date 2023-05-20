@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/joho/godotenv v1.5.1
+	github.com/redis/go-redis/v9 v9.0.4
 	go.mongodb.org/mongo-driver v1.11.4
 	golang.org/x/crypto v0.7.0
 )
@@ -22,7 +23,6 @@ require (
 	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/redis/go-redis/v9 v9.0.4 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect

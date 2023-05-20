@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"bytes"
@@ -6,9 +6,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/domain"
+	"github.com/AmirRezaM75/skull-king/contracts"
+	"github.com/AmirRezaM75/skull-king/models"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
-	"github.com/AmirRezaM75/skull-king/pkg/url_generator"
 	"html/template"
 	"os"
 	"strconv"
@@ -16,25 +16,25 @@ import (
 )
 
 type UserService struct {
-	userRepository  domain.UserRepository
-	tokenRepository domain.TokenRepository
+	userRepository  contracts.UserRepository
+	tokenRepository contracts.TokenRepository
 }
 
-func NewUserService(userRepository domain.UserRepository, tokenRepository domain.TokenRepository) domain.UserService {
+func NewUserService(userRepository contracts.UserRepository, tokenRepository contracts.TokenRepository) contracts.UserService {
 	return UserService{
 		userRepository:  userRepository,
 		tokenRepository: tokenRepository,
 	}
 }
 
-func (service UserService) Create(email, username, rawPassword string) (*domain.User, error) {
+func (service UserService) Create(email, username, rawPassword string) (*models.User, error) {
 	hashedPassword, err := support.HashPassword(rawPassword)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var user = domain.User{
+	var user = models.User{
 		Username: username,
 		Email:    email,
 		Password: hashedPassword,
@@ -43,11 +43,11 @@ func (service UserService) Create(email, username, rawPassword string) (*domain.
 	return service.userRepository.Create(user)
 }
 
-func (service UserService) FindByUsername(username string) *domain.User {
+func (service UserService) FindByUsername(username string) *models.User {
 	return service.userRepository.FindByUsername(username)
 }
 
-func (service UserService) FindById(id string) *domain.User {
+func (service UserService) FindById(id string) *models.User {
 	return service.userRepository.FindById(id)
 }
 
@@ -66,7 +66,7 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 		return errors.New("can't parse HTML file")
 	}
 
-	urlGenerator := url_generator.NewUrlGenerator(
+	urlGenerator := support.NewUrlGenerator(
 		os.Getenv("FRONTEND_URL"),
 		os.Getenv("APP_KEY"),
 	)
@@ -108,6 +108,7 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 		Body:    body.String(),
 	}
 
+	// TODO: return error
 	m.Send()
 
 	return nil

@@ -1,8 +1,9 @@
-package mongo
+package repositories
 
 import (
 	"context"
-	"github.com/AmirRezaM75/skull-king/domain"
+	"github.com/AmirRezaM75/skull-king/contracts"
+	"github.com/AmirRezaM75/skull-king/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,17 +13,17 @@ import (
 
 const UsersTable = "users"
 
-type mongoUserRepository struct {
+type userRepository struct {
 	db *mongo.Database
 }
 
-func NewMongoUserRepository(db *mongo.Database) domain.UserRepository {
-	return mongoUserRepository{
+func NewUserRepository(db *mongo.Database) contracts.UserRepository {
+	return userRepository{
 		db: db,
 	}
 }
 
-func (ur mongoUserRepository) Create(user domain.User) (*domain.User, error) {
+func (ur userRepository) Create(user models.User) (*models.User, error) {
 	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 
 	result, err := ur.db.Collection(UsersTable).InsertOne(context.Background(), user)
@@ -35,10 +36,10 @@ func (ur mongoUserRepository) Create(user domain.User) (*domain.User, error) {
 	return &user, nil
 }
 
-func (ur mongoUserRepository) FindByUsername(username string) *domain.User {
+func (ur userRepository) FindByUsername(username string) *models.User {
 	filter := bson.D{{"username", username}}
 
-	var user domain.User
+	var user models.User
 
 	err := ur.db.Collection(UsersTable).FindOne(context.Background(), filter).Decode(&user)
 
@@ -49,7 +50,7 @@ func (ur mongoUserRepository) FindByUsername(username string) *domain.User {
 	return &user
 }
 
-func (ur mongoUserRepository) FindById(userId string) *domain.User {
+func (ur userRepository) FindById(userId string) *models.User {
 	id, err := primitive.ObjectIDFromHex(userId)
 
 	if err != nil {
@@ -58,7 +59,7 @@ func (ur mongoUserRepository) FindById(userId string) *domain.User {
 
 	filter := bson.M{"_id": id}
 
-	var user domain.User
+	var user models.User
 
 	err = ur.db.Collection(UsersTable).FindOne(context.Background(), filter).Decode(&user)
 
@@ -69,10 +70,10 @@ func (ur mongoUserRepository) FindById(userId string) *domain.User {
 	return &user
 }
 
-func (ur mongoUserRepository) FindByEmail(email string) *domain.User {
+func (ur userRepository) FindByEmail(email string) *models.User {
 	filter := bson.D{{"email", email}}
 
-	var user domain.User
+	var user models.User
 
 	err := ur.db.Collection(UsersTable).FindOne(context.Background(), filter).Decode(&user)
 
@@ -83,7 +84,7 @@ func (ur mongoUserRepository) FindByEmail(email string) *domain.User {
 	return &user
 }
 
-func (ur mongoUserRepository) exists(filter bson.D) bool {
+func (ur userRepository) exists(filter bson.D) bool {
 	count, err := ur.db.Collection(UsersTable).CountDocuments(
 		context.Background(),
 		filter,
@@ -97,15 +98,15 @@ func (ur mongoUserRepository) exists(filter bson.D) bool {
 	return count != 0
 }
 
-func (ur mongoUserRepository) ExistsByUsername(username string) bool {
+func (ur userRepository) ExistsByUsername(username string) bool {
 	return ur.exists(bson.D{{"username", username}})
 }
 
-func (ur mongoUserRepository) ExistsByEmail(email string) bool {
+func (ur userRepository) ExistsByEmail(email string) bool {
 	return ur.exists(bson.D{{"email", email}})
 }
 
-func (ur mongoUserRepository) UpdateEmailVerifiedAtByUserId(userId string, datetime time.Time) bool {
+func (ur userRepository) UpdateEmailVerifiedAtByUserId(userId string, datetime time.Time) bool {
 	id, err := primitive.ObjectIDFromHex(userId)
 
 	if err != nil {
@@ -122,7 +123,7 @@ func (ur mongoUserRepository) UpdateEmailVerifiedAtByUserId(userId string, datet
 	return result.ModifiedCount > 0
 }
 
-func (ur mongoUserRepository) UpdatePasswordByEmail(email, password string) bool {
+func (ur userRepository) UpdatePasswordByEmail(email, password string) bool {
 	filter := bson.M{"email": email}
 
 	update := bson.M{"$set": bson.M{"password": password}}

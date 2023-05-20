@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"context"
@@ -13,9 +13,7 @@ import (
 	"time"
 )
 
-type App struct{}
-
-func (app App) InitDatabase() (*mongo.Client, context.CancelFunc, func()) {
+func initDatabase() (*mongo.Client, context.CancelFunc, func()) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	var mongoURI = fmt.Sprintf("mongodb://%s:%s", os.Getenv("MONGODB_HOST"), os.Getenv("MONGODB_PORT"))
@@ -43,7 +41,7 @@ func (app App) InitDatabase() (*mongo.Client, context.CancelFunc, func()) {
 	return client, cancel, disconnect
 }
 
-func (app App) LoadEnvironments() {
+func loadEnvironments() {
 	err := godotenv.Load()
 
 	if err != nil {
@@ -51,7 +49,7 @@ func (app App) LoadEnvironments() {
 	}
 }
 
-func (app App) InitRedis() *redis.Client {
+func initRedis() *redis.Client {
 	return redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
 		Password: os.Getenv("REDIS_PASSWORD"),

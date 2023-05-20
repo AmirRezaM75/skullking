@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/AmirRezaM75/skull-king/app/context_manager"
+	"github.com/AmirRezaM75/skull-king/services"
 	"net/http"
 	"regexp"
 )
@@ -28,7 +28,7 @@ func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		ctx := context_manager.WithRequestParams(r.Context(), params)
+		ctx := services.ContextService{}.WithRequestParams(r.Context(), params)
 		r = r.WithContext(ctx)
 
 		// It merges global middlewares and route middlewares

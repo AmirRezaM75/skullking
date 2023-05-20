@@ -1,15 +1,15 @@
 package middlewares
 
 import (
-	"github.com/AmirRezaM75/skull-king/app/context_manager"
-	"github.com/AmirRezaM75/skull-king/domain"
+	"github.com/AmirRezaM75/skull-king/contracts"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/services"
 	"net/http"
 	"strings"
 )
 
 type Authenticate struct {
-	UserService domain.UserService
+	UserService contracts.UserService
 }
 
 func (a Authenticate) Handle(next http.Handler) http.Handler {
@@ -37,7 +37,7 @@ func (a Authenticate) Handle(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context_manager.WithUser(r.Context(), user)
+		ctx := services.ContextService{}.WithUser(r.Context(), user)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

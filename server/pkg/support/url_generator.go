@@ -1,4 +1,4 @@
-package url_generator
+package support
 
 import (
 	"crypto/hmac"
