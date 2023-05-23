@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	ws "github.com/AmirRezaM75/skull-king/game/hub"
 	"github.com/AmirRezaM75/skull-king/handlers"
 	"github.com/AmirRezaM75/skull-king/middlewares"
+	"github.com/AmirRezaM75/skull-king/models"
 	"github.com/AmirRezaM75/skull-king/pkg/router"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	"github.com/AmirRezaM75/skull-king/repositories"
+	"github.com/AmirRezaM75/skull-king/routes"
 	"github.com/AmirRezaM75/skull-king/services"
 	"log"
 	"net/http"
@@ -37,15 +38,19 @@ func main() {
 	r := router.NewRouter()
 	r.Middleware(middlewares.CorsPolicy{})
 
-	handlers.NewUserHandler(userService, v, r)
+	userHandler := handlers.NewUserHandler(userService, v)
 
-	hub := ws.NewHub()
-
-	wsHandler := ws.NewHandler(hub)
+	hub := models.NewHub()
+	gameHandler := handlers.NewGameHandler(hub, userService)
 
 	go hub.Run()
 
-	http.HandleFunc("/ws/join", wsHandler.Join)
+	routes.Route{
+		Router:      r,
+		UserService: userService,
+		UserHandler: userHandler,
+		GameHandler: gameHandler,
+	}.Setup()
 
 	fmt.Println("Listening on port 3000")
 

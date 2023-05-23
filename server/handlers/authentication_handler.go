@@ -12,7 +12,7 @@ type CreateUserRequest struct {
 	Password string `json:"password" validate:"required,min=6,max=255"`
 }
 
-func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) {
+func (userHandler UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var payload CreateUserRequest
@@ -84,7 +84,7 @@ func (userHandler UserHandler) register(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(response)
 }
 
-func (userHandler UserHandler) login(w http.ResponseWriter, r *http.Request) {
+func (userHandler UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	payload := struct {

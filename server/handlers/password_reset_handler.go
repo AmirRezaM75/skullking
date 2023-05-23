@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (userHandler UserHandler) forgotPassword(w http.ResponseWriter, r *http.Request) {
+func (userHandler UserHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	type ForgotPasswordRequest struct {
@@ -41,7 +41,7 @@ func (userHandler UserHandler) forgotPassword(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (userHandler UserHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
+func (userHandler UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	type ResetPasswordRequest struct {

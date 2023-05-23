@@ -1,9 +1,4 @@
-package ws
-
-import (
-	"math/rand"
-	"time"
-)
+package models
 
 type Card struct {
 	Id     CardId `json:"id"`
@@ -13,7 +8,7 @@ type Card struct {
 }
 
 func (c Card) fromId(id CardId) Card {
-	return cards[id]
+	return Cards[id]
 }
 
 // Suit cards are the numbered cards, 1-14, in four colors.
@@ -163,7 +158,7 @@ const (
 // TODO: Should be part of Deck struct
 // I found it more performant to predefine cards before starting game,
 // Instead of generating them whenever I need to filter...
-var cards = map[CardId]Card{
+var Cards = map[CardId]Card{
 	SkullKing: {
 		Id:     SkullKing,
 		Color:  "#000",
@@ -611,7 +606,7 @@ func winner(cardIds []CardId) CardId {
 	hasKing := false
 
 	for _, id := range cardIds {
-		card := cards[id]
+		card := Cards[id]
 
 		// Instead of traversing card items more than once
 		// We update existence flag of specific cards here.
@@ -690,94 +685,4 @@ func winner(cardIds []CardId) CardId {
 	}
 
 	return lead.Id
-}
-
-type Table struct {
-	cards []Card
-}
-
-func (t Table) suit() Card {
-	var suit Card
-
-	for _, card := range t.cards {
-		if card.isSuit() {
-			suit = card
-		}
-	}
-
-	return suit
-}
-
-// Set Owned user's cards
-type Set struct {
-	cards []Card
-}
-
-func (s Set) pickables(t Table) []CardId {
-	var specialIds []CardId
-
-	var cardIds []CardId
-
-	var options []CardId
-
-	var suit Card
-
-	suit = t.suit()
-
-	for _, card := range s.cards {
-
-		cardIds = append(cardIds, card.Id)
-
-		if card.isSpecial() {
-			specialIds = append(specialIds, card.Id)
-		}
-
-		if card.Type == suit.Type {
-			options = append(options, card.Id)
-		}
-	}
-
-	if len(options) == 0 {
-		return cardIds
-	}
-
-	return append(options, specialIds...)
-}
-
-// Deck A complete pack, or deck, includes 14 cards in each suit + special cards
-type Deck struct {
-	cards []Card
-}
-
-func (d Deck) shuffle() {
-	cards := d.cards
-
-	for i := range cards {
-		source := rand.NewSource(time.Now().UnixNano())
-		r := rand.New(source)
-		j := r.Intn(len(d.cards) - 1)
-		cards[i], cards[j] = cards[j], cards[i]
-	}
-}
-
-func (d Deck) deal(count, size int) [][]CardId {
-	var output [][]CardId
-
-	index := 0
-
-	for i := 0; i < count; i++ {
-		var cardIds []CardId
-
-		cards := d.cards[index : size+index]
-
-		for _, card := range cards {
-			cardIds = append(cardIds, card.Id)
-		}
-
-		output = append(output, cardIds)
-
-		index = size + index
-	}
-
-	return output
 }

@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/AmirRezaM75/skull-king/contracts"
-	"github.com/AmirRezaM75/skull-king/middlewares"
-	"github.com/AmirRezaM75/skull-king/pkg/router"
 	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	"net/http"
 )
@@ -18,20 +16,11 @@ type UserHandler struct {
 	validator validator.Validator
 }
 
-func NewUserHandler(userService contracts.UserService, validator validator.Validator, r *router.Router) {
-	var handler = UserHandler{
+func NewUserHandler(userService contracts.UserService, validator validator.Validator) UserHandler {
+	return UserHandler{
 		service:   userService,
 		validator: validator,
 	}
-
-	r.Get("/verify-email/:id/:hash", handler.verifyEmail).
-		Middleware(middlewares.ValidateSignature{})
-	r.Post("/register", handler.register)
-	r.Post("/login", handler.login)
-	r.Post("/email/verification-notification", handler.emailVerificationNotification).
-		Middleware(middlewares.Authenticate{UserService: userService})
-	r.Post("/forgot-password", handler.forgotPassword)
-	r.Post("/reset-password", handler.resetPassword)
 }
 
 func decoder(payload any, w http.ResponseWriter, r *http.Request) error {
