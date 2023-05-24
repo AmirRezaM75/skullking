@@ -8,7 +8,6 @@ import (
 func (userHandler UserHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	params := services.ContextService{}.GetRequestParams(r.Context())
 	userId := params["id"]
-	userHandler.service.FindById(userId)
 	userHandler.service.MarkEmailAsVerified(userId)
 }
 
@@ -21,6 +20,7 @@ func (userHandler UserHandler) EmailVerificationNotification(w http.ResponseWrit
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusAccepted)
