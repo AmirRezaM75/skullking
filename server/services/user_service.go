@@ -60,7 +60,7 @@ func (service UserService) ExistsByEmail(email string) bool {
 }
 
 func (service UserService) SendEmailVerificationNotification(userId string, email string) error {
-	t, err := template.ParseFiles("app/resources/views/email/email-verification.html")
+	t, err := template.ParseFiles("resources/views/email/email-verification.html")
 
 	if err != nil {
 		return errors.New("can't parse HTML file")
@@ -75,7 +75,7 @@ func (service UserService) SendEmailVerificationNotification(userId string, emai
 	h.Write([]byte(email))
 
 	path := fmt.Sprintf(
-		"verify-email/%s/%s",
+		"/verify-email/%s/%s",
 		userId,
 		base64.RawURLEncoding.EncodeToString(h.Sum(nil)),
 	)
