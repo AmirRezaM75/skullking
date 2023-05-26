@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import ApiService from '../../../../services/ApiService';
+	import AuthService from '../../../../services/AuthService';
 
 	let status = 'loading';
 
@@ -10,6 +11,8 @@
         
         if (response.status === 200) {
             status = 'succeeded'
+			const authService = new AuthService
+			authService.markEmailAsVerified()
 			setTimeout(() => window.location.href = '/', 1500)
         } else {
             status = 'failed'

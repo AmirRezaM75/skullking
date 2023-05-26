@@ -28,6 +28,13 @@ class AuthService {
 		const item = JSON.stringify(user);
 		localStorage.setItem('user', item);
 	}
+
+	markEmailAsVerified() {
+		const user = this.user();
+		if (!user) return;
+		user.verified = true;
+		this.save(user);
+	}
 }
 
 export default AuthService;
