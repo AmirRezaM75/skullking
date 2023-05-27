@@ -72,7 +72,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		r := struct {
 			Message string `json:"message"`
 		}{Message: "User not found."}
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(r)
 		return
 	}
@@ -90,7 +90,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		r := struct {
 			Message string `json:"message"`
 		}{Message: "Game not found."}
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(r)
 		return
 	}
@@ -105,10 +105,14 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	c, err := upgrader.Upgrade(w, r, nil)
+	connection, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
-		http.Error(w, "Upgrade TCP connection failed.", 500)
+		r := struct {
+			Message string `json:"message"`
+		}{Message: "Upgrade TCP connection failed."}
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(r)
 		return
 	}
 
@@ -117,7 +121,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		Username:   user.Username,
 		GameId:     gameId,
 		Avatar:     game.GetAvailableAvatar(),
-		Connection: c,
+		Connection: connection,
 		Message:    make(chan *models.ServerMessage, 10),
 	}
 
