@@ -25,5 +25,5 @@ func (r Route) Setup() {
 	r.Router.Post("/reset-password", r.UserHandler.ResetPassword)
 
 	r.Router.Post("/games", r.GameHandler.Create)
-	r.Router.Post("/games/join", r.GameHandler.Join)
+	r.Router.Get("/games/join", r.GameHandler.Join)
 }

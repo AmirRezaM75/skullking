@@ -2,7 +2,9 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/AmirRezaM75/skull-king/constants"
+	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"strconv"
 	"time"
 )
@@ -60,11 +62,10 @@ func (game *Game) Start(hub *Hub) {
 		index++
 
 		m := &ServerMessage{
-			ContentType: "json",
-			Content:     string(playerCardIds),
-			Command:     constants.CommandDeal,
-			GameId:      game.Id,
-			ReceiverId:  player.Id,
+			Content:    string(playerCardIds),
+			Command:    constants.CommandDeal,
+			GameId:     game.Id,
+			ReceiverId: player.Id,
 		}
 
 		hub.Dispatch <- m
@@ -81,10 +82,9 @@ func (game *Game) Start(hub *Hub) {
 	)
 
 	m := &ServerMessage{
-		ContentType: "json",
-		Content:     string(content),
-		Command:     constants.CommandBiddingStarted,
-		GameId:      game.Id,
+		Content: string(content),
+		Command: constants.CommandBiddingStarted,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
@@ -120,10 +120,9 @@ func pickForIdlePlayer(game *Game, hub *Hub) {
 	})
 
 	m := &ServerMessage{
-		ContentType: "json",
-		Content:     string(content),
-		Command:     constants.CommandPicked,
-		GameId:      game.Id,
+		Content: string(content),
+		Command: constants.CommandPicked,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
@@ -144,10 +143,9 @@ func chooseNextPlayerForPicking(game *Game, hub *Hub) {
 	)
 
 	m := &ServerMessage{
-		ContentType: "json",
-		Content:     string(content),
-		Command:     constants.CommandPickingStarted,
-		GameId:      game.Id,
+		Content: string(content),
+		Command: constants.CommandPickingStarted,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
@@ -156,6 +154,44 @@ func chooseNextPlayerForPicking(game *Game, hub *Hub) {
 }
 
 func (game *Game) Initialize(hub *Hub, receiverId string) {
+	if game.State == constants.StatePending {
+		type Player struct {
+			Id       string `json:"id"`
+			Username string `json:"username"`
+			Avatar   string `json:"avatar"`
+		}
+
+		var players []Player
+
+		for playerId, player := range game.Players {
+			var p Player
+
+			p.Id = playerId
+			p.Username = player.Username
+			p.Avatar = player.Avatar
+
+			players = append(players, p)
+		}
+
+		content := struct {
+			State   string   `json:"state"`
+			Players []Player `json:"players"`
+		}{
+			State:   game.State,
+			Players: players,
+		}
+
+		m := &ServerMessage{
+			Content:    content,
+			Command:    constants.CommandInit,
+			GameId:     game.Id,
+			ReceiverId: receiverId,
+		}
+
+		hub.Dispatch <- m
+		return
+	}
+
 	round := game.Rounds[game.Round]
 	trick := round.Tricks[game.Trick]
 
@@ -189,7 +225,7 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		players = append(players, p)
 	}
 
-	content, _ := json.Marshal(struct {
+	content := struct {
 		Round          int      `json:"round"`
 		Trick          int      `json:"trick"`
 		State          string   `json:"state"`
@@ -203,14 +239,13 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		ExpirationTime: game.ExpirationTime,
 		PickingUserId:  trick.PickingUserId,
 		Players:        players,
-	})
+	}
 
 	m := &ServerMessage{
-		ContentType: "json",
-		Content:     string(content),
-		Command:     constants.CommandInit,
-		GameId:      game.Id,
-		ReceiverId:  receiverId,
+		Content:    content,
+		Command:    constants.CommandInit,
+		GameId:     game.Id,
+		ReceiverId: receiverId,
 	}
 
 	hub.Dispatch <- m
@@ -230,14 +265,27 @@ func (game *Game) Pick(hub *Hub, cardId int, senderId string) {
 	trick.PickedCards[senderId] = CardId(cardId)
 
 	var m = &ServerMessage{
-		ContentType: "text",
-		Content:     strconv.Itoa(cardId),
-		Command:     constants.CommandPicked,
-		SenderId:    senderId,
-		GameId:      game.Id,
+		Content:  strconv.Itoa(cardId),
+		Command:  constants.CommandPicked,
+		SenderId: senderId,
+		GameId:   game.Id,
 	}
 
 	hub.Dispatch <- m
 
 	chooseNextPlayerForPicking(game, hub)
+}
+
+func (game *Game) GetAvailableAvatar() string {
+outerLoop:
+	for _, number := range support.Fill(constants.MaxPlayers) {
+		for _, player := range game.Players {
+			if player.Avatar == fmt.Sprintf("avatar-%d", number) {
+				continue outerLoop
+			}
+		}
+		return fmt.Sprintf("avatar-%d", number)
+	}
+
+	return ""
 }

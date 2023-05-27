@@ -29,6 +29,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, _ *http.Request) {
 
 	gameHandler.hub.Games[gameId] = &models.Game{
 		Id:      gameId,
+		State:   constants.StatePending,
 		Players: make(map[string]*models.Player, constants.MaxPlayers),
 	}
 
@@ -49,6 +50,53 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
+	gameId := r.URL.Query().Get("gameId")
+	// TODO: The request can be intercepted
+	// @link https://devcenter.heroku.com/articles/websocket-security
+	token := r.URL.Query().Get("token")
+
+	claims, err := support.ParseJWT(token)
+
+	if err != nil {
+		r := struct {
+			Message string `json:"message"`
+		}{Message: "Can not parse JWT."}
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(r)
+		return
+	}
+
+	user := gameHandler.userService.FindById(claims.ID)
+
+	if user == nil {
+		r := struct {
+			Message string `json:"message"`
+		}{Message: "User not found."}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(r)
+		return
+	}
+
+	if user.EmailVerifiedAt == nil {
+		r := struct {
+			Message string `json:"message"`
+		}{Message: "Email has not been verified."}
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(r)
+		return
+	}
+
+	if _, ok := gameHandler.hub.Games[gameId]; !ok {
+		r := struct {
+			Message string `json:"message"`
+		}{Message: "Game not found."}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(r)
+		return
+	}
+
+	game := gameHandler.hub.Games[gameId]
+
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -64,47 +112,35 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gameId := r.URL.Query().Get("gameId")
-	// TODO: The request can be intercepted
-	// @link https://devcenter.heroku.com/articles/websocket-security
-	token := r.URL.Query().Get("token")
-
-	claims, err := support.ParseJWT(token)
-
-	if err != nil {
-		// TODO:
-		return
-	}
-
-	user := gameHandler.userService.FindById(claims.ID)
-
 	player := &models.Player{
+		Id:         user.Id.Hex(),
+		Username:   user.Username,
+		GameId:     gameId,
+		Avatar:     game.GetAvailableAvatar(),
 		Connection: c,
 		Message:    make(chan *models.ServerMessage, 10),
-		Id:         user.Id.Hex(),
-		GameId:     gameId,
-		// TODO: Assign each player an avatar
 	}
-
-	content, _ := json.Marshal(struct {
-		Id       string `json:"id"`
-		Username string `json:"username"`
-	}{
-		Id:       user.Id.Hex(),
-		Username: user.Username,
-	})
 
 	gameHandler.hub.Register <- player
 
 	m := &models.ServerMessage{
-		Command:     constants.CommandJoined,
-		ContentType: "json",
-		Content:     string(content),
-		GameId:      gameId,
-		SenderId:    user.Id.Hex(),
+		Command: constants.CommandJoined,
+		Content: struct {
+			Id       string `json:"id"`
+			Username string `json:"username"`
+			Avatar   string `json:"avatar"`
+		}{
+			Id:       player.Id,
+			Username: user.Username,
+			Avatar:   player.Avatar,
+		},
+		GameId:   gameId,
+		SenderId: player.Id,
 	}
 
 	gameHandler.hub.Dispatch <- m
+
+	game.Initialize(gameHandler.hub, player.Id)
 
 	go player.Write()
 	player.Read(gameHandler.hub)
