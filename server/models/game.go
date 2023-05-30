@@ -154,46 +154,8 @@ func chooseNextPlayerForPicking(game *Game, hub *Hub) {
 }
 
 func (game *Game) Initialize(hub *Hub, receiverId string) {
-	if game.State == constants.StatePending {
-		type Player struct {
-			Id       string `json:"id"`
-			Username string `json:"username"`
-			Avatar   string `json:"avatar"`
-		}
-
-		var players []Player
-
-		for playerId, player := range game.Players {
-			var p Player
-
-			p.Id = playerId
-			p.Username = player.Username
-			p.Avatar = player.Avatar
-
-			players = append(players, p)
-		}
-
-		content := struct {
-			State   string   `json:"state"`
-			Players []Player `json:"players"`
-		}{
-			State:   game.State,
-			Players: players,
-		}
-
-		m := &ServerMessage{
-			Content:    content,
-			Command:    constants.CommandInit,
-			GameId:     game.Id,
-			ReceiverId: receiverId,
-		}
-
-		hub.Dispatch <- m
-		return
-	}
 
 	round := game.Rounds[game.Round]
-	trick := round.Tricks[game.Trick]
 
 	type Player struct {
 		Id           string   `json:"id"`
@@ -213,13 +175,16 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		p.Id = playerId
 		p.Username = player.Username
 		p.Avatar = player.Avatar
-		p.Score = round.Scores[playerId]
-		p.Bids = round.Bids[playerId]
-		p.PickedCardId = trick.PickedCards[playerId]
 
-		// Receiver must not be aware of other cards
-		if playerId == receiverId {
-			p.DealtCards = round.DealtCards[playerId]
+		if round != nil {
+			p.Score = round.Scores[playerId]
+			p.Bids = round.Bids[playerId]
+			p.PickedCardId = round.Tricks[game.Trick].PickedCards[playerId]
+
+			// Receiver must not be aware of other cards
+			if playerId == receiverId {
+				p.DealtCards = round.DealtCards[playerId]
+			}
 		}
 
 		players = append(players, p)
@@ -237,8 +202,11 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		Trick:          game.Trick,
 		State:          game.State,
 		ExpirationTime: game.ExpirationTime,
-		PickingUserId:  trick.PickingUserId,
 		Players:        players,
+	}
+
+	if round != nil {
+		content.PickingUserId = round.Tricks[game.Trick].PickingUserId
 	}
 
 	m := &ServerMessage{
