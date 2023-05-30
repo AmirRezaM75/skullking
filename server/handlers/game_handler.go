@@ -127,6 +127,11 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 	gameHandler.hub.Register <- player
 
+	game.Initialize(gameHandler.hub, player.Id)
+
+	// Must send JOINED command after INIT command
+	// Because it preserves order of players in frontend
+	// Or we can stop sending JOINED to the new joiner player
 	m := &models.ServerMessage{
 		Command: constants.CommandJoined,
 		Content: struct {
@@ -143,8 +148,6 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gameHandler.hub.Dispatch <- m
-
-	game.Initialize(gameHandler.hub, player.Id)
 
 	go player.Write()
 	player.Read(gameHandler.hub)

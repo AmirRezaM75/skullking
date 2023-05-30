@@ -6,6 +6,12 @@ export type User = {
 };
 
 export type CreateGameResponse = {
-	id: string
-	statusCode: number
-}
+	id: string;
+	statusCode: number;
+};
+
+export type Player = {
+	avatar: string;
+	id: string;
+	username: string;
+};
