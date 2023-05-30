@@ -1,4 +1,5 @@
 export enum GameCommand {
 	Init = 'INIT',
-	Joined = 'JOINED'
+	Joined = 'JOINED',
+    Left = 'LEFT'
 }

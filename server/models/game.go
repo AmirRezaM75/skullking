@@ -257,3 +257,16 @@ outerLoop:
 
 	return ""
 }
+
+func (game *Game) Left(hub *Hub, playerId string) {
+	m := &ServerMessage{
+		Content: struct {
+			PlayerId string `json:"playerId"`
+		}{PlayerId: playerId},
+		Command:  constants.CommandLeft,
+		GameId:   game.Id,
+		SenderId: playerId,
+	}
+
+	hub.Dispatch <- m
+}

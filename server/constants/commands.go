@@ -3,6 +3,7 @@ package constants
 // Commands
 
 const CommandJoined = "JOINED"
+const CommandLeft = "LEFT"
 const CommandBiddingStarted = "BIDDING_STARTED"
 const CommandBiddingEnded = "BIDDING_ENDED"
 const CommandPickingStarted = "PICKING_STARTED"

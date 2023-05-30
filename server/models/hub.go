@@ -22,7 +22,7 @@ func NewHub() *Hub {
 		Games:      make(map[string]*Game),
 		Register:   make(chan *Player),
 		Unregister: make(chan *Player),
-		Dispatch:   make(chan *ServerMessage),
+		Dispatch:   make(chan *ServerMessage, 10),
 		Remind:     make(chan Reminder),
 	}
 }
@@ -43,7 +43,17 @@ func (h *Hub) Run() {
 			if _, ok := h.Games[player.GameId]; ok {
 				h.Games[player.GameId].Players[player.Id] = player
 			}
-		case _ = <-h.Unregister:
+		case player := <-h.Unregister:
+			// Remove player from the game when game status is PENDING
+			// Because we need to inform game creator how many people
+			// are in the game before starting.
+			if _, ok := h.Games[player.GameId]; ok {
+				game := h.Games[player.GameId]
+				if game.State == constants.StatePending {
+					game.Left(h, player.Id)
+					delete(game.Players, player.Id)
+				}
+			}
 			// Not going to remove player from game
 			// because it should continue playing till the end
 			// close(player.ServerMessage)
