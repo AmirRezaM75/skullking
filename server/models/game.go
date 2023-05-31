@@ -258,6 +258,28 @@ outerLoop:
 	return ""
 }
 
+func (game *Game) Join(hub *Hub, player *Player) {
+	// Must send JOINED command after INIT command
+	// Because it preserves order of players in frontend
+	// TODO: Or we can stop sending JOINED to the new joiner player
+	m := &ServerMessage{
+		Command: constants.CommandJoined,
+		Content: struct {
+			Id       string `json:"id"`
+			Username string `json:"username"`
+			Avatar   string `json:"avatar"`
+		}{
+			Id:       player.Id,
+			Username: player.Username,
+			Avatar:   player.Avatar,
+		},
+		GameId:   player.GameId,
+		SenderId: player.Id,
+	}
+
+	hub.Dispatch <- m
+}
+
 func (game *Game) Left(hub *Hub, playerId string) {
 	m := &ServerMessage{
 		Content: struct {

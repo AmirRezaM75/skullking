@@ -36,7 +36,7 @@ func (player *Player) Write() {
 
 func (player *Player) Read(hub *Hub) {
 	defer func() {
-		hub.Unregister <- player
+		hub.Unsubscribe(player)
 		_ = player.Connection.Close()
 	}()
 

@@ -125,30 +125,13 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		Message:    make(chan *models.ServerMessage, 10),
 	}
 
-	gameHandler.hub.Register <- player
+	gameHandler.hub.Subscribe(player)
 
 	game.Initialize(gameHandler.hub, player.Id)
 
-	// Must send JOINED command after INIT command
-	// Because it preserves order of players in frontend
-	// Or we can stop sending JOINED to the new joiner player
-	m := &models.ServerMessage{
-		Command: constants.CommandJoined,
-		Content: struct {
-			Id       string `json:"id"`
-			Username string `json:"username"`
-			Avatar   string `json:"avatar"`
-		}{
-			Id:       player.Id,
-			Username: user.Username,
-			Avatar:   player.Avatar,
-		},
-		GameId:   gameId,
-		SenderId: player.Id,
-	}
-
-	gameHandler.hub.Dispatch <- m
+	game.Join(gameHandler.hub, player)
 
 	go player.Write()
+
 	player.Read(gameHandler.hub)
 }

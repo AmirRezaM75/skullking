@@ -6,11 +6,9 @@ import (
 )
 
 type Hub struct {
-	Games      map[string]*Game
-	Register   chan *Player
-	Unregister chan *Player
-	Dispatch   chan *ServerMessage
-	Remind     chan Reminder
+	Games    map[string]*Game
+	Dispatch chan *ServerMessage
+	Remind   chan Reminder
 }
 
 type Reminder struct {
@@ -19,11 +17,9 @@ type Reminder struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		Games:      make(map[string]*Game),
-		Register:   make(chan *Player),
-		Unregister: make(chan *Player),
-		Dispatch:   make(chan *ServerMessage, 10),
-		Remind:     make(chan Reminder),
+		Games:    make(map[string]*Game),
+		Dispatch: make(chan *ServerMessage),
+		Remind:   make(chan Reminder),
 	}
 }
 
@@ -39,25 +35,6 @@ func (h *Hub) Run() {
 					game.EndPicking(h)
 				}
 			}
-		case player := <-h.Register:
-			if _, ok := h.Games[player.GameId]; ok {
-				h.Games[player.GameId].Players[player.Id] = player
-			}
-		case player := <-h.Unregister:
-			// Remove player from the game when game status is PENDING
-			// Because we need to inform game creator how many people
-			// are in the game before starting.
-			if _, ok := h.Games[player.GameId]; ok {
-				game := h.Games[player.GameId]
-				if game.State == constants.StatePending {
-					game.Left(h, player.Id)
-					delete(game.Players, player.Id)
-				}
-			}
-			// Not going to remove player from game
-			// because it should continue playing till the end
-			// close(player.ServerMessage)
-			// If every one left the game delete the game.
 
 		case message := <-h.Dispatch:
 			// If there is no specific receiver broadcast it to all players
@@ -75,6 +52,27 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+func (h *Hub) Subscribe(player *Player) {
+	if _, ok := h.Games[player.GameId]; ok {
+		h.Games[player.GameId].Players[player.Id] = player
+	}
+}
+
+func (h *Hub) Unsubscribe(player *Player) {
+	// If the game status is PENDING, we will remove the player from the game
+	// to inform the game creator of the total number of players before starting.
+	// However, if the game has already started, we will not remove the player,
+	// and the server decide on behalf of them
+	if _, ok := h.Games[player.GameId]; ok {
+		game := h.Games[player.GameId]
+		if game.State == constants.StatePending {
+			game.Left(h, player.Id)
+			delete(game.Players, player.Id)
+		}
+	}
+	// TODO: If every one left the game delete the game.
 }
 
 func (h *Hub) newReminder(gameId string) {
