@@ -14,6 +14,7 @@ type Player struct {
 	GameId     string
 	Avatar     string
 	Score      int
+	Index      int
 	Connection *websocket.Conn
 	Message    chan *ServerMessage
 }
@@ -66,18 +67,14 @@ func (player *Player) Read(hub *Hub) {
 func (player *Player) react(message ClientMessage, hub *Hub) {
 	var game = hub.Games[player.GameId]
 
-	if message.Command == constants.CommandInit {
-		game.Initialize(hub, player.Id)
-	}
-
 	if message.Command == constants.CommandBid && game.State == constants.StateBidding {
 		game.Rounds[game.Round].Bids[player.Id], _ = strconv.Atoi(message.Content)
 		// TODO: If he is the last one picking the card, clear the timer
 		return
 	}
 
-	if message.Command == constants.CommandStart && game.State == "" {
-		game.Start(hub)
+	if message.Command == constants.CommandStart && game.State == constants.StatePending {
+		game.NextRound(hub)
 	}
 
 	if message.Command == constants.CommandPick {

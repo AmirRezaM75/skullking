@@ -8,7 +8,7 @@ type Card struct {
 }
 
 func (c Card) fromId(id CardId) Card {
-	return Cards[id]
+	return cards[id]
 }
 
 // Suit cards are the numbered cards, 1-14, in four colors.
@@ -158,7 +158,7 @@ const (
 // TODO: Should be part of Deck struct
 // I found it more performant to predefine cards before starting game,
 // Instead of generating them whenever I need to filter...
-var Cards = map[CardId]Card{
+var cards = map[CardId]Card{
 	SkullKing: {
 		Id:     SkullKing,
 		Color:  "#000",
@@ -606,7 +606,7 @@ func winner(cardIds []CardId) CardId {
 	hasKing := false
 
 	for _, id := range cardIds {
-		card := Cards[id]
+		card := cards[id]
 
 		// Instead of traversing card items more than once
 		// We update existence flag of specific cards here.

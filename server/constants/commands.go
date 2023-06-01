@@ -1,16 +1,17 @@
 package constants
 
-// Commands
+// Commands sending to player
 
+const CommandInit = "INIT"
 const CommandJoined = "JOINED"
 const CommandLeft = "LEFT"
-const CommandBiddingStarted = "BIDDING_STARTED"
-const CommandBiddingEnded = "BIDDING_ENDED"
-const CommandPickingStarted = "PICKING_STARTED"
-const CommandPickingEnded = "PICKING_ENDED"
+const CommandStartBidding = "START_BIDDING"
+const CommandEndBidding = "END_BIDDING"
+const CommandStartPicking = "START_PICKING"
+const CommandEndPicking = "END_PICKING"
 const CommandDeal = "DEAL"
-const CommandInit = "INIT"
 const CommandPicked = "PICKED"
+const CommandAnnounceTrickWinner = "ANNOUNCE_TRICK_WINNER"
 
 // These commands coming from players
 

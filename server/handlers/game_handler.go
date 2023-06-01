@@ -31,6 +31,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, _ *http.Request) {
 		Id:      gameId,
 		State:   constants.StatePending,
 		Players: make(map[string]*models.Player, constants.MaxPlayers),
+		Rounds:  make(map[int]*models.Round, constants.MaxRounds),
 	}
 
 	response, err := json.Marshal(struct {
@@ -97,6 +98,15 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 	game := gameHandler.hub.Games[gameId]
 
+	if len(game.Players) == constants.MaxPlayers {
+		r := struct {
+			Message string `json:"message"`
+		}{Message: "Game is already full."}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(r)
+		return
+	}
+
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -116,7 +126,16 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	player := &models.Player{
+	var player *models.Player
+
+	if _, exists := game.Players[user.Id.Hex()]; exists {
+		player = game.Players[user.Id.Hex()]
+		player.Connection = connection
+		game.Initialize(gameHandler.hub, player.Id)
+		return
+	}
+
+	player = &models.Player{
 		Id:         user.Id.Hex(),
 		Username:   user.Username,
 		GameId:     gameId,

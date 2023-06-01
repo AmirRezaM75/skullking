@@ -1,3 +1,5 @@
+import type { GameState } from "./constants";
+
 export type User = {
 	email: string;
 	username: string;
@@ -14,4 +16,14 @@ export type Player = {
 	avatar: string;
 	id: string;
 	username: string;
+	score: number;
+	picking: boolean;
+	bids: number;
 };
+
+export type DealResponse = {
+	round: number;
+	trick: number;
+	cards: number[];
+	state: GameState;
+}

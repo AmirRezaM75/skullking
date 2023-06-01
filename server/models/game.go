@@ -1,10 +1,11 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/constants"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/responses"
+	"log"
 	"strconv"
 	"time"
 )
@@ -19,88 +20,270 @@ type Game struct {
 	Rounds         map[int]*Round
 }
 
-func (game *Game) GetNextPlayerIdForPicking(trick Trick) string {
-	var currentPickingPlayerHaveFound = false
+func (game *Game) findPlayerIndexForPicking() int {
+	pickedCardsCount := len(game.Rounds[game.Round].Tricks[game.Trick].PickedCards)
 
-	var pickerId string
-
-	for playerId, _ := range game.Players {
-		if currentPickingPlayerHaveFound {
-			pickerId = playerId
+	if pickedCardsCount != 0 {
+		index := game.Rounds[game.Round].Tricks[game.Trick].StarterPlayerIndex + pickedCardsCount
+		if index > len(game.Players) {
+			index = 1
 		}
-
-		if playerId == trick.PickingUserId {
-			currentPickingPlayerHaveFound = true
-		}
+		return index
 	}
 
-	return pickerId
+	if game.Round == 1 && game.Trick == 1 {
+		return 1
+	}
+
+	if game.Round > 1 && game.Trick == 1 {
+		index := game.Rounds[game.Round-1].StarterPlayerIndex + 1
+		if index > len(game.Players) {
+			index = 1
+		}
+		return index
+	}
+
+	playerId := game.Rounds[game.Round].Tricks[game.Trick-1].WinnerPlayerId
+
+	if playerId != "" {
+		for _, player := range game.Players {
+			if player.Id == playerId {
+				return player.Index
+			}
+		}
+	} else {
+		return game.Rounds[game.Round].Tricks[game.Trick-1].StarterPlayerIndex
+	}
+
+	log.Fatalln("Unable to find playerId within for loop.")
+	return 1
 }
 
-func (game *Game) Start(hub *Hub) {
-	var round = game.Rounds[game.Round]
+func (game *Game) setNextPlayerForPicking() string {
+	index := game.findPlayerIndexForPicking()
+	pickedCardsCount := len(game.Rounds[game.Round].Tricks[game.Trick].PickedCards)
 
+	if pickedCardsCount == 0 {
+		if game.Trick == 1 {
+			game.Rounds[game.Round].StarterPlayerIndex = index
+		}
+		game.Rounds[game.Round].Tricks[game.Trick].StarterPlayerIndex = index
+	}
+
+	for _, player := range game.Players {
+		if player.Index == index {
+			game.Rounds[game.Round].Tricks[game.Trick].PickingUserId = player.Id
+			return player.Id
+		}
+	}
+
+	log.Fatalln("Unable to find playerId within for loop.")
+	return ""
+}
+
+func (game *Game) NextRound(hub *Hub) {
 	game.Round++
+	game.Trick = 1
+	game.State = constants.StateDealing
 
 	var deck Deck
-
-	for _, card := range Cards {
-		deck.Cards = append(deck.Cards, card)
-	}
 
 	deck.Shuffle()
 
 	dealtCardIds := deck.Deal(len(game.Players), game.Round)
 
+	round := Round{
+		Number:         game.Round,
+		Scores:         make(map[string]int, len(game.Players)),
+		DealtCards:     make(map[string][]CardId, len(game.Players)),
+		RemainingCards: make(map[string][]CardId, len(game.Players)),
+		Bids:           make(map[string]int, len(game.Players)),
+		Tricks:         make(map[int]*Trick, 1),
+	}
+
 	index := 0
 
 	for _, player := range game.Players {
-		round.DealtCards[player.Id] = dealtCardIds[index]
+		player.Index = index + 1
 
-		playerCardIds, _ := json.Marshal(dealtCardIds[index])
+		round.DealtCards[player.Id] = dealtCardIds[index]
+		round.Scores[player.Id] = 0
+		round.RemainingCards[player.Id] = dealtCardIds[index]
+		round.Bids[player.Id] = 0
 
 		index++
+	}
+
+	trick := &Trick{
+		Number:        game.Trick,
+		PickingUserId: "",
+		PickedCards:   make(map[string]CardId, constants.MaxPlayers),
+	}
+	round.Tricks[game.Trick] = trick
+	game.Rounds[game.Round] = &round
+
+	for _, player := range game.Players {
+		content := responses.DealResponse{
+			Round: game.Round,
+			Trick: game.Trick,
+			Cards: round.getDealtCardIdsByPlayerId(player.Id),
+			State: game.State,
+		}
 
 		m := &ServerMessage{
-			Content:    string(playerCardIds),
+			Content:    content,
 			Command:    constants.CommandDeal,
 			GameId:     game.Id,
 			ReceiverId: player.Id,
+			SenderId:   "SERVER",
 		}
 
 		hub.Dispatch <- m
 	}
 
-	content, _ := json.Marshal(
-		struct {
-			Round  int   `json:"round"`
-			EndsAt int64 `json:"endsAt"`
-		}{
-			Round:  game.Round,
-			EndsAt: time.Now().Add(constants.WaitTime).Unix(),
-		},
-	)
+	game.startBidding(hub)
+}
+
+func (game *Game) startBidding(hub *Hub) {
+	duration := game.getBiddingExpirationDuration()
 
 	m := &ServerMessage{
-		Content: string(content),
-		Command: constants.CommandBiddingStarted,
-		GameId:  game.Id,
+		Content: responses.StartBidding{
+			EndsAt: time.Now().Add(duration).Unix(),
+		},
+		Command:  constants.CommandStartBidding,
+		SenderId: "SERVER",
+		GameId:   game.Id,
 	}
 
 	hub.Dispatch <- m
 
 	game.State = constants.StateBidding
 
-	// TODO: Waiter
+	timer := time.NewTimer(duration)
+
+	go func() {
+		<-timer.C
+		game.endBidding(hub)
+	}()
 }
 
-func (game *Game) EndPicking(hub *Hub) {
-	pickForIdlePlayer(game, hub)
+func (game *Game) endBidding(hub *Hub) {
+	m := &ServerMessage{
+		Content:  nil,
+		Command:  constants.CommandEndBidding,
+		SenderId: "SERVER",
+		GameId:   game.Id,
+	}
 
-	chooseNextPlayerForPicking(game, hub)
+	hub.Dispatch <- m
+
+	game.startPicking(hub)
 }
 
-func pickForIdlePlayer(game *Game, hub *Hub) {
+func (game *Game) startPicking(hub *Hub) {
+	playerId := game.setNextPlayerForPicking()
+
+	if playerId == "" {
+		log.Fatalln("No player id is found for picking")
+		return
+	}
+
+	content := responses.StartPicking{
+		PlayerId: playerId,
+		EndsAt:   time.Now().Add(constants.WaitTime).Unix(),
+	}
+
+	m := &ServerMessage{
+		Content: content,
+		Command: constants.CommandStartPicking,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+
+	timer := time.NewTimer(constants.WaitTime)
+	go func() {
+		<-timer.C
+		game.endPicking(hub)
+	}()
+}
+
+func (game *Game) endPicking(hub *Hub) {
+	game.pickForIdlePlayer(hub)
+
+	if game.isTrickOver() {
+		game.announceTrickWinner(hub)
+		game.nextTrick(hub)
+	} else {
+		game.startPicking(hub)
+	}
+}
+
+func (game *Game) isTrickOver() bool {
+	var round = game.Rounds[game.Round]
+	var trick = round.Tricks[game.Trick]
+	return len(trick.PickedCards) == len(game.Players)
+}
+
+func (game *Game) announceTrickWinner(hub *Hub) {
+	cardId, playerId := game.findTrickWinner()
+
+	game.Rounds[game.Round].Tricks[game.Trick].WinnerPlayerId = playerId
+
+	content := responses.AnnounceTrickWinner{
+		PlayerId: playerId,
+		CardId:   int(cardId),
+	}
+
+	m := &ServerMessage{
+		Content:  content,
+		Command:  constants.CommandAnnounceTrickWinner,
+		GameId:   game.Id,
+		SenderId: "SERVER",
+	}
+
+	hub.Dispatch <- m
+}
+
+func (game *Game) nextTrick(hub *Hub) {
+	if game.Trick == game.Round {
+		game.NextRound(hub)
+		return
+	}
+
+	game.Trick++
+
+	game.startPicking(hub)
+}
+
+func (game *Game) findTrickWinner() (CardId, string) {
+	var round = game.Rounds[game.Round]
+	var trick = round.Tricks[game.Trick]
+
+	var cardIds []CardId
+	for _, cardId := range trick.PickedCards {
+		cardIds = append(cardIds, cardId)
+	}
+
+	winnerCardId := winner(cardIds)
+
+	if winnerCardId == 0 {
+		return winnerCardId, ""
+	}
+
+	var winnerPlayerId string
+	for playerId, cardId := range trick.PickedCards {
+		if cardId == winnerCardId {
+			winnerPlayerId = playerId
+			break
+		}
+	}
+
+	return winnerCardId, winnerPlayerId
+}
+
+func (game *Game) pickForIdlePlayer(hub *Hub) {
 	var round = game.Rounds[game.Round]
 	var trick = round.Tricks[game.Trick]
 	var pickerId = trick.PickingUserId
@@ -111,46 +294,18 @@ func pickForIdlePlayer(game *Game, hub *Hub) {
 
 	trick.PickedCards[pickerId] = round.RemainingCards[pickerId][0]
 
-	content, _ := json.Marshal(struct {
-		PlayerId string `json:"playerId"`
-		CardId   int    `json:"cardId"`
-	}{
+	content := responses.Pick{
 		PlayerId: pickerId,
 		CardId:   int(trick.PickedCards[pickerId]),
-	})
+	}
 
 	m := &ServerMessage{
-		Content: string(content),
+		Content: content,
 		Command: constants.CommandPicked,
 		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
-}
-
-func chooseNextPlayerForPicking(game *Game, hub *Hub) {
-	var round = game.Rounds[game.Round]
-	var trick = round.Tricks[game.Trick]
-
-	content, _ := json.Marshal(
-		struct {
-			UserId string `json:"userId"`
-			EndsAt int64  `json:"endsAt"`
-		}{
-			UserId: game.GetNextPlayerIdForPicking(trick),
-			EndsAt: time.Now().Add(constants.WaitTime).Unix(),
-		},
-	)
-
-	m := &ServerMessage{
-		Content: string(content),
-		Command: constants.CommandPickingStarted,
-		GameId:  game.Id,
-	}
-
-	hub.Dispatch <- m
-
-	// TODO: Timer
 }
 
 func (game *Game) Initialize(hub *Hub, receiverId string) {
@@ -241,18 +396,19 @@ func (game *Game) Pick(hub *Hub, cardId int, senderId string) {
 
 	hub.Dispatch <- m
 
-	chooseNextPlayerForPicking(game, hub)
+	game.startPicking(hub)
 }
 
 func (game *Game) GetAvailableAvatar() string {
+	// TODO: Not working properly
 outerLoop:
 	for _, number := range support.Fill(constants.MaxPlayers) {
 		for _, player := range game.Players {
-			if player.Avatar == fmt.Sprintf("avatar-%d", number) {
+			if player.Avatar == fmt.Sprintf("%d.jpg", number) {
 				continue outerLoop
 			}
 		}
-		return fmt.Sprintf("avatar-%d", number)
+		return fmt.Sprintf("%d.jpg", number)
 	}
 
 	return ""
@@ -291,4 +447,11 @@ func (game *Game) Left(hub *Hub, playerId string) {
 	}
 
 	hub.Dispatch <- m
+}
+
+func (game *Game) getBiddingExpirationDuration() time.Duration {
+	// As the round number increases, it takes more time to complete the card dealing animation.
+	// Therefore, we need to increase the wait time for each level
+	// Each animation takes about 2 seconds
+	return constants.WaitTime + time.Duration(game.Round)*2*time.Second
 }

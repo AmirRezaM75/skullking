@@ -10,7 +10,15 @@ type Deck struct {
 	Cards []Card
 }
 
-func (d Deck) Shuffle() {
+func (d *Deck) fill() {
+	for _, card := range cards {
+		d.Cards = append(d.Cards, card)
+	}
+}
+
+func (d *Deck) Shuffle() {
+	d.fill()
+
 	cards := d.Cards
 
 	for i := range cards {
@@ -21,7 +29,7 @@ func (d Deck) Shuffle() {
 	}
 }
 
-func (d Deck) Deal(count, size int) [][]CardId {
+func (d *Deck) Deal(count, size int) [][]CardId {
 	var output [][]CardId
 
 	index := 0

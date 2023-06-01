@@ -48,6 +48,10 @@ Only the Mermaid capturing the Skull King bonus is earned.
 
 When you lead a trick, you may choose to play either a suit card or a special card.
 
+The next trick is led by the player who would have won the trick.
+
+The player to the left of the current round's starting player becomes the starting player for the next round.
+
 ## When a suit card is led
 
 If a suit card is played first in a trick (lead), all players must

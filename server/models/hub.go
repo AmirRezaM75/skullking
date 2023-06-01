@@ -2,13 +2,11 @@ package models
 
 import (
 	"github.com/AmirRezaM75/skull-king/constants"
-	"time"
 )
 
 type Hub struct {
 	Games    map[string]*Game
 	Dispatch chan *ServerMessage
-	Remind   chan Reminder
 }
 
 type Reminder struct {
@@ -19,23 +17,12 @@ func NewHub() *Hub {
 	return &Hub{
 		Games:    make(map[string]*Game),
 		Dispatch: make(chan *ServerMessage),
-		Remind:   make(chan Reminder),
 	}
 }
 
 func (h *Hub) Run() {
 	for {
 		select {
-		case reminder, ok := <-h.Remind:
-			game := h.Games[reminder.gameId]
-			if !ok {
-				h.Remind = nil
-			} else {
-				if game.State == constants.StatePicking {
-					game.EndPicking(h)
-				}
-			}
-
 		case message := <-h.Dispatch:
 			// If there is no specific receiver broadcast it to all players
 			if _, ok := h.Games[message.GameId]; ok {
@@ -73,16 +60,6 @@ func (h *Hub) Unsubscribe(player *Player) {
 		}
 	}
 	// TODO: If every one left the game delete the game.
-}
-
-func (h *Hub) newReminder(gameId string) {
-	time.Sleep(constants.WaitTime)
-
-	h.Remind <- Reminder{
-		gameId: gameId,
-	}
-
-	//close(hub.remind)
 }
 
 type UserBet struct {
