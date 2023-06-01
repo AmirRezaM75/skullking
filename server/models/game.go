@@ -93,12 +93,11 @@ func (game *Game) NextRound(hub *Hub) {
 	dealtCardIds := deck.Deal(len(game.Players), game.Round)
 
 	round := Round{
-		Number:         game.Round,
-		Scores:         make(map[string]int, len(game.Players)),
-		DealtCards:     make(map[string][]CardId, len(game.Players)),
-		RemainingCards: make(map[string][]CardId, len(game.Players)),
-		Bids:           make(map[string]int, len(game.Players)),
-		Tricks:         make(map[int]*Trick, 1),
+		Number:     game.Round,
+		Scores:     make(map[string]int, len(game.Players)),
+		DealtCards: make(map[string][]CardId, len(game.Players)),
+		Bids:       make(map[string]int, len(game.Players)),
+		Tricks:     make(map[int]*Trick, 1),
 	}
 
 	index := 0
@@ -108,7 +107,6 @@ func (game *Game) NextRound(hub *Hub) {
 
 		round.DealtCards[player.Id] = dealtCardIds[index]
 		round.Scores[player.Id] = 0
-		round.RemainingCards[player.Id] = dealtCardIds[index]
 		round.Bids[player.Id] = 0
 
 		index++
@@ -292,7 +290,8 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 		return
 	}
 
-	trick.PickedCards[pickerId] = round.RemainingCards[pickerId][0]
+	remainingCards := game.getRemainingCardsForPlayerId(pickerId)
+	trick.PickedCards[pickerId] = remainingCards[0]
 
 	content := responses.Pick{
 		PlayerId: pickerId,
@@ -306,6 +305,24 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	}
 
 	hub.Dispatch <- m
+}
+
+func (game *Game) getRemainingCardsForPlayerId(playerId string) []CardId {
+	var remainingCardIds []CardId
+	var round = game.Rounds[game.Round]
+	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
+
+outerLoop:
+	for _, dealtCardId := range round.DealtCards[playerId] {
+		for _, pickedCardId := range pickedCardIds {
+			if pickedCardId == dealtCardId {
+				continue outerLoop
+			}
+		}
+		remainingCardIds = append(remainingCardIds, dealtCardId)
+	}
+
+	return remainingCardIds
 }
 
 func (game *Game) Initialize(hub *Hub, receiverId string) {
