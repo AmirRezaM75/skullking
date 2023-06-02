@@ -97,7 +97,7 @@ func (game *Game) NextRound(hub *Hub) {
 		Scores:     make(map[string]int, len(game.Players)),
 		DealtCards: make(map[string][]CardId, len(game.Players)),
 		Bids:       make(map[string]int, len(game.Players)),
-		Tricks:     make(map[int]*Trick, 1),
+		Tricks:     make(map[int]*Trick, game.Round),
 	}
 
 	index := 0
@@ -113,9 +113,8 @@ func (game *Game) NextRound(hub *Hub) {
 	}
 
 	trick := &Trick{
-		Number:        game.Trick,
-		PickingUserId: "",
-		PickedCards:   make(map[string]CardId, constants.MaxPlayers),
+		Number:      game.Trick,
+		PickedCards: make(map[string]CardId, constants.MaxPlayers),
 	}
 	round.Tricks[game.Trick] = trick
 	game.Rounds[game.Round] = &round
@@ -251,6 +250,10 @@ func (game *Game) nextTrick(hub *Hub) {
 	}
 
 	game.Trick++
+	game.Rounds[game.Round].Tricks[game.Trick] = &Trick{
+		Number:      game.Trick,
+		PickedCards: make(map[string]CardId, constants.MaxPlayers),
+	}
 
 	game.startPicking(hub)
 }
