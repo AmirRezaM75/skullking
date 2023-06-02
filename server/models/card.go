@@ -1,10 +1,12 @@
 package models
 
+type CardId int
+
 type Card struct {
-	Id     CardId `json:"id"`
-	Color  string `json:"color"`
-	Number int    `json:"number"`
-	Type   string `json:"type"`
+	Id     CardId
+	Color  string
+	Number int
+	Type   string
 }
 
 func (c Card) fromId(id CardId) Card {
@@ -38,8 +40,16 @@ func (c Card) isMermaid() bool {
 	return c.Type == TypeMermaid
 }
 
+func (c Card) isCharacter() bool {
+	return c.isKing() || c.isMermaid() || c.isPirate()
+}
+
+func (c Card) isBeast() bool {
+	return c.isKraken() || c.isWhale()
+}
+
 func (c Card) isSpecial() bool {
-	return c.isKing() || c.isMermaid() || c.isPirate() || c.isEscape() || c.isKraken() || c.isWhale()
+	return c.isCharacter() || c.isBeast() || c.isEscape()
 }
 
 func (c Card) isParrot() bool {
@@ -76,8 +86,6 @@ const TypeChest string = "chest"
 const TypeRoger string = "roger"
 const TypePirate string = "pirate"
 const TypeEscape string = "escape"
-
-type CardId int
 
 // It looks stupid at first to define each single of them as const
 // But it makes it easier to understand what's the card in winner() func for example.

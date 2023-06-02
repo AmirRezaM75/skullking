@@ -1,20 +1,17 @@
 package models
 
-// Set Owned user's cards
-type Set struct {
+type Hand struct {
 	cards []Card
 }
 
-func (s Set) pickables(t Table) []CardId {
+func (s Hand) pickables(t Table) []CardId {
 	var specialIds []CardId
 
 	var cardIds []CardId
 
 	var options []CardId
 
-	var suit Card
-
-	suit = t.suit()
+	pattern := t.pattern()
 
 	for _, card := range s.cards {
 
@@ -24,7 +21,7 @@ func (s Set) pickables(t Table) []CardId {
 			specialIds = append(specialIds, card.Id)
 		}
 
-		if card.Type == suit.Type {
+		if card.Type == pattern {
 			options = append(options, card.Id)
 		}
 	}

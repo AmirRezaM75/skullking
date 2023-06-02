@@ -1,7 +1,6 @@
 package models
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -170,94 +169,5 @@ func TestSkullKingWinsJollyRoger(t *testing.T) {
 	cardId := winner(CardIds)
 	if SkullKing != cardId {
 		t.Errorf("Wrong winner card.")
-	}
-}
-
-func TestPickableCardWhenTableIsEmpty(t *testing.T) {
-	var table Table
-	var set Set
-	var card Card
-
-	set.cards = []Card{
-		card.fromId(Parrot2),
-		card.fromId(Roger5),
-		card.fromId(SkullKing),
-		card.fromId(Map3),
-		card.fromId(Map2),
-	}
-
-	expected := []CardId{
-		Parrot2,
-		Roger5,
-		SkullKing,
-		Map3,
-		Map2,
-	}
-
-	options := set.pickables(table)
-
-	if !reflect.DeepEqual(expected, options) {
-		t.Error("Wrong pickable cards.")
-	}
-}
-
-func TestPickableCardWhenFirstCardOnTableIsSuit(t *testing.T) {
-	var table Table
-	var set Set
-	var card Card
-
-	table.cards = []Card{
-		card.fromId(Parrot3),
-	}
-
-	set.cards = []Card{
-		card.fromId(Parrot2),
-		card.fromId(Roger5),
-		card.fromId(SkullKing),
-		card.fromId(Map3),
-		card.fromId(Map2),
-	}
-
-	expected := []CardId{
-		Parrot2,
-		SkullKing,
-	}
-
-	options := set.pickables(table)
-
-	if !reflect.DeepEqual(expected, options) {
-		t.Error("Wrong pickable cards.")
-	}
-}
-
-func TestUserCanPickAnyCardIfNoCardMatchesTheSuit(t *testing.T) {
-	var table Table
-	var set Set
-	var card Card
-
-	table.cards = []Card{
-		card.fromId(Parrot3),
-	}
-
-	set.cards = []Card{
-		card.fromId(Chest1),
-		card.fromId(Roger5),
-		card.fromId(Pirate1),
-		card.fromId(Map3),
-		card.fromId(Map2),
-	}
-
-	expected := []CardId{
-		Chest1,
-		Roger5,
-		Pirate1,
-		Map3,
-		Map2,
-	}
-
-	options := set.pickables(table)
-
-	if !reflect.DeepEqual(expected, options) {
-		t.Error("Wrong pickable cards.")
 	}
 }
