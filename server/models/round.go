@@ -2,7 +2,6 @@ package models
 
 type Round struct {
 	Number             int
-	Scores             map[string]int
 	DealtCards         map[string][]CardId
 	Bids               map[string]int
 	Tricks             map[int]*Trick // TODO: Simple slice?
@@ -23,9 +22,9 @@ func (round Round) getPickedCardIdsByPlayerId(playerId string) []CardId {
 	var cardIds []CardId
 
 	for _, trick := range round.Tricks {
-		for pId, cardId := range trick.PickedCards {
-			if playerId == pId {
-				cardIds = append(cardIds, cardId)
+		for _, pickedCard := range trick.PickedCards {
+			if playerId == pickedCard.PlayerId {
+				cardIds = append(cardIds, pickedCard.CardId)
 			}
 		}
 	}

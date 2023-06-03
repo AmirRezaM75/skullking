@@ -17,7 +17,7 @@ type Game struct {
 	State          string
 	ExpirationTime int
 	Players        map[string]*Player
-	Rounds         map[int]*Round
+	Rounds         map[int]*Round // TODO: Simple slice?
 }
 
 func (game *Game) findPlayerIndexForPicking() int {
@@ -94,7 +94,6 @@ func (game *Game) NextRound(hub *Hub) {
 
 	round := Round{
 		Number:     game.Round,
-		Scores:     make(map[string]int, len(game.Players)),
 		DealtCards: make(map[string][]CardId, len(game.Players)),
 		Bids:       make(map[string]int, len(game.Players)),
 		Tricks:     make(map[int]*Trick, game.Round),
@@ -106,15 +105,13 @@ func (game *Game) NextRound(hub *Hub) {
 		player.Index = index + 1
 
 		round.DealtCards[player.Id] = dealtCardIds[index]
-		round.Scores[player.Id] = 0
 		round.Bids[player.Id] = 0
 
 		index++
 	}
 
 	trick := &Trick{
-		Number:      game.Trick,
-		PickedCards: make(map[string]CardId, constants.MaxPlayers),
+		Number: game.Trick,
 	}
 	round.Tricks[game.Trick] = trick
 	game.Rounds[game.Round] = &round
@@ -251,8 +248,7 @@ func (game *Game) nextTrick(hub *Hub) {
 
 	game.Trick++
 	game.Rounds[game.Round].Tricks[game.Trick] = &Trick{
-		Number:      game.Trick,
-		PickedCards: make(map[string]CardId, constants.MaxPlayers),
+		Number: game.Trick,
 	}
 
 	game.startPicking(hub)
@@ -263,8 +259,8 @@ func (game *Game) findTrickWinner() (CardId, string) {
 	var trick = round.Tricks[game.Trick]
 
 	var cardIds []CardId
-	for _, cardId := range trick.PickedCards {
-		cardIds = append(cardIds, cardId)
+	for _, pickedCard := range trick.PickedCards {
+		cardIds = append(cardIds, pickedCard.CardId)
 	}
 
 	winnerCardId := winner(cardIds)
@@ -274,9 +270,9 @@ func (game *Game) findTrickWinner() (CardId, string) {
 	}
 
 	var winnerPlayerId string
-	for playerId, cardId := range trick.PickedCards {
-		if cardId == winnerCardId {
-			winnerPlayerId = playerId
+	for _, pickedCard := range trick.PickedCards {
+		if pickedCard.CardId == winnerCardId {
+			winnerPlayerId = pickedCard.PlayerId
 			break
 		}
 	}
@@ -289,16 +285,20 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	var trick = round.Tricks[game.Trick]
 	var pickerId = trick.PickingUserId
 
-	if _, ok := trick.PickedCards[pickerId]; ok {
+	if trick.isPlayerPicked(pickerId) {
 		return
 	}
 
-	remainingCards := game.getRemainingCardsForPlayerId(pickerId)
-	trick.PickedCards[pickerId] = remainingCards[0]
+	remainingCardIds := game.getRemainingCardsForPlayerId(pickerId)
+	pickedCard := PickedCard{
+		PlayerId: pickerId,
+		CardId:   remainingCardIds[0],
+	}
+	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
 	content := responses.Pick{
 		PlayerId: pickerId,
-		CardId:   int(trick.PickedCards[pickerId]),
+		CardId:   int(pickedCard.CardId),
 	}
 
 	m := &ServerMessage{
@@ -352,9 +352,13 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		p.Avatar = player.Avatar
 
 		if round != nil {
-			p.Score = round.Scores[playerId]
+			var trick = round.Tricks[game.Trick]
+			pickedCard := trick.getPickedCardByPlayerId(playerId)
+			if pickedCard != nil {
+				p.PickedCardId = pickedCard.CardId
+			}
+
 			p.Bids = round.Bids[playerId]
-			p.PickedCardId = round.Tricks[game.Trick].PickedCards[playerId]
 
 			// Receiver must not be aware of other cards
 			if playerId == receiverId {
@@ -405,7 +409,12 @@ func (game *Game) Pick(hub *Hub, cardId int, senderId string) {
 
 	// TODO: Check if cardId is valid and exists in the last dealt cards
 
-	trick.PickedCards[senderId] = CardId(cardId)
+	pickedCard := PickedCard{
+		PlayerId: senderId,
+		CardId:   CardId(cardId),
+	}
+
+	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
 	var m = &ServerMessage{
 		Content:  strconv.Itoa(cardId),
