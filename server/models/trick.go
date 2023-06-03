@@ -8,7 +8,7 @@ type Trick struct {
 	// affects the pickable cards. In Go, a map is not a suitable collection to maintain
 	// the sequence of elements as it is unordered.
 	PickedCards        []PickedCard
-	WinnerPlayerId     string // TODO: Shorter (Winner)
+	WinnerPlayerId     string
 	StarterPlayerIndex int
 }
 
@@ -34,4 +34,14 @@ func (trick Trick) getPickedCardByPlayerId(playerId string) *PickedCard {
 		}
 	}
 	return nil
+}
+
+func (trick Trick) getAllPickedCardIds() []CardId {
+	var cardIds []CardId
+
+	for _, pickedCard := range trick.PickedCards {
+		cardIds = append(cardIds, pickedCard.CardId)
+	}
+
+	return cardIds
 }

@@ -14,6 +14,7 @@ type StartBidding struct {
 type StartPicking struct {
 	PlayerId string `json:"playerId"`
 	EndsAt   int64  `json:"endsAt"`
+	CardIds  []int  `json:"cardIds"`
 }
 
 type Pick struct {

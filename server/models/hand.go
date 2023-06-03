@@ -4,6 +4,20 @@ type Hand struct {
 	cards []Card
 }
 
+func newHand(cardIds []CardId) Hand {
+	var cards []Card
+
+	var card Card
+
+	for _, cardId := range cardIds {
+		cards = append(cards, card.fromId(cardId))
+	}
+
+	return Hand{
+		cards: cards,
+	}
+}
+
 func (s Hand) pickables(t Table) []CardId {
 	var specialIds []CardId
 

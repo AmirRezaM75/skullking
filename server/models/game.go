@@ -183,9 +183,12 @@ func (game *Game) startPicking(hub *Hub) {
 		return
 	}
 
+	cardIds := game.getAvailableCardIdsForPlayerId(playerId)
+
 	content := responses.StartPicking{
 		PlayerId: playerId,
 		EndsAt:   time.Now().Add(constants.WaitTime).Unix(),
+		CardIds:  cardIds,
 	}
 
 	m := &ServerMessage{
@@ -201,6 +204,26 @@ func (game *Game) startPicking(hub *Hub) {
 		<-timer.C
 		game.endPicking(hub)
 	}()
+}
+
+func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []int {
+	var availableCardIds []int
+	remainingCardIds := game.getRemainingCardIdsForPlayerId(playerId)
+
+	var trick = game.Rounds[game.Round].Tricks[game.Trick]
+
+	table := newTable(
+		trick.getAllPickedCardIds(),
+	)
+
+	hand := newHand(remainingCardIds)
+	pickableCardIds := hand.pickables(table)
+
+	for _, pickableCardId := range pickableCardIds {
+		availableCardIds = append(availableCardIds, int(pickableCardId))
+	}
+
+	return availableCardIds
 }
 
 func (game *Game) endPicking(hub *Hub) {
@@ -289,10 +312,11 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 		return
 	}
 
-	remainingCardIds := game.getRemainingCardsForPlayerId(pickerId)
+	availableCardIds := game.getAvailableCardIdsForPlayerId(pickerId)
+
 	pickedCard := PickedCard{
 		PlayerId: pickerId,
-		CardId:   remainingCardIds[0],
+		CardId:   CardId(availableCardIds[0]),
 	}
 	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
@@ -310,7 +334,7 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	hub.Dispatch <- m
 }
 
-func (game *Game) getRemainingCardsForPlayerId(playerId string) []CardId {
+func (game *Game) getRemainingCardIdsForPlayerId(playerId string) []CardId {
 	var remainingCardIds []CardId
 	var round = game.Rounds[game.Round]
 	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)

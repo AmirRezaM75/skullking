@@ -4,6 +4,20 @@ type Table struct {
 	cards []Card
 }
 
+func newTable(cardIds []CardId) Table {
+	var cards []Card
+
+	var card Card
+
+	for _, cardId := range cardIds {
+		cards = append(cards, card.fromId(cardId))
+	}
+
+	return Table{
+		cards: cards,
+	}
+}
+
 func (t Table) pattern() string {
 	var pattern string
 
