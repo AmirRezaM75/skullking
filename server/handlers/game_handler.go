@@ -50,6 +50,10 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write(response)
 }
 
+func (gameHandler *GameHandler) Cards(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	gameId := r.URL.Query().Get("gameId")
 	// TODO: The request can be intercepted

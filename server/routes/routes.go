@@ -26,4 +26,5 @@ func (r Route) Setup() {
 
 	r.Router.Post("/games", r.GameHandler.Create)
 	r.Router.Get("/games/join", r.GameHandler.Join)
+	r.Router.Get("/games/cards", r.GameHandler.Cards)
 }
