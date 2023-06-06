@@ -7,6 +7,8 @@
     --lime-secondary: #3dff7e;
 }
 
+$cardHeight: 240px;
+
 body {
     font-family: "Barlow", sans-serif;
     // Icon credit: https://www.flaticon.com/authors/pongsakornred
@@ -344,29 +346,31 @@ form {
     margin: 0;
 }
 
+
+
 .cards-container {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: end;
     position: absolute;
-    bottom: calc(-240px / 2);
+    bottom: calc(-1 * $cardHeight / 2);
     left: 0;
     width: 100%;
 }
 
 .card {
     width: 170px;
-    height: 240px;
+    height: $cardHeight;
     background-color: #a9ff98;
     border-radius: 20px;
     margin: 0 10px;
     cursor: pointer;
-    transition: all 1s;
+    transition: all .5s;
     will-change: transform;
 }
 
 .card:hover {
-    transform: translateY(-130px) !important;
+    margin-bottom: calc($cardHeight / 2 + 10px);
 }
 
 /* ****************** */
@@ -469,7 +473,6 @@ form {
 
 @keyframes dealing {
     0% {
-        opacity: 0;
         -webkit-transform: translateY(-1200px) scale(0.7);
         transform: translateY(-1200px) scale(0.7);
     }
@@ -478,16 +481,16 @@ form {
         transform: translateY(-400px) scale(0.7);
     }
     50% {
-        -webkit-transform: translateY(-400px) scale(1.2) rotateY(180deg);
-        transform: translateY(-400px) scale(1.2) rotateY(180deg);
+        -webkit-transform: translateY(-400px) scale(1.2);
+        transform: translateY(-400px) scale(1.2);
     }
     80% {
-        -webkit-transform: translateY(-400px) scale(1.2) rotateY(180deg);
-        transform: translateY(-400px) scale(1.2) rotateY(180deg);
+        -webkit-transform: translateY(-400px) scale(1.2);
+        transform: translateY(-400px) scale(1.2);
     }
     to {
-        -webkit-transform: translateY(0) scale(1) rotateY(180deg);
-        transform: translateY(0) scale(1) rotateY(180deg);
+        -webkit-transform: translateY(0) scale(1);
+        transform: translateY(0) scale(1);
         opacity: 1;
     }
 }
