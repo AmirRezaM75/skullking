@@ -26,3 +26,9 @@ type AnnounceTrickWinner struct {
 	PlayerId string `json:"playerId"`
 	CardId   int    `json:"cardId"`
 }
+
+type Card struct {
+	Id     int    `json:"id"`
+	Number int    `json:"number"`
+	Type   string `json:"type"`
+}

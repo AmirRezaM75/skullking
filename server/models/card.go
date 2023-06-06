@@ -529,6 +529,10 @@ var cards = map[CardId]Card{
 	},
 }
 
+func GetCards() map[CardId]Card {
+	return cards
+}
+
 // TODO: Should have Table struct as receiver
 func winner(cardIds []CardId) CardId {
 	var lead Card

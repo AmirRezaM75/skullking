@@ -6,6 +6,7 @@ import (
 	"github.com/AmirRezaM75/skull-king/contracts"
 	"github.com/AmirRezaM75/skull-king/models"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/responses"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -50,8 +51,22 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write(response)
 }
 
-func (gameHandler *GameHandler) Cards(w http.ResponseWriter, r *http.Request) {
+func (gameHandler *GameHandler) Cards(w http.ResponseWriter, _ *http.Request) {
+	response := struct {
+		Items []responses.Card `json:"items"`
+	}{}
 
+	for _, card := range models.GetCards() {
+		response.Items = append(response.Items, responses.Card{
+			Id:     int(card.Id),
+			Number: card.Number,
+			Type:   card.Type,
+		})
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+	return
 }
 
 func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
@@ -63,51 +78,51 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	claims, err := support.ParseJWT(token)
 
 	if err != nil {
-		r := struct {
+		response := struct {
 			Message string `json:"message"`
 		}{Message: "Can not parse JWT."}
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(r)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
 	user := gameHandler.userService.FindById(claims.ID)
 
 	if user == nil {
-		r := struct {
+		response := struct {
 			Message string `json:"message"`
 		}{Message: "User not found."}
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(r)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
 	if user.EmailVerifiedAt == nil {
-		r := struct {
+		response := struct {
 			Message string `json:"message"`
 		}{Message: "Email has not been verified."}
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(r)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
 	if _, ok := gameHandler.hub.Games[gameId]; !ok {
-		r := struct {
+		response := struct {
 			Message string `json:"message"`
 		}{Message: "Game not found."}
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(r)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
 	game := gameHandler.hub.Games[gameId]
 
 	if len(game.Players) == constants.MaxPlayers {
-		r := struct {
+		response := struct {
 			Message string `json:"message"`
 		}{Message: "Game is already full."}
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(r)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
@@ -122,11 +137,11 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	connection, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
-		r := struct {
+		response := struct {
 			Message string `json:"message"`
 		}{Message: "Upgrade TCP connection failed."}
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(r)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
