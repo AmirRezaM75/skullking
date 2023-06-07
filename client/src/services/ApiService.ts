@@ -77,13 +77,22 @@ class ApiService {
 	sendEmailVerificationNotification(): Promise<Response> {
 		const authService = new AuthService();
 		const user = authService.user();
-		
-		if (!user) throw new Error("Unauthenticated");
+
+		if (!user) throw new Error('Unauthenticated');
 
 		return fetch(this.baseURL + '/email/verification-notification', {
 			method: 'POST',
 			headers: {
 				Authorization: `Bearer ${user.token}`,
+				'Content-Type': 'application/json'
+			}
+		});
+	}
+
+	getCards(): Promise<Response> {
+		return fetch(this.baseURL + '/games/cards', {
+			method: 'GET',
+			headers: {
 				'Content-Type': 'application/json'
 			}
 		});

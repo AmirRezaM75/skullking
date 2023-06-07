@@ -1,4 +1,5 @@
 # About Game
+
 Skull King is a trick-taking game in which you will bid
 the exact number of tricks you predict you will win each
 round. You’ll battle with your rivals as you strive to keep
@@ -10,26 +11,27 @@ the Seven Seas!
 # Cards
 
 ## Suit Cards
+
 - Parrot (14)
 - Pirate Map (14)
 - Treasure Chest (14)
 - Jolly Roger (14)
 
 ## Special Cards
+
 - Pirate (5)
 - Skull King (1)
 - Mermaid (2)
 - Escape (5)
 
 ## Expansion Cards
+
 - Kraken (1)
 - White Whale (1)
 
 > **Loot** and **Tigress** cards are not implemented duo to complexity.
 
-
 # Rules
-
 
 Special cards allow you to break the rules governing
 numbered cards
@@ -40,11 +42,8 @@ In the rare event that each player plays
 an escape card, Tigress as an escape, or a loot card, in the
 same trick; the first card played wins the trick.
 
-
 If a Pirate, the Skull King, and a Mermaid are all played in the same trick,
 the Mermaid always wins the trick, regardless of order of play.
-Only the Mermaid capturing the Skull King bonus is earned.
-
 
 When you lead a trick, you may choose to play either a suit card or a special card.
 
@@ -62,6 +61,7 @@ lead, you may play any other suit.
 ## When a special card is led
 
 ### Leading with an escape
+
 When an Escape is lead, the next player sets the suit that must be followed,
 unless they play one of these as well, which would defer setting the suit
 to the next player.

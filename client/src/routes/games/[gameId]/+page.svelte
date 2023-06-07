@@ -2,10 +2,12 @@
 	import GameService from '../../../services/GameService.js';
 	import { GameState, GameCommand } from '../../../constants.js';
 	import User from '../../../components/User.svelte';
+	import Card from '../../../components/Card.svelte';
 
 	export let data;
 
-	let game = new GameService();
+	let game = new GameService(data.cardService);
+	// game = game.test()
 
 	const ws = new WebSocket(
 		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
@@ -15,11 +17,11 @@
 		console.log('OPEN');
 	};
 
-	ws.onmessage = async function (e) {
+	ws.onmessage = function (e) {
 		let message = JSON.parse(e.data);
 		console.log(message);
 
-		game = await game.handle(message['command'], message['content'], message['senderId']);
+		game = game.handle(message['command'], message['content'], message['senderId']);
 	};
 
 	function start() {
@@ -35,7 +37,7 @@
 	class="min-w-full min-h-screen bg-gray-900 flex items-center justify-center"
 	style="background-color: #1B1B1B;"
 >
-	{#if game.state == GameState.Pending}
+	{#if game.state != GameState.Pending}
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
 				{#each game.players as player}
@@ -100,7 +102,7 @@
 
 			<div class="cards-container">
 				{#each game.cards as card, index}
-					<div class="card dealing-card-animation" style="animation-delay: {index}s;" />
+					<Card {card} {index} />
 				{/each}
 			</div>
 		</div>

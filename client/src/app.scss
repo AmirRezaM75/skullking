@@ -346,8 +346,6 @@ form {
     margin: 0;
 }
 
-
-
 .cards-container {
     display: flex;
     justify-content: center;
@@ -359,18 +357,20 @@ form {
 }
 
 .card {
+    @apply bg-cover cursor-pointer rounded-2xl mx-2 border-4;
     width: 170px;
     height: $cardHeight;
-    background-color: #a9ff98;
-    border-radius: 20px;
-    margin: 0 10px;
-    cursor: pointer;
-    transition: all .5s;
+    transition: all 0.5s;
     will-change: transform;
-}
 
-.card:hover {
-    margin-bottom: calc($cardHeight / 2 + 10px);
+    &:hover {
+        margin-bottom: calc($cardHeight / 2 + 10px);
+    }
+
+    .number {
+        @apply flex items-center justify-center font-bold text-xl w-9 h-9 mt-2 ml-2;
+        border-radius: 40%;
+    }
 }
 
 /* ****************** */

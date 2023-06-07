@@ -1,4 +1,4 @@
-import type { GameState } from "./constants";
+import type { GameState, CardType } from './constants';
 
 export type User = {
 	email: string;
@@ -26,4 +26,13 @@ export type DealResponse = {
 	trick: number;
 	cards: number[];
 	state: GameState;
-}
+};
+
+export type Card = {
+	id: number;
+	type: CardType;
+	number: number;
+	borderColor: string
+	backgroundColor: string
+	imageURL: string
+};

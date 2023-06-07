@@ -1,12 +1,14 @@
-import type { Player, DealResponse } from './../types';
+import type { Player, DealResponse, Card } from './../types';
 import { GameCommand, GameState } from './../constants';
-import Time from './../utils/Time';
+import type CardService from './CardService';
 
 class GameService {
+	cardService: CardService;
+
 	players: Player[];
 
-	// Dealt card ids for authenticated user
-	cards: number[] = [];
+	// Dealt cards for authenticated user
+	cards: Card[] = [];
 
 	state: GameState = GameState.Pending;
 
@@ -16,11 +18,22 @@ class GameService {
 
 	roundNotifier = false;
 
-	constructor() {
+	constructor(cardService: CardService) {
 		this.players = [];
+		this.cardService = cardService;
 	}
 
-	async handle(command: GameCommand, content: any, senderId: string) {
+	test(): this {
+		this.cards = [1,3,13,4,28,36]
+			.map((cardId: number) => {
+				return this.cardService.findById(cardId);
+			});
+			console.log(this.cards, this.cardService.cards)
+
+			return this
+	}
+
+	handle(command: GameCommand, content: any, senderId: string) {
 		if (GameCommand.Init == command) {
 			this.init(content);
 		}
@@ -34,7 +47,7 @@ class GameService {
 		}
 
 		if (GameCommand.Deal == command) {
-			await this.deal(content);
+			this.deal(content);
 		}
 
 		return this;
@@ -46,7 +59,7 @@ class GameService {
 		content.players.forEach((player) => {
 			this.addPlayer(player);
 			if (player.dealtCards) {
-				this.cards = player.dealtCards
+				this.cards = player.dealtCards;
 			}
 		});
 	}
@@ -59,11 +72,16 @@ class GameService {
 		this.deletePlayerById(content.playerId);
 	}
 
-	async deal(content: DealResponse) {
+	deal(content: DealResponse) {
 		this.state = content.state;
 		this.round = content.round;
 		this.trick = content.trick;
-		this.cards = content.cards;
+		// TODO:
+		this.cards = content.cards
+			.map((cardId: number) => {
+				return this.cardService.findById(cardId);
+			})
+			.filter(Boolean);
 	}
 
 	addPlayer(player: any) {
