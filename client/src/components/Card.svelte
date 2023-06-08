@@ -8,10 +8,7 @@
 	class="card dealing-card-animation {card.borderColor}"
 	style="background-image: url({card.imageURL}); animation-delay: {index}s;"
 >
-	<div
-		class="number {card.backgroundColor}"
-		style="{card.number === 0 ? 'display: none;' : ''}"
-	>
+	<div class="number {card.backgroundColor} {card.textColor}" style={card.number === 0 ? 'display: none;' : ''}>
 		{card.number}
 	</div>
 </div>

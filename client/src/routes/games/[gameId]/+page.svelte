@@ -7,7 +7,7 @@
 	export let data;
 
 	let game = new GameService(data.cardService);
-	// game = game.test()
+	game = game.test()
 
 	const ws = new WebSocket(
 		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
@@ -34,7 +34,7 @@
 </script>
 
 <div
-	class="min-w-full min-h-screen bg-gray-900 flex items-center justify-center"
+	class="min-w-full min-h-screen flex items-center justify-center"
 	style="background-color: #1B1B1B;"
 >
 	{#if game.state != GameState.Pending}

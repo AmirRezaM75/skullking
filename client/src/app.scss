@@ -349,7 +349,7 @@ form {
 .cards-container {
     display: flex;
     justify-content: center;
-    align-items: end;
+    align-items: flex-end;
     position: absolute;
     bottom: calc(-1 * $cardHeight / 2);
     left: 0;
@@ -362,6 +362,7 @@ form {
     height: $cardHeight;
     transition: all 0.5s;
     will-change: transform;
+    flex-shrink: 0;
 
     &:hover {
         margin-bottom: calc($cardHeight / 2 + 10px);
@@ -487,11 +488,13 @@ form {
     80% {
         -webkit-transform: translateY(-400px) scale(1.2);
         transform: translateY(-400px) scale(1.2);
+        pointer-events: none;
     }
     to {
         -webkit-transform: translateY(0) scale(1);
         transform: translateY(0) scale(1);
         opacity: 1;
+        pointer-events: auto;
     }
 }
 
@@ -502,6 +505,8 @@ form {
     animation-duration: 2s;
     opacity: 0;
     animation-fill-mode: forwards;
+    // I need to make sure hover effect doesn't work while animation is in progress
+    pointer-events: none;
 }
 
 @keyframes backInLeft {

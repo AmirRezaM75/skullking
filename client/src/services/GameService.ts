@@ -24,7 +24,7 @@ class GameService {
 	}
 
 	test(): this {
-		this.cards = [1,3,13,4,28,36]
+		this.cards = [1,3,13,4,28,36,56,71]
 			.map((cardId: number) => {
 				return this.cardService.findById(cardId);
 			});

@@ -34,5 +34,6 @@ export type Card = {
 	number: number;
 	borderColor: string
 	backgroundColor: string
+	textColor: string
 	imageURL: string
 };

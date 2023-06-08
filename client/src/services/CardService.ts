@@ -17,6 +17,7 @@ class CardService {
 						number: c.number,
 						borderColor: this.getBorderColor(c.type),
 						backgroundColor: this.getBackgroundColor(c.type),
+						textColor: this.getTextColor(c.type),
 						imageURL: this.getImageURL(c.type)
 					});
 				});
@@ -56,6 +57,15 @@ class CardService {
 				return 'bg-black';
 			default:
 				return 'red';
+		}
+	}
+
+	getTextColor(type: string): string {
+		switch (type) {
+			case CardType.Roger:
+				return 'text-white';
+			default:
+				return 'text-black';
 		}
 	}
 
