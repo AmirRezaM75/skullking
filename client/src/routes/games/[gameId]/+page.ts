@@ -19,6 +19,7 @@ export async function load({ params }) {
 	return {
 		gameId: params.gameId,
 		token: user.token,
+		authId: user.id,
 		cardService: cardService
 	}
 }

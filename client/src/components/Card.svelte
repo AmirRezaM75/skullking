@@ -1,14 +1,23 @@
 <script lang="ts">
 	import type { Card } from '../types';
+	let clazz = '';
+
 	export let card: Card;
-	export let index: number;
+	export let delay: number;
+	export {clazz as class}; 
 </script>
 
+<!-- TODO: https://stackoverflow.com/questions/74974066 -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	class="card dealing-card-animation {card.borderColor}"
-	style="background-image: url({card.imageURL}); animation-delay: {index}s;"
+	on:click
+	class="card {card.borderColor} {clazz}"
+	style="background-image: url({card.imageURL}); animation-delay: {delay}s;"
 >
-	<div class="number {card.backgroundColor} {card.textColor}" style={card.number === 0 ? 'display: none;' : ''}>
+	<div
+		class="number {card.backgroundColor} {card.textColor}"
+		style={card.number === 0 ? 'display: none;' : ''}
+	>
 		{card.number}
 	</div>
 </div>

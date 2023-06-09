@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/responses"
 	"net/http"
 )
 
@@ -59,15 +60,6 @@ func (userHandler UserHandler) Register(w http.ResponseWriter, r *http.Request) 
 
 	_ = userHandler.service.SendEmailVerificationNotification(user.Id.Hex(), user.Email)
 
-	var response struct {
-		User struct {
-			Email    string `json:"email"`
-			Username string `json:"username"`
-			Verified bool   `json:"verified"`
-		} `json:"user"`
-		Token string `json:"token"`
-	}
-
 	token, err := support.GenerateJWT(user.Id.Hex())
 
 	if err != nil {
@@ -75,6 +67,9 @@ func (userHandler UserHandler) Register(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	var response responses.Authentication
+
+	response.User.Id = user.Id.Hex()
 	response.User.Email = user.Email
 	response.User.Username = user.Username
 	response.User.Verified = false
@@ -118,14 +113,7 @@ func (userHandler UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response struct {
-		User struct {
-			Email    string `json:"email"`
-			Username string `json:"username"`
-			Verified bool   `json:"verified"`
-		} `json:"user"`
-		Token string `json:"token"`
-	}
+	var response responses.Authentication
 
 	token, err := support.GenerateJWT(user.Id.Hex())
 
@@ -134,6 +122,7 @@ func (userHandler UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response.User.Id = user.Id.Hex()
 	response.User.Email = user.Email
 	response.User.Username = user.Username
 	response.User.Verified = user.EmailVerifiedAt != nil

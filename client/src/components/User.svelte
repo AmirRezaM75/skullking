@@ -14,7 +14,7 @@
 	</div>
 	<div class="info">
 		<div class="username">{player.username}</div>
-		<div class="action">Bids: {player.bids}</div>
+		<div class="action">Bids: {player.bid}</div>
 	</div>
 	<div class="score">{player.score}</div>
 </div>

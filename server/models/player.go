@@ -68,8 +68,13 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 	var game = hub.Games[player.GameId]
 
 	if message.Command == constants.CommandBid && game.State == constants.StateBidding {
-		game.Rounds[game.Round].Bids[player.Id], _ = strconv.Atoi(message.Content)
-		// TODO: If he is the last one picking the card, clear the timer
+		number, err := strconv.Atoi(message.Content)
+
+		if err != nil {
+			number = 0
+		}
+
+		game.Bid(hub, player.Id, number)
 		return
 	}
 

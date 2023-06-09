@@ -4,7 +4,6 @@ package models
 type ServerMessage struct {
 	Content    any    `json:"content"`
 	Command    string `json:"command"`
-	SenderId   string `json:"senderId"`
 	GameId     string `json:"-"`
 	ReceiverId string `json:"-"`
 }

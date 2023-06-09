@@ -7,11 +7,12 @@ const CommandJoined = "JOINED"
 const CommandLeft = "LEFT"
 const CommandStartBidding = "START_BIDDING"
 const CommandEndBidding = "END_BIDDING"
+const CommandBade = "BADE"
 const CommandStartPicking = "START_PICKING"
-const CommandEndPicking = "END_PICKING"
-const CommandDeal = "DEAL"
 const CommandPicked = "PICKED"
+const CommandDeal = "DEAL"
 const CommandAnnounceTrickWinner = "ANNOUNCE_TRICK_WINNER"
+const CommandNextTrick = "NEXT_TRICK"
 
 // These commands coming from players
 

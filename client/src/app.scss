@@ -5,6 +5,16 @@
 :root {
     --lime-primary: #6dfa84;
     --lime-secondary: #3dff7e;
+
+    // They are default tailwind colors
+    --color-red-100: #fee2e2;
+    --color-red-300: #fca5a5;
+    --color-red-500: #ef4444;
+    --color-red-700: #b91c1c;
+    --color-blue-100: #dbeafe;
+    --color-blue-300: #93c5fd;
+    --color-blue-500: #3b82f6;
+    --color-blue-700: #1d4ed8;
 }
 
 $cardHeight: 240px;
@@ -275,7 +285,7 @@ form {
 }
 
 .notifier {
-    padding-top: 20px;
+    @apply pt-5 h-20;
 
     p {
         color: white;
@@ -311,24 +321,24 @@ form {
                     background: rgb(205, 250, 250);
                     background: linear-gradient(
                         90deg,
-                        var(--red-100) 0%,
-                        var(--red-200) 15%,
-                        var(--red-300) 35%,
-                        var(--red-400) 100%
+                        var(--color-red-100) 0%,
+                        var(--color-red-300) 15%,
+                        var(--color-red-500) 35%,
+                        var(--color-red-700) 100%
                     );
-                    /*box-shadow: 0 0 10px #005A82;*/
+                    box-shadow: 0 0 10px #005a82;
                 }
 
                 &.blue {
                     background: rgb(205, 250, 250);
                     background: linear-gradient(
                         90deg,
-                        var(--blue-100) 0%,
-                        var(--blue-200) 15%,
-                        var(--blue-300) 35%,
-                        var(--blue-400) 100%
+                        var(--color-blue-100) 0%,
+                        var(--color-blue-300) 15%,
+                        var(--color-blue-500) 35%,
+                        var(--color-blue-700) 100%
                     );
-                    /*box-shadow: 0 0 10px #005A82;*/
+                    box-shadow: 0 0 10px #005a82;
                 }
             }
         }
@@ -371,6 +381,24 @@ form {
     .number {
         @apply flex items-center justify-center font-bold text-xl w-9 h-9 mt-2 ml-2;
         border-radius: 40%;
+    }
+
+    &.winner {
+        transform: scale(1.2) rotate(360deg);
+    }
+}
+
+.bids-container {
+    @apply flex justify-center items-center gap-3 mt-16;
+
+    .bid {
+        @apply w-14 h-14 text-center text-white bg-slate-700 border-2 cursor-pointer border-lime-primary font-bold text-2xl rounded-lg;
+        line-height: 3.15rem;
+        transition: all 0.2s;
+        &:hover,
+        &.active {
+            @apply text-lime-primary bg-slate-800;
+        }
     }
 }
 
@@ -509,49 +537,24 @@ form {
     pointer-events: none;
 }
 
-@keyframes backInLeft {
-    0% {
-        transform: translateX(-2000px) scale(0.7);
-        opacity: 0.7;
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
     }
 
-    80% {
-        transform: translateX(0px) scale(0.7);
-        opacity: 0.7;
-    }
-
-    100% {
-        transform: scale(1);
+    to {
         opacity: 1;
+        transform: translate3d(0, 0, 0);
     }
 }
 
-.back-in-left-animation {
-    -webkit-animation-name: backInLeft;
-    animation-name: backInLeft;
-    -webkit-animation-duration: 0.75s;
-    animation-duration: 0.75s;
+.fade-in-down-animation {
+    animation-name: fadeInDown;
 }
 
-@keyframes backOutRight {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    20% {
-        transform: translateX(0px) scale(0.7);
-        opacity: 0.7;
-    }
-
-    100% {
-        transform: translateX(2000px) scale(0.7);
-        opacity: 0.7;
-    }
-}
-
-.back-out-left-animation {
-    animation-name: backOutRight;
+.animation-duration-500 {
+    animation-duration: 500ms;
 }
 
 /* ****************** */

@@ -6,7 +6,6 @@ import (
 	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/responses"
 	"log"
-	"strconv"
 	"time"
 )
 
@@ -129,7 +128,6 @@ func (game *Game) NextRound(hub *Hub) {
 			Command:    constants.CommandDeal,
 			GameId:     game.Id,
 			ReceiverId: player.Id,
-			SenderId:   "SERVER",
 		}
 
 		hub.Dispatch <- m
@@ -141,18 +139,19 @@ func (game *Game) NextRound(hub *Hub) {
 func (game *Game) startBidding(hub *Hub) {
 	duration := game.getBiddingExpirationDuration()
 
+	game.State = constants.StateBidding
+
 	m := &ServerMessage{
 		Content: responses.StartBidding{
 			EndsAt: time.Now().Add(duration).Unix(),
+			State:  game.State,
+			Round:  game.Round,
 		},
-		Command:  constants.CommandStartBidding,
-		SenderId: "SERVER",
-		GameId:   game.Id,
+		Command: constants.CommandStartBidding,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
-
-	game.State = constants.StateBidding
 
 	timer := time.NewTimer(duration)
 
@@ -163,11 +162,23 @@ func (game *Game) startBidding(hub *Hub) {
 }
 
 func (game *Game) endBidding(hub *Hub) {
+	game.State = "" // TODO: Better name!?
+
+	var bids []responses.Bid
+
+	for playerId, number := range game.Rounds[game.Round].Bids {
+		bids = append(bids, responses.Bid{
+			PlayerId: playerId,
+			Number:   number,
+		})
+	}
+
+	content := responses.EndBidding{Bids: bids}
+
 	m := &ServerMessage{
-		Content:  nil,
-		Command:  constants.CommandEndBidding,
-		SenderId: "SERVER",
-		GameId:   game.Id,
+		Content: content,
+		Command: constants.CommandEndBidding,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
@@ -183,12 +194,17 @@ func (game *Game) startPicking(hub *Hub) {
 		return
 	}
 
+	// TODO: Set pickingUserId
+
 	cardIds := game.getAvailableCardIdsForPlayerId(playerId)
+
+	game.State = constants.StatePicking
 
 	content := responses.StartPicking{
 		PlayerId: playerId,
 		EndsAt:   time.Now().Add(constants.WaitTime).Unix(),
 		CardIds:  cardIds,
+		State:    game.State,
 	}
 
 	m := &ServerMessage{
@@ -199,11 +215,23 @@ func (game *Game) startPicking(hub *Hub) {
 
 	hub.Dispatch <- m
 
+	var trick = game.Rounds[game.Round].Tricks[game.Trick]
 	timer := time.NewTimer(constants.WaitTime)
 	go func() {
 		<-timer.C
-		game.endPicking(hub)
+		game.stopPicking(hub, playerId, trick)
 	}()
+}
+
+// stopPicking needs to get trick as parameter because
+// the trick might be increased when this function is called.
+func (game *Game) stopPicking(hub *Hub, playerId string, trick *Trick) {
+	// When picking time is expired there is no need to take any further action
+	// if player already picked the card because we already called endPicking function
+	if !trick.isPlayerPicked(playerId) {
+		game.pickForIdlePlayer(hub)
+		game.endPicking(hub)
+	}
 }
 
 func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []int {
@@ -227,8 +255,6 @@ func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []int {
 }
 
 func (game *Game) endPicking(hub *Hub) {
-	game.pickForIdlePlayer(hub)
-
 	if game.isTrickOver() {
 		game.announceTrickWinner(hub)
 		game.nextTrick(hub)
@@ -254,10 +280,9 @@ func (game *Game) announceTrickWinner(hub *Hub) {
 	}
 
 	m := &ServerMessage{
-		Content:  content,
-		Command:  constants.CommandAnnounceTrickWinner,
-		GameId:   game.Id,
-		SenderId: "SERVER",
+		Content: content,
+		Command: constants.CommandAnnounceTrickWinner,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
@@ -273,6 +298,19 @@ func (game *Game) nextTrick(hub *Hub) {
 	game.Rounds[game.Round].Tricks[game.Trick] = &Trick{
 		Number: game.Trick,
 	}
+
+	content := responses.NextTrick{
+		Round: game.Round,
+		Trick: game.Trick,
+	}
+
+	m := &ServerMessage{
+		Content: content,
+		Command: constants.CommandNextTrick,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
 
 	game.startPicking(hub)
 }
@@ -320,7 +358,7 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	}
 	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
-	content := responses.Pick{
+	content := responses.Picked{
 		PlayerId: pickerId,
 		CardId:   int(pickedCard.CardId),
 	}
@@ -422,11 +460,11 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 	hub.Dispatch <- m
 }
 
-func (game *Game) Pick(hub *Hub, cardId int, senderId string) {
+func (game *Game) Pick(hub *Hub, cardId int, playerId string) {
 	var round = game.Rounds[game.Round]
 	var trick = round.Tricks[game.Trick]
 
-	if game.State != constants.StatePicking || trick.PickingUserId == senderId {
+	if game.State != constants.StatePicking || trick.PickingUserId != playerId {
 		// TODO: Exception
 		return
 	}
@@ -434,22 +472,26 @@ func (game *Game) Pick(hub *Hub, cardId int, senderId string) {
 	// TODO: Check if cardId is valid and exists in the last dealt cards
 
 	pickedCard := PickedCard{
-		PlayerId: senderId,
+		PlayerId: playerId,
 		CardId:   CardId(cardId),
 	}
 
 	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
+	content := responses.Picked{
+		PlayerId: playerId,
+		CardId:   cardId,
+	}
+
 	var m = &ServerMessage{
-		Content:  strconv.Itoa(cardId),
-		Command:  constants.CommandPicked,
-		SenderId: senderId,
-		GameId:   game.Id,
+		Content: content,
+		Command: constants.CommandPicked,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
 
-	game.startPicking(hub)
+	game.endPicking(hub)
 }
 
 func (game *Game) GetAvailableAvatar() string {
@@ -467,6 +509,29 @@ outerLoop:
 	return ""
 }
 
+func (game *Game) Bid(hub *Hub, playerId string, number int) {
+	if number < 0 || number > game.Round {
+		content := responses.Error{Message: "Invalid bid number."}
+		m := &ServerMessage{
+			Content:    content,
+			GameId:     game.Id,
+			ReceiverId: playerId,
+		}
+		hub.Dispatch <- m
+		return
+	}
+	game.Rounds[game.Round].Bids[playerId] = number
+	content := responses.Bade{Number: number}
+	m := &ServerMessage{
+		Content:    content,
+		Command:    constants.CommandBade,
+		GameId:     game.Id,
+		ReceiverId: playerId,
+	}
+	hub.Dispatch <- m
+	// TODO: If he is the last one bidding, call endBidding()
+}
+
 func (game *Game) Join(hub *Hub, player *Player) {
 	// Must send JOINED command after INIT command
 	// Because it preserves order of players in frontend
@@ -482,8 +547,7 @@ func (game *Game) Join(hub *Hub, player *Player) {
 			Username: player.Username,
 			Avatar:   player.Avatar,
 		},
-		GameId:   player.GameId,
-		SenderId: player.Id,
+		GameId: player.GameId,
 	}
 
 	hub.Dispatch <- m
@@ -494,9 +558,8 @@ func (game *Game) Left(hub *Hub, playerId string) {
 		Content: struct {
 			PlayerId string `json:"playerId"`
 		}{PlayerId: playerId},
-		Command:  constants.CommandLeft,
-		GameId:   game.Id,
-		SenderId: playerId,
+		Command: constants.CommandLeft,
+		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m

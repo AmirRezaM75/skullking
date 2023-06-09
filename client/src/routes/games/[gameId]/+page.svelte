@@ -3,11 +3,13 @@
 	import { GameState, GameCommand } from '../../../constants.js';
 	import User from '../../../components/User.svelte';
 	import Card from '../../../components/Card.svelte';
+	import Countdown from '../../../components/Countdown.svelte';
+	import QueueService from '../../../services/QueueService.js';
 
 	export let data;
 
-	let game = new GameService(data.cardService);
-	game = game.test()
+	let game = new GameService(data.cardService, data.authId);
+	const queue = new QueueService();
 
 	const ws = new WebSocket(
 		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
@@ -17,17 +19,45 @@
 		console.log('OPEN');
 	};
 
-	ws.onmessage = function (e) {
+	ws.onmessage = async function (e) {
 		let message = JSON.parse(e.data);
-		console.log(message);
-
-		game = game.handle(message['command'], message['content'], message['senderId']);
+		queue.push(message);
+		await run();
 	};
+
+	async function run() {
+		const message = queue.pop();
+
+		if (message) {
+			console.log(message); // TODO: Remove
+			game = await game.handle(message.command, message.content);
+			queue.isProcessing = false;
+			run();
+		}
+	}
 
 	function start() {
 		ws.send(
 			JSON.stringify({
 				command: GameCommand.Start
+			})
+		);
+	}
+
+	function bid(bid: number) {
+		ws.send(
+			JSON.stringify({
+				command: GameCommand.Bid,
+				content: bid.toString()
+			})
+		);
+	}
+
+	function pick(cardId: number) {
+		ws.send(
+			JSON.stringify({
+				command: GameCommand.Pick,
+				content: cardId.toString()
 			})
 		);
 	}
@@ -37,7 +67,7 @@
 	class="min-w-full min-h-screen flex items-center justify-center"
 	style="background-color: #1B1B1B;"
 >
-	{#if game.state != GameState.Pending}
+	{#if game.state == GameState.Pending}
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
 				{#each game.players as player}
@@ -80,29 +110,42 @@
 					</div>
 				</div>
 			{/if} -->
+
 			<div class="notifier">
-				<p>Pick your card</p>
-				<div class="countdown">
-					<div class="progress-bar-container">
-						<div class="progress-bar red countdown-card-animation" />
-					</div>
-					<div id="js-timer" class="timer">10</div>
-					<div class="progress-bar-container rotate-y-180">
-						<div class="progress-bar red countdown-card-animation" />
-					</div>
-				</div>
+				<p>{game.notifierMessage}</p>
+				{#if game.showCountdown}
+					<Countdown number={game.timer} color={game.countdownColor} />
+				{/if}
 			</div>
 
-			<!-- <div class="table">
-				<div class="card" />
-				<div class="card" />
-				<div class="card" />
-				<div class="card picked-card-animation" />
-			</div> -->
+			<div class="bids-container">
+				{#each game.bids as bidNumber, index}
+					<div
+						class="bid
+						{game.bid === bidNumber ? 'active' : ''}
+						{game.state === GameState.EndBidding ? 'fade-in-down-animation animation-duration-500 active' : ''}"
+						on:click={() => bid(bidNumber)}
+						on:keydown={() => bid(bidNumber)}
+					>
+						{bidNumber}
+					</div>
+				{/each}
+			</div>
+
+			<div class="table">
+				{#each game.tableCards as card}
+					<Card {card} delay={0} class="picked-card-animation {card.isWinner ? 'winner' : ''}" />
+				{/each}
+			</div>
 
 			<div class="cards-container">
 				{#each game.cards as card, index}
-					<Card {card} {index} />
+					<Card
+						{card}
+						delay={index}
+						class="dealing-card-animation"
+						on:click={() => pick(card.id)}
+					/>
 				{/each}
 			</div>
 		</div>

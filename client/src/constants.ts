@@ -1,14 +1,30 @@
 export enum GameCommand {
+	// Client side commands
+	Start = 'START',
+	Bid = 'BID',
+	Pick = 'PICK',
+	// Server side commands
 	Init = 'INIT',
 	Joined = 'JOINED',
 	Left = 'LEFT',
-	Start = 'START',
-	Deal = 'DEAL'
+	Deal = 'DEAL',
+	StartBidding = 'START_BIDDING',
+	EndBidding = 'END_BIDDING',
+	Bade = 'BADE',
+	StartPicking = 'START_PICKING',
+	Picked = 'PICKED',
+	AnnounceTrickWinner = 'ANNOUNCE_TRICK_WINNER',
+	NextTrick = 'NEXT_TRICK',
+	ReportError = 'REPORT_ERROR'
 }
 
 export enum GameState {
 	Pending = 'PENDING',
-	Dealing = 'DEALING'
+	Dealing = 'DEALING',
+	Picking = 'PICKING',
+	Bidding = 'BIDDING',
+	EndBidding = 'END_BIDDING', // TODO: Not set in server
+	AnnounceTrickWinner = 'ANNOUNCE_TRICK_WINNER' // TODO: Not set in server
 }
 
 export enum CardType {

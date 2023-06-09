@@ -18,7 +18,8 @@ class CardService {
 						borderColor: this.getBorderColor(c.type),
 						backgroundColor: this.getBackgroundColor(c.type),
 						textColor: this.getTextColor(c.type),
-						imageURL: this.getImageURL(c.type)
+						imageURL: this.getImageURL(c.type),
+						isWinner: false,
 					});
 				});
 			});
