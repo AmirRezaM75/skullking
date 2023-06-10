@@ -16,14 +16,14 @@ type Game struct {
 	State          string
 	ExpirationTime int
 	Players        map[string]*Player
-	Rounds         map[int]*Round // TODO: Simple slice?
+	Rounds         [constants.MaxRounds]*Round
 }
 
 func (game *Game) findPlayerIndexForPicking() int {
-	pickedCardsCount := len(game.Rounds[game.Round].Tricks[game.Trick].PickedCards)
+	pickedCardsCount := len(game.getCurrentTrick().PickedCards)
 
 	if pickedCardsCount != 0 {
-		index := game.Rounds[game.Round].Tricks[game.Trick].StarterPlayerIndex + pickedCardsCount
+		index := game.getCurrentTrick().StarterPlayerIndex + pickedCardsCount
 		if index > len(game.Players) {
 			index = 1
 		}
@@ -35,14 +35,14 @@ func (game *Game) findPlayerIndexForPicking() int {
 	}
 
 	if game.Round > 1 && game.Trick == 1 {
-		index := game.Rounds[game.Round-1].StarterPlayerIndex + 1
+		index := game.getPreviousRound().StarterPlayerIndex + 1
 		if index > len(game.Players) {
 			index = 1
 		}
 		return index
 	}
 
-	playerId := game.Rounds[game.Round].Tricks[game.Trick-1].WinnerPlayerId
+	playerId := game.getPreviousTrick().WinnerPlayerId
 
 	if playerId != "" {
 		for _, player := range game.Players {
@@ -51,7 +51,9 @@ func (game *Game) findPlayerIndexForPicking() int {
 			}
 		}
 	} else {
-		return game.Rounds[game.Round].Tricks[game.Trick-1].StarterPlayerIndex
+		// TODO: Kraken - The next trick is led by the player who would have won the trick.
+		// TODO: Whale - The person who played the White Whale is the next to lead.
+		return game.getPreviousTrick().StarterPlayerIndex
 	}
 
 	log.Fatalln("Unable to find playerId within for loop.")
@@ -60,18 +62,18 @@ func (game *Game) findPlayerIndexForPicking() int {
 
 func (game *Game) setNextPlayerForPicking() string {
 	index := game.findPlayerIndexForPicking()
-	pickedCardsCount := len(game.Rounds[game.Round].Tricks[game.Trick].PickedCards)
+	pickedCardsCount := len(game.getCurrentTrick().PickedCards)
 
 	if pickedCardsCount == 0 {
 		if game.Trick == 1 {
-			game.Rounds[game.Round].StarterPlayerIndex = index
+			game.getCurrentRound().StarterPlayerIndex = index
 		}
-		game.Rounds[game.Round].Tricks[game.Trick].StarterPlayerIndex = index
+		game.getCurrentTrick().StarterPlayerIndex = index
 	}
 
 	for _, player := range game.Players {
 		if player.Index == index {
-			game.Rounds[game.Round].Tricks[game.Trick].PickingUserId = player.Id
+			game.getCurrentTrick().PickingUserId = player.Id
 			return player.Id
 		}
 	}
@@ -95,7 +97,7 @@ func (game *Game) NextRound(hub *Hub) {
 		Number:     game.Round,
 		DealtCards: make(map[string][]CardId, len(game.Players)),
 		Bids:       make(map[string]int, len(game.Players)),
-		Tricks:     make(map[int]*Trick, game.Round),
+		Tricks:     make([]*Trick, game.Round),
 	}
 
 	index := 0
@@ -112,8 +114,8 @@ func (game *Game) NextRound(hub *Hub) {
 	trick := &Trick{
 		Number: game.Trick,
 	}
-	round.Tricks[game.Trick] = trick
-	game.Rounds[game.Round] = &round
+	round.Tricks[game.Trick-1] = trick
+	game.Rounds[game.Round-1] = &round
 
 	for _, player := range game.Players {
 		content := responses.DealResponse{
@@ -166,7 +168,7 @@ func (game *Game) endBidding(hub *Hub) {
 
 	var bids []responses.Bid
 
-	for playerId, number := range game.Rounds[game.Round].Bids {
+	for playerId, number := range game.getCurrentRound().Bids {
 		bids = append(bids, responses.Bid{
 			PlayerId: playerId,
 			Number:   number,
@@ -215,7 +217,7 @@ func (game *Game) startPicking(hub *Hub) {
 
 	hub.Dispatch <- m
 
-	var trick = game.Rounds[game.Round].Tricks[game.Trick]
+	var trick = game.getCurrentTrick()
 	timer := time.NewTimer(constants.WaitTime)
 	go func() {
 		<-timer.C
@@ -238,7 +240,7 @@ func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []int {
 	var availableCardIds []int
 	remainingCardIds := game.getRemainingCardIdsForPlayerId(playerId)
 
-	var trick = game.Rounds[game.Round].Tricks[game.Trick]
+	var trick = game.getCurrentTrick()
 
 	table := newTable(
 		trick.getAllPickedCardIds(),
@@ -264,15 +266,15 @@ func (game *Game) endPicking(hub *Hub) {
 }
 
 func (game *Game) isTrickOver() bool {
-	var round = game.Rounds[game.Round]
-	var trick = round.Tricks[game.Trick]
+	var trick = game.getCurrentTrick()
 	return len(trick.PickedCards) == len(game.Players)
 }
 
 func (game *Game) announceTrickWinner(hub *Hub) {
 	cardId, playerId := game.findTrickWinner()
 
-	game.Rounds[game.Round].Tricks[game.Trick].WinnerPlayerId = playerId
+	game.getCurrentTrick().WinnerPlayerId = playerId
+	game.getCurrentTrick().WinnerCardId = cardId
 
 	content := responses.AnnounceTrickWinner{
 		PlayerId: playerId,
@@ -295,7 +297,7 @@ func (game *Game) nextTrick(hub *Hub) {
 	}
 
 	game.Trick++
-	game.Rounds[game.Round].Tricks[game.Trick] = &Trick{
+	game.getCurrentRound().Tricks[game.Trick-1] = &Trick{
 		Number: game.Trick,
 	}
 
@@ -316,8 +318,7 @@ func (game *Game) nextTrick(hub *Hub) {
 }
 
 func (game *Game) findTrickWinner() (CardId, string) {
-	var round = game.Rounds[game.Round]
-	var trick = round.Tricks[game.Trick]
+	var trick = game.getCurrentTrick()
 
 	var cardIds []CardId
 	for _, pickedCard := range trick.PickedCards {
@@ -342,8 +343,7 @@ func (game *Game) findTrickWinner() (CardId, string) {
 }
 
 func (game *Game) pickForIdlePlayer(hub *Hub) {
-	var round = game.Rounds[game.Round]
-	var trick = round.Tricks[game.Trick]
+	var trick = game.getCurrentTrick()
 	var pickerId = trick.PickingUserId
 
 	if trick.isPlayerPicked(pickerId) {
@@ -374,7 +374,7 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 
 func (game *Game) getRemainingCardIdsForPlayerId(playerId string) []CardId {
 	var remainingCardIds []CardId
-	var round = game.Rounds[game.Round]
+	var round = game.getCurrentRound()
 	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
 
 outerLoop:
@@ -391,8 +391,6 @@ outerLoop:
 }
 
 func (game *Game) Initialize(hub *Hub, receiverId string) {
-
-	round := game.Rounds[game.Round]
 
 	type Player struct {
 		Id           string   `json:"id"`
@@ -413,8 +411,9 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		p.Username = player.Username
 		p.Avatar = player.Avatar
 
-		if round != nil {
-			var trick = round.Tricks[game.Trick]
+		if game.Round != 0 {
+			var round = game.getCurrentRound()
+			var trick = game.getCurrentTrick()
 			pickedCard := trick.getPickedCardByPlayerId(playerId)
 			if pickedCard != nil {
 				p.PickedCardId = pickedCard.CardId
@@ -446,8 +445,10 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		Players:        players,
 	}
 
-	if round != nil {
-		content.PickingUserId = round.Tricks[game.Trick].PickingUserId
+	if game.Round != 0 {
+		var trick = game.getCurrentTrick()
+
+		content.PickingUserId = trick.PickingUserId
 	}
 
 	m := &ServerMessage{
@@ -461,8 +462,7 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 }
 
 func (game *Game) Pick(hub *Hub, cardId int, playerId string) {
-	var round = game.Rounds[game.Round]
-	var trick = round.Tricks[game.Trick]
+	var trick = game.getCurrentTrick()
 
 	if game.State != constants.StatePicking || trick.PickingUserId != playerId {
 		// TODO: Exception
@@ -520,7 +520,7 @@ func (game *Game) Bid(hub *Hub, playerId string, number int) {
 		hub.Dispatch <- m
 		return
 	}
-	game.Rounds[game.Round].Bids[playerId] = number
+	game.getCurrentRound().Bids[playerId] = number
 	content := responses.Bade{Number: number}
 	m := &ServerMessage{
 		Content:    content,
@@ -570,4 +570,21 @@ func (game *Game) getBiddingExpirationDuration() time.Duration {
 	// Therefore, we need to increase the wait time for each level
 	// Each animation takes about 2 seconds
 	return constants.WaitTime + time.Duration(game.Round)*2*time.Second
+}
+
+func (game *Game) getCurrentRound() *Round {
+	return game.Rounds[game.Round-1]
+}
+
+func (game *Game) getPreviousRound() *Round {
+	return game.Rounds[game.Round-2]
+}
+
+func (game *Game) getCurrentTrick() *Trick {
+	var round = game.getCurrentRound()
+	return round.Tricks[game.Trick-1]
+}
+
+func (game *Game) getPreviousTrick() *Trick {
+	return game.getCurrentRound().Tricks[game.Trick-2]
 }

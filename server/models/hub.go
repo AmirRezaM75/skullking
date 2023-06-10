@@ -9,10 +9,6 @@ type Hub struct {
 	Dispatch chan *ServerMessage
 }
 
-type Reminder struct {
-	gameId string
-}
-
 func NewHub() *Hub {
 	return &Hub{
 		Games:    make(map[string]*Game),
@@ -60,18 +56,4 @@ func (h *Hub) Unsubscribe(player *Player) {
 		}
 	}
 	// TODO: If every one left the game delete the game.
-}
-
-type UserBet struct {
-	UserId string `json:"userId"`
-	Bet    int    `json:"bet"`
-}
-
-type UserPickedCard struct {
-	UserId string `json:"userId"`
-	CardId int    `json:"cardId"`
-}
-
-type CommandPickContent struct {
-	CardId int `json:"cardId"`
 }

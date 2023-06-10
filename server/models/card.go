@@ -8,7 +8,12 @@ type Card struct {
 	Type   string
 }
 
+// TODO: Remove this and use below function
 func (c Card) fromId(id CardId) Card {
+	return cards[id]
+}
+
+func newCardFromId(id CardId) Card {
 	return cards[id]
 }
 
@@ -533,7 +538,7 @@ func GetCards() map[CardId]Card {
 	return cards
 }
 
-// TODO: Should have Table struct as receiver
+// TODO: Should have Trick struct as receiver
 func winner(cardIds []CardId) CardId {
 	var lead Card
 

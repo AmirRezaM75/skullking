@@ -9,6 +9,7 @@ type Trick struct {
 	// the sequence of elements as it is unordered.
 	PickedCards        []PickedCard
 	WinnerPlayerId     string
+	WinnerCardId       CardId
 	StarterPlayerIndex int
 }
 
@@ -44,4 +45,41 @@ func (trick Trick) getAllPickedCardIds() []CardId {
 	}
 
 	return cardIds
+}
+
+func (trick Trick) getWinnerBonusPoint() int {
+	var bonus int
+
+	var winnerCard = newCardFromId(trick.WinnerCardId)
+
+	for _, pickedCard := range trick.PickedCards {
+		if pickedCard.CardId == Parrot14 ||
+			pickedCard.CardId == Chest14 ||
+			pickedCard.CardId == Map14 {
+			bonus += 10
+			continue
+		}
+
+		if pickedCard.CardId == Roger14 {
+			bonus += 20
+			continue
+		}
+
+		card := newCardFromId(pickedCard.CardId)
+
+		if winnerCard.isPirate() && card.isMermaid() {
+			bonus += 20
+			continue
+		}
+
+		if winnerCard.isKing() && card.isPirate() {
+			bonus += 30
+			continue
+		}
+
+		if winnerCard.isMermaid() && card.isKing() {
+			bonus += 40
+		}
+	}
+	return bonus
 }

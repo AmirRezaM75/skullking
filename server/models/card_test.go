@@ -124,6 +124,14 @@ func TestHigherNumberWinsWhenWhaleIsLead(t *testing.T) {
 	}
 }
 
+func TestIfThereIsATieTheFirstOnePlayedIsWinnerWhenWhalePlayed(t *testing.T) {
+	CardIds := []CardId{Escape1, Chest2, Roger2, Whale, Roger1}
+	cardId := winner(CardIds)
+	if Chest2 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
 func TestNoWinnerWhenWhaleCardIsLeadAndThereIsNoSuitCard(t *testing.T) {
 	CardIds := []CardId{Pirate1, Pirate2, Escape2, Mermaid2, SkullKing, Pirate3, Whale}
 	cardId := winner(CardIds)

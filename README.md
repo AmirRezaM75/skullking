@@ -1,5 +1,8 @@
 # About Game
 
+This program is a digital version of a board game that belongs to the original series
+of [Grandpa Skull King](https://www.grandpabecksgames.com/pages/skull-king).
+
 Skull King is a trick-taking game in which you will bid
 the exact number of tricks you predict you will win each
 round. You’ll battle with your rivals as you strive to keep
@@ -71,3 +74,39 @@ to the next player.
 When a Mermaid, Pirate, Skull King, Kraken, or White Whale
 leads a trick, there is no suit to follow for that trick.
 Each other player may play any card they choose.
+
+# Scoring
+
+## Bidding One or More
+
+When you win the exact number of tricks that you bid, you
+are awarded 20 points for each trick taken.
+Capture more or fewer tricks than you bid, and you’ll lose
+10 points for every trick you were off. You don’t earn
+points for any tricks captured that round.
+
+## Bidding Zero
+
+Bid zero and get your bid correct and your potential score
+is 10 points times the number of cards dealt that round.
+However, if you bid zero and then take 1 or more tricks,
+you’ll lose 10 points per card dealt that round instead.
+
+## Bonus Points
+
+### The Number Fourteen Cards
+
+- **10 points** for each standard suit (yellow, purple, or
+  green) 14 card you have at the end of the round.
+- **20 points** for possessing the black (Jolly Roger) 14 card at
+  the end of the round.
+
+> Every 14 you have at the end of the round earns you a bonus, whether played by you or an opponent.
+
+### Character Cards
+
+Capturing (taking) character cards will earn a bonus:
+
+- 20 points for each Mermaid taken by a Pirate.
+- 30 points for each Pirate taken by the Skull King.
+- 40 points for taking the Skull King with a Mermaid.
