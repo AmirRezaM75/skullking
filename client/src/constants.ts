@@ -39,3 +39,5 @@ export enum CardType {
 	Pirate = 'pirate',
 	Escape = 'escape'
 }
+
+export const IntendedGameId = 'intended_game_id'

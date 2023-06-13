@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { IntendedGameId } from '../../constants';
 	import ApiService from '../../services/ApiService';
 	import AuthService from '../../services/AuthService';
 	import type { User } from '../../types';
@@ -41,7 +42,9 @@
 			authService.save(user);
 
 			if (user.verified) {
-				window.location.href = '/';
+				const gameId = sessionStorage.getItem(IntendedGameId);
+				sessionStorage.removeItem(IntendedGameId);
+				window.location.href = gameId ? `/games/${gameId}` : '/';
 			} else {
 				window.location.href = 'verify-email';
 			}
