@@ -374,7 +374,7 @@ form {
     will-change: transform;
     flex-shrink: 0;
 
-    &:hover {
+    &:not(.disabled):hover {
         margin-bottom: calc($cardHeight / 2 + 10px);
     }
 
@@ -385,6 +385,12 @@ form {
 
     &.winner {
         transform: scale(1.2) rotate(360deg);
+    }
+
+    &.disabled {
+        filter: grayscale(1);
+        cursor: not-allowed;
+        pointer-events: none;
     }
 }
 

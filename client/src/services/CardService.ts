@@ -20,6 +20,7 @@ class CardService {
 						textColor: this.getTextColor(c.type),
 						imageURL: this.getImageURL(c.type),
 						isWinner: false,
+						disabled: false
 					});
 				});
 			});

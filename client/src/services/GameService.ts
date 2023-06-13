@@ -195,6 +195,10 @@ class GameService {
 	startPicking(content: StartPickingResponse) {
 		this.bids = [];
 
+		this.cards.forEach((card) => {
+			card.disabled = false;
+		});
+
 		const now = new Date().getTime() / 1000;
 		this.timer = Math.floor(content.endsAt - now);
 		this.state = content.state;
@@ -205,6 +209,14 @@ class GameService {
 				this.notifierMessage =
 					player.id === this.authId ? 'Pick your card' : `${player.username} is picking`;
 				this.countdownColor = player.id === this.authId ? 'blue' : 'red';
+
+				if (player.id === this.authId) {
+					this.cards.forEach((card) => {
+						if (!content.cardIds.includes(card.id)) {
+							card.disabled = true;
+						}
+					});
+				}
 			}
 		});
 		this.showCountdown = true;

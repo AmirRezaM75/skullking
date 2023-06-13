@@ -76,6 +76,7 @@ export type Card = {
 	textColor: string;
 	imageURL: string;
 	isWinner: boolean;
+	disabled: boolean;
 };
 
 export type ReportErrorResponse = {

@@ -11,7 +11,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
 	on:click
-	class="card {card.borderColor} {clazz}"
+	class="card {card.borderColor} {clazz} {card.disabled ? 'disabled' : ''}"
 	style="background-image: url({card.imageURL}); animation-delay: {delay}s;"
 >
 	<div

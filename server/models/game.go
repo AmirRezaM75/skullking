@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/constants"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
@@ -189,39 +190,43 @@ func (game *Game) endBidding(hub *Hub) {
 }
 
 func (game *Game) startPicking(hub *Hub) {
-	playerId := game.setNextPlayerForPicking()
+	game.State = constants.StatePicking
 
-	if playerId == "" {
+	pickerId := game.setNextPlayerForPicking()
+
+	if pickerId == "" {
 		log.Fatalln("No player id is found for picking")
 		return
 	}
 
-	// TODO: Set pickingUserId
-
-	cardIds := game.getAvailableCardIdsForPlayerId(playerId)
-
-	game.State = constants.StatePicking
-
 	content := responses.StartPicking{
-		PlayerId: playerId,
+		PlayerId: pickerId,
 		EndsAt:   time.Now().Add(constants.WaitTime).Unix(),
-		CardIds:  cardIds,
+		CardIds:  []int{},
 		State:    game.State,
 	}
 
-	m := &ServerMessage{
-		Content: content,
-		Command: constants.CommandStartPicking,
-		GameId:  game.Id,
-	}
+	for _, player := range game.Players {
+		if pickerId == player.Id {
+			cardIds := game.getAvailableCardIdsForPlayerId(pickerId)
+			content.CardIds = cardIds
+		}
 
-	hub.Dispatch <- m
+		m := &ServerMessage{
+			Content:    content,
+			Command:    constants.CommandStartPicking,
+			GameId:     game.Id,
+			ReceiverId: player.Id,
+		}
+
+		hub.Dispatch <- m
+	}
 
 	var trick = game.getCurrentTrick()
 	timer := time.NewTimer(constants.WaitTime)
 	go func() {
 		<-timer.C
-		game.stopPicking(hub, playerId, trick)
+		game.stopPicking(hub, pickerId, trick)
 	}()
 }
 
@@ -461,20 +466,54 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 	hub.Dispatch <- m
 }
 
-func (game *Game) Pick(hub *Hub, cardId int, playerId string) {
-	var trick = game.getCurrentTrick()
-
-	if game.State != constants.StatePicking || trick.PickingUserId != playerId {
-		// TODO: Exception
-		return
+func (game *Game) validateUserPickedCard(pickedCardId int, playerId string) error {
+	if game.State != constants.StatePicking {
+		return errors.New("we are not accepting picking command in this state")
 	}
 
-	// TODO: Check if cardId is valid and exists in the last dealt cards
+	var trick = game.getCurrentTrick()
+
+	if trick.PickingUserId != playerId {
+		return errors.New("it's not your turn to pick a card")
+	}
+
+	cardIds := game.getAvailableCardIdsForPlayerId(playerId)
+
+	var exists = false
+	for _, cardId := range cardIds {
+		if cardId == pickedCardId {
+			exists = true
+		}
+	}
+
+	if !exists {
+		return errors.New("you don't own the card")
+	}
+
+	return nil
+}
+
+func (game *Game) Pick(hub *Hub, cardId int, playerId string) {
+
+	err := game.validateUserPickedCard(cardId, playerId)
+
+	if err != nil {
+		content := responses.Error{Message: err.Error()}
+		m := &ServerMessage{
+			Content:    content,
+			GameId:     game.Id,
+			ReceiverId: playerId,
+		}
+		hub.Dispatch <- m
+		return
+	}
 
 	pickedCard := PickedCard{
 		PlayerId: playerId,
 		CardId:   CardId(cardId),
 	}
+
+	var trick = game.getCurrentTrick()
 
 	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
