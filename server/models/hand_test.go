@@ -8,14 +8,13 @@ import (
 func TestPickableCardWhenTableIsEmpty(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	hand.cards = []Card{
-		card.fromId(Parrot2),
-		card.fromId(Roger5),
-		card.fromId(SkullKing),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Parrot2),
+		newCardFromId(Roger5),
+		newCardFromId(SkullKing),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{
@@ -36,18 +35,17 @@ func TestPickableCardWhenTableIsEmpty(t *testing.T) {
 func TestPickableCardWhenFirstCardOnTableIsSuit(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	table.cards = []Card{
-		card.fromId(Parrot3),
+		newCardFromId(Parrot3),
 	}
 
 	hand.cards = []Card{
-		card.fromId(Parrot2),
-		card.fromId(Roger5),
-		card.fromId(SkullKing),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Parrot2),
+		newCardFromId(Roger5),
+		newCardFromId(SkullKing),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{
@@ -65,18 +63,17 @@ func TestPickableCardWhenFirstCardOnTableIsSuit(t *testing.T) {
 func TestUserCanPickAnyCardIfNoCardMatchesTheSuit(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	table.cards = []Card{
-		card.fromId(Parrot3),
+		newCardFromId(Parrot3),
 	}
 
 	hand.cards = []Card{
-		card.fromId(Chest1),
-		card.fromId(Roger5),
-		card.fromId(Pirate1),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Chest1),
+		newCardFromId(Roger5),
+		newCardFromId(Pirate1),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{
@@ -97,18 +94,17 @@ func TestUserCanPickAnyCardIfNoCardMatchesTheSuit(t *testing.T) {
 func TestPickableCardWhenFirstCardOnTableIsEscape1(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	table.cards = []Card{
-		card.fromId(Escape1),
+		newCardFromId(Escape1),
 	}
 
 	hand.cards = []Card{
-		card.fromId(Chest1),
-		card.fromId(Roger5),
-		card.fromId(Pirate1),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Chest1),
+		newCardFromId(Roger5),
+		newCardFromId(Pirate1),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{
@@ -129,19 +125,18 @@ func TestPickableCardWhenFirstCardOnTableIsEscape1(t *testing.T) {
 func TestPickableCardWhenFirstCardOnTableIsEscape2(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	table.cards = []Card{
-		card.fromId(Escape1),
-		card.fromId(Escape2),
+		newCardFromId(Escape1),
+		newCardFromId(Escape2),
 	}
 
 	hand.cards = []Card{
-		card.fromId(Chest1),
-		card.fromId(Roger5),
-		card.fromId(Pirate1),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Chest1),
+		newCardFromId(Roger5),
+		newCardFromId(Pirate1),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{
@@ -162,20 +157,19 @@ func TestPickableCardWhenFirstCardOnTableIsEscape2(t *testing.T) {
 func TestPickableCardWhenFirstCardOnTableIsEscape3(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	table.cards = []Card{
-		card.fromId(Escape1),
-		card.fromId(Escape2),
-		card.fromId(Chest1),
+		newCardFromId(Escape1),
+		newCardFromId(Escape2),
+		newCardFromId(Chest1),
 	}
 
 	hand.cards = []Card{
-		card.fromId(Chest1),
-		card.fromId(Roger5),
-		card.fromId(Pirate1),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Chest1),
+		newCardFromId(Roger5),
+		newCardFromId(Pirate1),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{
@@ -193,18 +187,17 @@ func TestPickableCardWhenFirstCardOnTableIsEscape3(t *testing.T) {
 func TestPickableCardWhenFirstCardOnTableIsCharacter1(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	table.cards = []Card{
-		card.fromId(Pirate1),
+		newCardFromId(Pirate1),
 	}
 
 	hand.cards = []Card{
-		card.fromId(Chest1),
-		card.fromId(Roger5),
-		card.fromId(Pirate1),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Chest1),
+		newCardFromId(Roger5),
+		newCardFromId(Pirate1),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{
@@ -225,19 +218,18 @@ func TestPickableCardWhenFirstCardOnTableIsCharacter1(t *testing.T) {
 func TestPickableCardWhenFirstCardOnTableIsCharacter2(t *testing.T) {
 	var table Table
 	var hand Hand
-	var card Card
 
 	table.cards = []Card{
-		card.fromId(Pirate1),
-		card.fromId(Chest2),
+		newCardFromId(Pirate1),
+		newCardFromId(Chest2),
 	}
 
 	hand.cards = []Card{
-		card.fromId(Chest1),
-		card.fromId(Roger5),
-		card.fromId(Pirate1),
-		card.fromId(Map3),
-		card.fromId(Map2),
+		newCardFromId(Chest1),
+		newCardFromId(Roger5),
+		newCardFromId(Pirate1),
+		newCardFromId(Map3),
+		newCardFromId(Map2),
 	}
 
 	expected := []CardId{

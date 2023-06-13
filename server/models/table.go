@@ -7,10 +7,8 @@ type Table struct {
 func newTable(cardIds []CardId) Table {
 	var cards []Card
 
-	var card Card
-
 	for _, cardId := range cardIds {
-		cards = append(cards, card.fromId(cardId))
+		cards = append(cards, newCardFromId(cardId))
 	}
 
 	return Table{

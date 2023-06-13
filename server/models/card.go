@@ -8,11 +8,6 @@ type Card struct {
 	Type   string
 }
 
-// TODO: Remove this and use below function
-func (c Card) fromId(id CardId) Card {
-	return cards[id]
-}
-
 func newCardFromId(id CardId) Card {
 	return cards[id]
 }
