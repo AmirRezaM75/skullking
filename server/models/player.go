@@ -78,7 +78,9 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 		return
 	}
 
-	if message.Command == constants.CommandStart && game.State == constants.StatePending {
+	if message.Command == constants.CommandStart &&
+		game.State == constants.StatePending &&
+		game.CreatorId == player.Id {
 		game.NextRound(hub)
 	}
 

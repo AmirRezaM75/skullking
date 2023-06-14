@@ -53,6 +53,14 @@ class GameService {
 
 	countdownColor: 'blue' | 'red' = 'blue';
 
+	creator: {
+		id: string;
+		username: string;
+	} = {
+		id: '',
+		username: ''
+	};
+
 	constructor(cardService: CardService, authId: string) {
 		this.players = [];
 		this.cardService = cardService;
@@ -132,6 +140,15 @@ class GameService {
 				this.cards = player.dealtCards;
 			}
 		});
+
+		const creator = this.findPlayerById(content.creatorId);
+
+		if (creator) {
+			this.creator = {
+				id: creator.id,
+				username: creator.username
+			};
+		}
 	}
 
 	joined(content: any) {
@@ -294,7 +311,7 @@ class GameService {
 		// at the same time, to avoid inserting auth user data twice
 		// we need to check if user id is already exists or exclude
 		// authenticated user id but I think using AuthService is overhead in this class
-		const exists = this.existsByPlayerId(player.id);
+		const exists = this.findPlayerById(player.id);
 
 		if (exists) return;
 
@@ -317,14 +334,13 @@ class GameService {
 		}
 	}
 
-	existsByPlayerId(playerId: string): boolean {
+	findPlayerById(playerId: string): Player | null {
 		for (let i = 0; i < this.players.length; i++) {
 			if (this.players[i].id === playerId) {
-				return true;
+				return this.players[i];
 			}
 		}
-
-		return false;
+		return null;
 	}
 }
 

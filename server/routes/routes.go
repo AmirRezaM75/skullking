@@ -24,7 +24,8 @@ func (r Route) Setup() {
 	r.Router.Post("/forgot-password", r.UserHandler.ForgotPassword)
 	r.Router.Post("/reset-password", r.UserHandler.ResetPassword)
 
-	r.Router.Post("/games", r.GameHandler.Create)
+	r.Router.Post("/games", r.GameHandler.Create).
+		Middleware(middlewares.Authenticate{UserService: r.UserService})
 	r.Router.Get("/games/join", r.GameHandler.Join)
 	r.Router.Get("/games/cards", r.GameHandler.Cards)
 }

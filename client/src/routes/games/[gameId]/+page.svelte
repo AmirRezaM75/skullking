@@ -74,24 +74,24 @@
 					<div class="">
 						<div class="bg-gray-700 p-6 rounded-lg text-center">
 							<div class="mb-3">
-								<img
-									src="/images/avatars/1.jpg"
-									width="100"
-									height="100"
-									alt=""
-									class="rounded-full"
-								/>
+								<img src={player.avatar} width="100" height="100" alt="" class="rounded-full" />
 							</div>
 							<span class="text-gray-100 font-bold text-lg uppercase">{player.username}</span>
 						</div>
 					</div>
 				{/each}
 			</div>
-			<div class="text-center mt-6">
-				<button type="button" on:click={start} class="btn-secondary">
-					<span>Start</span>
-				</button>
-			</div>
+			{#if game.creator.id === data.authId}
+				<div class="text-center mt-6">
+					<button type="button" on:click={start} class="btn-secondary">
+						<span>Start</span>
+					</button>
+				</div>
+			{:else}
+				<p class="text-yellow-500 text-center">
+					Wait for {game.creator.username} to start the game.
+				</p>
+			{/if}
 		</div>
 	{:else}
 		<div class="w-1/6 h-screen bg-gray-950">

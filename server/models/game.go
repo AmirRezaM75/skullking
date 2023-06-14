@@ -19,6 +19,8 @@ type Game struct {
 	Players        map[string]*Player
 	Scores         map[string]int
 	Rounds         [constants.MaxRounds]*Round
+	CreatorId      string
+	CreatedAt      int64
 }
 
 func (game *Game) findPlayerIndexForPicking() int {
@@ -469,12 +471,14 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		ExpirationTime int      `json:"expirationTime"`
 		PickingUserId  string   `json:"pickingUserId"`
 		Players        []Player `json:"players"`
+		CreatorId      string   `json:"creatorId"`
 	}{
 		Round:          game.Round,
 		Trick:          game.Trick,
 		State:          game.State,
 		ExpirationTime: game.ExpirationTime,
 		Players:        players,
+		CreatorId:      game.CreatorId,
 	}
 
 	if game.Round != 0 {

@@ -78,3 +78,7 @@ type Score struct {
 	PlayerId string `json:"playerId"`
 	Score    int    `json:"score"`
 }
+
+type CreateGame struct {
+	Id string `json:"id"`
+}

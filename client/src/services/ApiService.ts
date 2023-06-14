@@ -3,10 +3,21 @@ import AuthService from './AuthService';
 class ApiService {
 	baseURL = 'http://localhost:3000';
 
+	private authService;
+
+	constructor() {
+		this.authService = new AuthService();
+	}
+
 	createGame(): Promise<Response> {
+		const user = this.authService.user();
+
+		if (!user) throw new Error('Unauthenticated');
+
 		return fetch(this.baseURL + '/games', {
 			method: 'POST',
 			headers: {
+				Authorization: `Bearer ${user.token}`,
 				'Content-Type': 'application/json'
 			}
 		});
@@ -75,8 +86,7 @@ class ApiService {
 	}
 
 	sendEmailVerificationNotification(): Promise<Response> {
-		const authService = new AuthService();
-		const user = authService.user();
+		const user = this.authService.user();
 
 		if (!user) throw new Error('Unauthenticated');
 

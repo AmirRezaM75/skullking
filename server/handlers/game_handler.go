@@ -7,9 +7,11 @@ import (
 	"github.com/AmirRezaM75/skull-king/models"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/responses"
+	"github.com/AmirRezaM75/skull-king/services"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"time"
 )
 
 type GameHandler struct {
@@ -24,22 +26,27 @@ func NewGameHandler(hub *models.Hub, userService contracts.UserService) *GameHan
 	}
 }
 
-func (gameHandler *GameHandler) Create(w http.ResponseWriter, _ *http.Request) {
+func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
+	user := services.ContextService{}.GetUser(r.Context())
 
-	gameId := uuid.New().String()
-
-	gameHandler.hub.Games[gameId] = &models.Game{
-		Id:      gameId,
-		State:   constants.StatePending,
-		Players: make(map[string]*models.Player, constants.MaxPlayers),
-		Scores:  make(map[string]int, constants.MaxPlayers),
+	if user == nil {
+		return
 	}
 
-	response, err := json.Marshal(struct {
-		Id string `json:"id"`
-	}{
-		Id: gameId,
-	})
+	game := &models.Game{
+		Id:        uuid.New().String(),
+		State:     constants.StatePending,
+		Players:   make(map[string]*models.Player, constants.MaxPlayers),
+		Scores:    make(map[string]int, constants.MaxPlayers),
+		CreatorId: user.Id.Hex(),
+		CreatedAt: time.Now().Unix(),
+	}
+
+	gameHandler.hub.Games[game.Id] = game
+
+	response, err := json.Marshal(
+		responses.CreateGame{Id: game.Id},
+	)
 
 	if err != nil {
 		http.Error(w, "JSON marshal failed", 500)
