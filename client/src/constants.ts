@@ -8,6 +8,7 @@ export enum GameCommand {
 	Joined = 'JOINED',
 	Left = 'LEFT',
 	Deal = 'DEAL',
+	AnnounceScores = 'ANNOUNCE_SCORES',
 	StartBidding = 'START_BIDDING',
 	EndBidding = 'END_BIDDING',
 	Bade = 'BADE',

@@ -17,6 +17,7 @@ type Game struct {
 	State          string
 	ExpirationTime int
 	Players        map[string]*Player
+	Scores         map[string]int
 	Rounds         [constants.MaxRounds]*Round
 }
 
@@ -99,6 +100,7 @@ func (game *Game) NextRound(hub *Hub) {
 		DealtCards: make(map[string][]CardId, len(game.Players)),
 		Bids:       make(map[string]int, len(game.Players)),
 		Tricks:     make([]*Trick, game.Round),
+		Scores:     make(map[string]int, len(game.Players)),
 	}
 
 	index := 0
@@ -295,8 +297,33 @@ func (game *Game) announceTrickWinner(hub *Hub) {
 	hub.Dispatch <- m
 }
 
+func (game *Game) announceScores(hub *Hub) {
+	var round = game.getCurrentRound()
+	round.calculateScores()
+
+	content := responses.AnnounceScore{}
+
+	for playerId, score := range round.Scores {
+		game.Scores[playerId] += score
+		s := responses.Score{
+			PlayerId: playerId,
+			Score:    game.Scores[playerId],
+		}
+		content.Scores = append(content.Scores, s)
+	}
+
+	m := &ServerMessage{
+		Content: content,
+		Command: constants.CommandAnnounceScores,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+}
+
 func (game *Game) nextTrick(hub *Hub) {
 	if game.Trick == game.Round {
+		game.announceScores(hub)
 		game.NextRound(hub)
 		return
 	}

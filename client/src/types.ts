@@ -67,6 +67,13 @@ export type NextTrickResponse = {
 	trick: number;
 };
 
+export type AnnounceScoresResponse = {
+	scores: {
+		playerId: string;
+		score: number;
+	}[];
+};
+
 export type Card = {
 	id: number;
 	type: CardType;

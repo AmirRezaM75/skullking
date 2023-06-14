@@ -32,6 +32,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, _ *http.Request) {
 		Id:      gameId,
 		State:   constants.StatePending,
 		Players: make(map[string]*models.Player, constants.MaxPlayers),
+		Scores:  make(map[string]int, constants.MaxPlayers),
 	}
 
 	response, err := json.Marshal(struct {

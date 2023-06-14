@@ -69,3 +69,12 @@ type NextTrick struct {
 	Round int `json:"round"`
 	Trick int `json:"trick"`
 }
+
+type AnnounceScore struct {
+	Scores []Score `json:"scores"`
+}
+
+type Score struct {
+	PlayerId string `json:"playerId"`
+	Score    int    `json:"score"`
+}

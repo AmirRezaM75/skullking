@@ -12,6 +12,7 @@ const CommandStartPicking = "START_PICKING"
 const CommandPicked = "PICKED"
 const CommandDeal = "DEAL"
 const CommandAnnounceTrickWinner = "ANNOUNCE_TRICK_WINNER"
+const CommandAnnounceScores = "ANNOUNCE_SCORES"
 const CommandNextTrick = "NEXT_TRICK"
 
 // These commands coming from players

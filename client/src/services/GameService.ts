@@ -9,7 +9,8 @@ import type {
 	PickedResponse,
 	AnnounceTrickWinnerResponse,
 	NextTrickResponse,
-	ReportErrorResponse
+	ReportErrorResponse,
+	AnnounceScoresResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -79,6 +80,10 @@ class GameService {
 			this.left(content);
 		}
 
+		if (GameCommand.AnnounceScores == command) {
+			this.announceScores(content);
+		}
+
 		if (GameCommand.Deal == command) {
 			this.deal(content);
 		}
@@ -142,6 +147,16 @@ class GameService {
 		this.tableCards = [];
 		this.round = content.round;
 		this.trick = content.trick;
+	}
+
+	announceScores(content: AnnounceScoresResponse) {
+		this.players.forEach((player) => {
+			content.scores.forEach((item) => {
+				if (item.playerId === player.id) {
+					player.score = item.score;
+				}
+			});
+		});
 	}
 
 	deal(content: DealResponse) {
