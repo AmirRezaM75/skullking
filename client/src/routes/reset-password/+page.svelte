@@ -46,6 +46,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Reset Password</title>
+</svelte:head>
+
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	<div class="max-w-md">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Reset Password</h1>

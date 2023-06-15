@@ -63,6 +63,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Skull King</title>
+</svelte:head>
+
 <div
 	class="min-w-full min-h-screen flex items-center justify-center"
 	style="background-color: #1B1B1B;"

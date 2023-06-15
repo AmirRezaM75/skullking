@@ -18,6 +18,10 @@
 	export let data;
 </script>
 
+<svelte:head>
+	<title>Skull King</title>
+</svelte:head>
+
 <div class="background">
 	<div class="inner">
 		<div>

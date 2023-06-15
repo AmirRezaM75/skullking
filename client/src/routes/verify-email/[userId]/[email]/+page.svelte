@@ -20,6 +20,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Verify Email</title>
+</svelte:head>
+
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	<div
 		class="circle-loader"

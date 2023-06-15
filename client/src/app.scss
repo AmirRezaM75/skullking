@@ -72,9 +72,9 @@ form {
     }
 }
 
-/* .card {
+.card {
     @apply p-6 rounded-xl bg-slate-800 flex flex-col bg-clip-border;
-} */
+}
 
 .circle-loader {
     @apply border-2 border-gray-500 w-40 h-40 rounded-full border-l-yellow-500 relative;
@@ -364,33 +364,33 @@ form {
     bottom: calc(-1 * $cardHeight / 2);
     left: 0;
     width: 100%;
-}
 
-.card {
-    @apply bg-cover cursor-pointer rounded-2xl mx-2 border-4;
-    width: 170px;
-    height: $cardHeight;
-    transition: all 0.5s;
-    will-change: transform;
-    flex-shrink: 0;
+    .card {
+        @apply bg-cover cursor-pointer rounded-2xl mx-2 border-4;
+        width: 170px;
+        height: $cardHeight;
+        transition: all 0.5s;
+        will-change: transform;
+        flex-shrink: 0;
 
-    &:not(.disabled):hover {
-        margin-bottom: calc($cardHeight / 2 + 10px);
-    }
+        &:not(.disabled):hover {
+            margin-bottom: calc($cardHeight / 2 + 10px);
+        }
 
-    .number {
-        @apply flex items-center justify-center font-bold text-xl w-9 h-9 mt-2 ml-2;
-        border-radius: 40%;
-    }
+        .number {
+            @apply flex items-center justify-center font-bold text-xl w-9 h-9 mt-2 ml-2;
+            border-radius: 40%;
+        }
 
-    &.winner {
-        transform: scale(1.2) rotate(360deg);
-    }
+        &.winner {
+            transform: scale(1.2) rotate(360deg);
+        }
 
-    &.disabled {
-        filter: grayscale(1);
-        cursor: not-allowed;
-        pointer-events: none;
+        &.disabled {
+            filter: grayscale(1);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
     }
 }
 

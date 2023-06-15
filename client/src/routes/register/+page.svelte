@@ -50,6 +50,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Register</title>
+</svelte:head>
+
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	<div class="w-80 max-w-lg">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Register</h1>

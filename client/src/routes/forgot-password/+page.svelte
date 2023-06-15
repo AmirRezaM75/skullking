@@ -23,6 +23,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Forgot Password</title>
+</svelte:head>
+
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	{#if !sent}
 		<div class="max-w-md">
