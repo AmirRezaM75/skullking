@@ -1,7 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"github.com/AmirRezaM75/skull-king/constants"
+	"time"
 )
 
 type Hub struct {
@@ -56,4 +58,14 @@ func (h *Hub) Unsubscribe(player *Player) {
 		}
 	}
 	// TODO: If every one left the game delete the game.
+}
+
+func (h *Hub) Cleanup() {
+	for _, game := range h.Games {
+		if game.CreatedAt <= time.Now().Add(-30*time.Minute).Unix() &&
+			game.State == constants.StatePending {
+			fmt.Printf("Delete game %s due to inactivity.\n", game.Id)
+			delete(h.Games, game.Id)
+		}
+	}
 }

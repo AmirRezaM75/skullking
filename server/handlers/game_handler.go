@@ -42,6 +42,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now().Unix(),
 	}
 
+	gameHandler.hub.Cleanup()
 	gameHandler.hub.Games[game.Id] = game
 
 	response, err := json.Marshal(
