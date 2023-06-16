@@ -17,7 +17,7 @@ type Game struct {
 	State          string
 	ExpirationTime int
 	Players        map[string]*Player
-	Scores         map[string]int
+	Scores         map[string]int // TODO: Must be inside players
 	Rounds         [constants.MaxRounds]*Round
 	CreatorId      string
 	CreatedAt      int64
@@ -86,7 +86,29 @@ func (game *Game) setNextPlayerForPicking() string {
 	return ""
 }
 
+func (game *Game) endGame(hub *Hub) {
+	m := &ServerMessage{
+		Command: constants.CommandEndGame,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+
+	_, err := hub.GameRepository.Create(*game)
+
+	if err != nil {
+		fmt.Println("Can't persist game in database", err.Error())
+	}
+
+	delete(hub.Games, game.Id)
+}
+
 func (game *Game) NextRound(hub *Hub) {
+	if game.Round == constants.MaxRounds {
+		game.endGame(hub)
+		return
+	}
+
 	game.Round++
 	game.Trick = 1
 	game.State = constants.StateDealing
@@ -206,7 +228,7 @@ func (game *Game) startPicking(hub *Hub) {
 	content := responses.StartPicking{
 		PlayerId: pickerId,
 		EndsAt:   time.Now().Add(constants.WaitTime).Unix(),
-		CardIds:  []int{},
+		CardIds:  []uint16{},
 		State:    game.State,
 	}
 
@@ -245,8 +267,8 @@ func (game *Game) stopPicking(hub *Hub, playerId string, trick *Trick) {
 	}
 }
 
-func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []int {
-	var availableCardIds []int
+func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []uint16 {
+	var availableCardIds []uint16
 	remainingCardIds := game.getRemainingCardIdsForPlayerId(playerId)
 
 	var trick = game.getCurrentTrick()
@@ -259,7 +281,7 @@ func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []int {
 	pickableCardIds := hand.pickables(table)
 
 	for _, pickableCardId := range pickableCardIds {
-		availableCardIds = append(availableCardIds, int(pickableCardId))
+		availableCardIds = append(availableCardIds, uint16(pickableCardId))
 	}
 
 	return availableCardIds
@@ -287,7 +309,7 @@ func (game *Game) announceTrickWinner(hub *Hub) {
 
 	content := responses.AnnounceTrickWinner{
 		PlayerId: playerId,
-		CardId:   int(cardId),
+		CardId:   uint16(cardId),
 	}
 
 	m := &ServerMessage{
@@ -394,7 +416,7 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 
 	content := responses.Picked{
 		PlayerId: pickerId,
-		CardId:   int(pickedCard.CardId),
+		CardId:   uint16(pickedCard.CardId),
 	}
 
 	m := &ServerMessage{
@@ -497,7 +519,7 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 	hub.Dispatch <- m
 }
 
-func (game *Game) validateUserPickedCard(pickedCardId int, playerId string) error {
+func (game *Game) validateUserPickedCard(pickedCardId uint16, playerId string) error {
 	if game.State != constants.StatePicking {
 		return errors.New("we are not accepting picking command in this state")
 	}
@@ -524,7 +546,7 @@ func (game *Game) validateUserPickedCard(pickedCardId int, playerId string) erro
 	return nil
 }
 
-func (game *Game) Pick(hub *Hub, cardId int, playerId string) {
+func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 
 	err := game.validateUserPickedCard(cardId, playerId)
 

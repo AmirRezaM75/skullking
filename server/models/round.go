@@ -13,11 +13,11 @@ type Round struct {
 	Scores             map[string]int
 }
 
-func (round Round) getDealtCardIdsByPlayerId(playerId string) []int {
-	var cardIds []int
+func (round Round) getDealtCardIdsByPlayerId(playerId string) []uint16 {
+	var cardIds []uint16
 
 	for _, cardId := range round.DealtCards[playerId] {
-		cardIds = append(cardIds, int(cardId))
+		cardIds = append(cardIds, uint16(cardId))
 	}
 
 	return cardIds

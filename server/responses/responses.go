@@ -1,10 +1,13 @@
 package responses
 
+// @link https://github.com/golang/go/issues/44692
+// I can't use uint8 for cardId. This is due to byte being an alias for uint8
+
 type DealResponse struct {
-	Round int    `json:"round"`
-	Trick int    `json:"trick"`
-	Cards []int  `json:"cards"`
-	State string `json:"state"`
+	Round int      `json:"round"`
+	Trick int      `json:"trick"`
+	Cards []uint16 `json:"cards"`
+	State string   `json:"state"`
 }
 
 type StartBidding struct {
@@ -14,24 +17,24 @@ type StartBidding struct {
 }
 
 type StartPicking struct {
-	PlayerId string `json:"playerId"`
-	EndsAt   int64  `json:"endsAt"`
-	CardIds  []int  `json:"cardIds"`
-	State    string `json:"state"`
+	PlayerId string   `json:"playerId"`
+	EndsAt   int64    `json:"endsAt"`
+	CardIds  []uint16 `json:"cardIds"`
+	State    string   `json:"state"`
 }
 
 type Picked struct {
 	PlayerId string `json:"playerId"`
-	CardId   int    `json:"cardId"`
+	CardId   uint16 `json:"cardId"`
 }
 
 type AnnounceTrickWinner struct {
 	PlayerId string `json:"playerId"`
-	CardId   int    `json:"cardId"`
+	CardId   uint16 `json:"cardId"`
 }
 
 type Card struct {
-	Id     int    `json:"id"`
+	Id     uint16 `json:"id"`
 	Number int    `json:"number"`
 	Type   string `json:"type"`
 }

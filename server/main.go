@@ -25,9 +25,8 @@ func main() {
 	defer cancel()
 	defer disconnect()
 
-	var userRepository = repositories.NewUserRepository(
-		client.Database(os.Getenv("MONGODB_DATABASE")),
-	)
+	db := client.Database(os.Getenv("MONGODB_DATABASE"))
+	var userRepository = repositories.NewUserRepository(db)
 
 	var tokenRepository = repositories.NewTokenRepository(redis)
 
@@ -40,7 +39,9 @@ func main() {
 
 	userHandler := handlers.NewUserHandler(userService, v)
 
-	hub := models.NewHub()
+	gameRepository := repositories.NewGameRepository(db)
+
+	hub := models.NewHub(gameRepository)
 	gameHandler := handlers.NewGameHandler(hub, userService)
 
 	go hub.Run()

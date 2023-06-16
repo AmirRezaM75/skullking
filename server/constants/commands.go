@@ -14,6 +14,7 @@ const CommandDeal = "DEAL"
 const CommandAnnounceTrickWinner = "ANNOUNCE_TRICK_WINNER"
 const CommandAnnounceScores = "ANNOUNCE_SCORES"
 const CommandNextTrick = "NEXT_TRICK"
+const CommandEndGame = "END_GAME"
 
 // These commands coming from players
 

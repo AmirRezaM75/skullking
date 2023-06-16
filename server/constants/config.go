@@ -6,4 +6,4 @@ const WaitTime = 10 * time.Second
 
 const MaxPlayers = 7
 
-const MaxRounds = 10
+const MaxRounds = 1

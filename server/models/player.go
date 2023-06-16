@@ -86,6 +86,6 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 
 	if message.Command == constants.CommandPick {
 		cardId, _ := strconv.Atoi(message.Content)
-		game.Pick(hub, cardId, player.Id)
+		game.Pick(hub, uint16(cardId), player.Id)
 	}
 }

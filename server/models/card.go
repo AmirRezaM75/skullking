@@ -1,6 +1,8 @@
 package models
 
-type CardId int
+// CardId Storing the card ID as a string in the database is preferable since it enhances readability.
+// Additionally, when using iota, we must be vigilant to ensure that nothing is inserted between our cards.
+type CardId uint16
 
 type Card struct {
 	Id     CardId
@@ -86,8 +88,6 @@ const TypeRoger string = "roger"
 const TypePirate string = "pirate"
 const TypeEscape string = "escape"
 
-// It looks stupid at first to define each single of them as const
-// But it makes it easier to understand what's the card in winner() func for example.
 const (
 	SkullKing CardId = iota + 1
 	Whale
@@ -546,7 +546,7 @@ func winner(cardIds []CardId) CardId {
 	hasKing := false
 
 	for _, id := range cardIds {
-		card := cards[id]
+		card := newCardFromId(id)
 
 		// Instead of traversing card items more than once
 		// We update existence flag of specific cards here.

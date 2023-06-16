@@ -8,8 +8,8 @@ import (
 	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/responses"
 	"github.com/AmirRezaM75/skull-king/services"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"time"
 )
@@ -34,7 +34,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	game := &models.Game{
-		Id:        uuid.New().String(),
+		Id:        primitive.NewObjectID().Hex(),
 		State:     constants.StatePending,
 		Players:   make(map[string]*models.Player, constants.MaxPlayers),
 		Scores:    make(map[string]int, constants.MaxPlayers),
@@ -66,7 +66,7 @@ func (gameHandler *GameHandler) Cards(w http.ResponseWriter, _ *http.Request) {
 
 	for _, card := range models.GetCards() {
 		response.Items = append(response.Items, responses.Card{
-			Id:     int(card.Id),
+			Id:     uint16(card.Id),
 			Number: card.Number,
 			Type:   card.Type,
 		})
@@ -94,6 +94,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Why not using middleware
 	user := gameHandler.userService.FindById(claims.ID)
 
 	if user == nil {

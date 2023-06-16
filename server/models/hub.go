@@ -6,15 +6,22 @@ import (
 	"time"
 )
 
-type Hub struct {
-	Games    map[string]*Game
-	Dispatch chan *ServerMessage
+// TODO: Couldn't define this interface inside contracts because of 'import cycle not allowed' error
+type GameRepository interface {
+	Create(u Game) (*Game, error)
 }
 
-func NewHub() *Hub {
+type Hub struct {
+	Games          map[string]*Game
+	Dispatch       chan *ServerMessage
+	GameRepository GameRepository
+}
+
+func NewHub(gameRepository GameRepository) *Hub {
 	return &Hub{
-		Games:    make(map[string]*Game),
-		Dispatch: make(chan *ServerMessage),
+		Games:          make(map[string]*Game),
+		Dispatch:       make(chan *ServerMessage),
+		GameRepository: gameRepository,
 	}
 }
 
@@ -49,7 +56,7 @@ func (h *Hub) Unsubscribe(player *Player) {
 	// If the game status is PENDING, we will remove the player from the game
 	// to inform the game creator of the total number of players before starting.
 	// However, if the game has already started, we will not remove the player,
-	// and the server decide on behalf of them
+	// and the server decide on behalf of them.
 	if _, ok := h.Games[player.GameId]; ok {
 		game := h.Games[player.GameId]
 		if game.State == constants.StatePending {
