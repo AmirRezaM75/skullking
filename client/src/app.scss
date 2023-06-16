@@ -72,7 +72,7 @@ form {
     }
 }
 
-.card {
+.plate {
     @apply p-6 rounded-xl bg-slate-800 flex flex-col bg-clip-border;
 }
 
@@ -364,7 +364,10 @@ form {
     bottom: calc(-1 * $cardHeight / 2);
     left: 0;
     width: 100%;
+}
 
+.table,
+.cards-container {
     .card {
         @apply bg-cover cursor-pointer rounded-2xl mx-2 border-4;
         width: 170px;

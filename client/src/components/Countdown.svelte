@@ -6,9 +6,15 @@
 
 	$: timer = number;
 
+	const audio = new Audio('/sounds/clock.mp3');
 	let x = setInterval(() => {
 		timer -= 1;
+		if (timer === 5) {
+			
+			audio.play();
+		}
 		if (timer == 0) {
+			audio.pause()
 			clearInterval(x);
 		}
 	}, 1000);

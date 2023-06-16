@@ -37,7 +37,7 @@
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	<div class="max-w-md">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Email Verification</h1>
-		<div class="card">
+		<div class="plate">
 			<p class="text-gray-100">
 				Avast, me hearty! Ye be one step closer to joining our crew. We've just sent a message in a
 				bottle to <span class="text-fuchsia-500">{data.email}</span>. If ye can't find it, check yer

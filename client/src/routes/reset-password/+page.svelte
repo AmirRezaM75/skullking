@@ -53,7 +53,7 @@
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	<div class="max-w-md">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Reset Password</h1>
-		<div class="card">
+		<div class="plate">
 			<p class="text-gray-100">
 				After you submit your new password, you will be redirected to the login page where you can
 				log in with your new credentials.

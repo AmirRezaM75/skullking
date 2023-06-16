@@ -65,6 +65,11 @@
 
 <svelte:head>
 	<title>Skull King</title>
+	{#each ['chest', 'escape', 'king', 'kraken', 'map', 'mermaid', 'parrot', 'pirate', 'roger', 'whale'] as card}
+		<!-- This will cause the browser to preload the images as soon as the page loads,
+			even if they are not actually present in the DOM yet! -->
+		<link rel="preload" href="/images/cards/{card}.jpg" as="image" />
+	{/each}
 </svelte:head>
 
 <div

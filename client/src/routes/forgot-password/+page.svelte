@@ -31,7 +31,7 @@
 	{#if !sent}
 		<div class="max-w-md">
 			<h1 class="font-bold text-white text-3xl mb-8 text-center">Forgot Password?</h1>
-			<div class="card">
+			<div class="plate">
 				<p class="text-gray-100">
 					Don't worry it happens. please enter the address associated with your account.
 				</p>
@@ -56,7 +56,7 @@
 		</div>
 	{:else}
 		<div class="max-w-md">
-			<div class="card">
+			<div class="plate">
 				<img src="/images/checked.png" class="mx-auto" width="85" height="85" alt="" />
 
 				<p class="text-gray-200 mt-4">
