@@ -1,7 +1,6 @@
-import type { CreateGameResponse } from './../types';
 import AuthService from './AuthService';
 class ApiService {
-	baseURL = 'http://localhost:3000';
+	baseURL = import.meta.env.VITE_BACKEND_URL;
 
 	private authService;
 
