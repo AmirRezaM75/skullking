@@ -17,7 +17,6 @@ type Game struct {
 	State          string
 	ExpirationTime int
 	Players        map[string]*Player
-	Scores         map[string]int // TODO: Must be inside players
 	Rounds         [constants.MaxRounds]*Round
 	CreatorId      string
 	CreatedAt      int64
@@ -328,10 +327,10 @@ func (game *Game) announceScores(hub *Hub) {
 	content := responses.AnnounceScore{}
 
 	for playerId, score := range round.Scores {
-		game.Scores[playerId] += score
+		game.Players[playerId].Score += score
 		s := responses.Score{
 			PlayerId: playerId,
-			Score:    game.Scores[playerId],
+			Score:    game.Players[playerId].Score,
 		}
 		content.Scores = append(content.Scores, s)
 	}

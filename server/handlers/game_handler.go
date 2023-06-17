@@ -37,7 +37,6 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Id:        primitive.NewObjectID().Hex(),
 		State:     constants.StatePending,
 		Players:   make(map[string]*models.Player, constants.MaxPlayers),
-		Scores:    make(map[string]int, constants.MaxPlayers),
 		CreatorId: user.Id.Hex(),
 		CreatedAt: time.Now().Unix(),
 	}
