@@ -90,16 +90,18 @@
 					</div>
 				{/each}
 			</div>
-			{#if game.creator.id === data.authId}
+			{#if game.creator.id !== data.authId}
+				<p class="text-yellow-500 text-center">
+					Wait for {game.creator.username} to start the game.
+				</p>
+			{:else if game.players.length === 1}
+				<p class="text-yellow-500 text-center">Invite at least one more player to start the game</p>
+			{:else}
 				<div class="text-center mt-6">
 					<button type="button" on:click={start} class="btn-secondary">
 						<span>Start</span>
 					</button>
 				</div>
-			{:else}
-				<p class="text-yellow-500 text-center">
-					Wait for {game.creator.username} to start the game.
-				</p>
 			{/if}
 		</div>
 	{:else}

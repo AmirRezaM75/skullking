@@ -80,7 +80,8 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 
 	if message.Command == constants.CommandStart &&
 		game.State == constants.StatePending &&
-		game.CreatorId == player.Id {
+		game.CreatorId == player.Id &&
+		len(game.Players) > 1 {
 		game.NextRound(hub)
 	}
 
