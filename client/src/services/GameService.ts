@@ -124,6 +124,10 @@ class GameService {
 			this.nextTrick(content);
 		}
 
+		if (GameCommand.EndGame == command) {
+			this.endGame();
+		}
+
 		if (GameCommand.ReportError == command) {
 			this.reportError(content);
 		}
@@ -164,6 +168,17 @@ class GameService {
 		this.tableCards = [];
 		this.round = content.round;
 		this.trick = content.trick;
+	}
+
+	endGame() {
+		this.cards = []
+		this.tableCards = []
+		const winner = this.players.reduce((previous, current) => {
+			return previous.score > current.score ? previous : current
+		})
+
+		this.notifierMessage = `${winner.username} won the game`
+		
 	}
 
 	announceScores(content: AnnounceScoresResponse) {

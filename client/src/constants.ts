@@ -16,7 +16,8 @@ export enum GameCommand {
 	Picked = 'PICKED',
 	AnnounceTrickWinner = 'ANNOUNCE_TRICK_WINNER',
 	NextTrick = 'NEXT_TRICK',
-	ReportError = 'REPORT_ERROR'
+	ReportError = 'REPORT_ERROR',
+	EndGame = 'END_GAME'
 }
 
 export enum GameState {
