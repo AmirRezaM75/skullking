@@ -85,3 +85,9 @@ type Score struct {
 type CreateGame struct {
 	Id string `json:"id"`
 }
+
+type Joined struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+}

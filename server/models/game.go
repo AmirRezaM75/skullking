@@ -591,7 +591,6 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 }
 
 func (game *Game) GetAvailableAvatar() string {
-	// TODO: Not working properly
 outerLoop:
 	for _, number := range support.Fill(constants.MaxPlayers) {
 		for _, player := range game.Players {
@@ -631,11 +630,7 @@ func (game *Game) Bid(hub *Hub, playerId string, number int) {
 func (game *Game) Join(hub *Hub, player *Player) {
 	m := &ServerMessage{
 		Command: constants.CommandJoined,
-		Content: struct {
-			Id       string `json:"id"`
-			Username string `json:"username"`
-			Avatar   string `json:"avatar"`
-		}{
+		Content: responses.Joined{
 			Id:       player.Id,
 			Username: player.Username,
 			Avatar:   player.Avatar,
@@ -683,8 +678,8 @@ func (game *Game) getPreviousTrick() *Trick {
 	return game.getCurrentRound().Tricks[game.Trick-2]
 }
 
-func (game *Game) getPlayers() []Player {
-	var players = make([]Player, 0, len(game.Players))
+func (game *Game) getPlayers() []*Player {
+	var players = make([]*Player, 0, len(game.Players))
 
 	var playerIds = make([]string, 0, len(game.Players))
 
@@ -697,7 +692,7 @@ func (game *Game) getPlayers() []Player {
 	})
 
 	for _, playerId := range playerIds {
-		players = append(players, *game.Players[playerId])
+		players = append(players, game.Players[playerId])
 	}
 
 	return players
