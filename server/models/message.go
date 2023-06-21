@@ -6,6 +6,7 @@ type ServerMessage struct {
 	Command    string `json:"command"`
 	GameId     string `json:"-"`
 	ReceiverId string `json:"-"`
+	ExcludedId string `json:"-"`
 }
 
 // ClientMessage Message from client to server structure

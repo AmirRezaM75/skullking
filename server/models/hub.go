@@ -29,12 +29,14 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case message := <-h.Dispatch:
-			// If there is no specific receiver broadcast it to all players
 			if _, ok := h.Games[message.GameId]; ok {
 				var game = h.Games[message.GameId]
+				// If there is no specific receiver broadcast it to all players
 				if message.ReceiverId == "" {
 					for _, player := range game.Players {
-						player.Message <- message
+						if message.ExcludedId != player.Id {
+							player.Message <- message
+						}
 					}
 				} else {
 					if _, ok = game.Players[message.ReceiverId]; ok {

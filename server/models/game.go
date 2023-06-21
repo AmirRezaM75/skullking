@@ -7,6 +7,7 @@ import (
 	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/responses"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -128,8 +129,12 @@ func (game *Game) NextRound(hub *Hub) {
 
 	index := 0
 
-	for _, player := range game.Players {
-		player.Index = index + 1
+	for _, player := range game.getPlayers() {
+		// Initially, we assign a Unix time as an index for each player when they join.
+		// However, we require a sequential index starting from 1 to identify the next player for picking.
+		if player.Index > constants.MaxPlayers {
+			player.Index = index + 1
+		}
 
 		round.DealtCards[player.Id] = dealtCardIds[index]
 		round.Bids[player.Id] = 0
@@ -459,26 +464,26 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 
 	var players []Player
 
-	for playerId, player := range game.Players {
+	for _, player := range game.getPlayers() {
 		var p Player
 
-		p.Id = playerId
+		p.Id = player.Id
 		p.Username = player.Username
 		p.Avatar = player.Avatar
 
 		if game.Round != 0 {
 			var round = game.getCurrentRound()
 			var trick = game.getCurrentTrick()
-			pickedCard := trick.getPickedCardByPlayerId(playerId)
+			pickedCard := trick.getPickedCardByPlayerId(player.Id)
 			if pickedCard != nil {
 				p.PickedCardId = pickedCard.CardId
 			}
 
-			p.Bids = round.Bids[playerId]
+			p.Bids = round.Bids[player.Id]
 
 			// Receiver must not be aware of other cards
-			if playerId == receiverId {
-				p.DealtCards = round.DealtCards[playerId]
+			if player.Id == receiverId {
+				p.DealtCards = round.DealtCards[player.Id]
 			}
 		}
 
@@ -624,9 +629,6 @@ func (game *Game) Bid(hub *Hub, playerId string, number int) {
 }
 
 func (game *Game) Join(hub *Hub, player *Player) {
-	// Must send JOINED command after INIT command
-	// Because it preserves order of players in frontend
-	// TODO: Or we can stop sending JOINED to the new joiner player
 	m := &ServerMessage{
 		Command: constants.CommandJoined,
 		Content: struct {
@@ -638,7 +640,8 @@ func (game *Game) Join(hub *Hub, player *Player) {
 			Username: player.Username,
 			Avatar:   player.Avatar,
 		},
-		GameId: player.GameId,
+		GameId:     player.GameId,
+		ExcludedId: player.Id,
 	}
 
 	hub.Dispatch <- m
@@ -678,4 +681,24 @@ func (game *Game) getCurrentTrick() *Trick {
 
 func (game *Game) getPreviousTrick() *Trick {
 	return game.getCurrentRound().Tricks[game.Trick-2]
+}
+
+func (game *Game) getPlayers() []Player {
+	var players = make([]Player, 0, len(game.Players))
+
+	var playerIds = make([]string, 0, len(game.Players))
+
+	for playerId := range game.Players {
+		playerIds = append(playerIds, playerId)
+	}
+
+	sort.SliceStable(playerIds, func(i, j int) bool {
+		return game.Players[playerIds[i]].Index < game.Players[playerIds[j]].Index
+	})
+
+	for _, playerId := range playerIds {
+		players = append(players, *game.Players[playerId])
+	}
+
+	return players
 }

@@ -169,6 +169,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		Avatar:     game.GetAvailableAvatar(),
 		Connection: connection,
 		Message:    make(chan *models.ServerMessage, 10),
+		Index:      int(time.Now().UnixMilli()),
 	}
 
 	gameHandler.hub.Subscribe(player)
