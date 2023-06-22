@@ -357,28 +357,28 @@ form {
 }
 
 .cards-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    position: absolute;
-    bottom: calc(-1 * $cardHeight / 2);
-    left: 0;
-    width: 100%;
+    @apply flex items-center justify-center absolute bottom-0 left-0 w-full px-4;
+    // The original intention was to position each card lower and have them pop up when hovered over,
+    // but we need to modify this for mobile devices since the hover effect doesn't work well on them.
+    // Also we'll need to make some adjustments to ensure it works properly with swiper.
+    /* align-items: flex-end;
+    bottom: calc(-1 * $cardHeight / 2); */
 }
 
 .table,
 .cards-container {
     .card {
-        @apply bg-cover cursor-pointer rounded-2xl mx-2 border-4;
+        @apply bg-cover cursor-pointer rounded-2xl border-4;
+        // @apply mx-2;
         width: 170px;
         height: $cardHeight;
         transition: all 0.5s;
         will-change: transform;
         flex-shrink: 0;
 
-        &:not(.disabled):hover {
+        /* &:not(.disabled):hover {
             margin-bottom: calc($cardHeight / 2 + 10px);
-        }
+        } */
 
         .number {
             @apply flex items-center justify-center font-bold text-xl w-9 h-9 mt-2 ml-2;
@@ -511,21 +511,8 @@ form {
 
 @keyframes dealing {
     0% {
-        -webkit-transform: translateY(-1200px) scale(0.7);
-        transform: translateY(-1200px) scale(0.7);
-    }
-    20% {
-        -webkit-transform: translateY(-400px) scale(0.7);
-        transform: translateY(-400px) scale(0.7);
-    }
-    50% {
-        -webkit-transform: translateY(-400px) scale(1.2);
-        transform: translateY(-400px) scale(1.2);
-    }
-    80% {
-        -webkit-transform: translateY(-400px) scale(1.2);
-        transform: translateY(-400px) scale(1.2);
-        pointer-events: none;
+        -webkit-transform: translateY(300px) scale(0.7);
+        transform: translateY(300px) scale(0.7);
     }
     to {
         -webkit-transform: translateY(0) scale(1);
@@ -538,8 +525,8 @@ form {
 .dealing-card-animation {
     -webkit-animation-name: dealing;
     animation-name: dealing;
-    -webkit-animation-duration: 2s;
-    animation-duration: 2s;
+    -webkit-animation-duration: .5s;
+    animation-duration: .5s;
     opacity: 0;
     animation-fill-mode: forwards;
     // I need to make sure hover effect doesn't work while animation is in progress

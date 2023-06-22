@@ -191,6 +191,14 @@ class GameService {
 		});
 	}
 
+	test(cards) {
+		cards.forEach((cardId) => {
+			const card = this.cardService.findById(cardId);
+			if (card) {
+				this.cards.push(card);
+			}
+		});
+	}
 	deal(content: DealResponse) {
 		this.tableCards = [];
 		this.state = content.state;

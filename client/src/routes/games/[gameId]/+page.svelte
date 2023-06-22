@@ -5,15 +5,25 @@
 	import Card from '../../../components/Card.svelte';
 	import Countdown from '../../../components/Countdown.svelte';
 	import QueueService from '../../../services/QueueService.js';
+	import Swiper from 'swiper';
+	import 'swiper/css';
+	import { onMount } from 'svelte';
 
 	export let data;
 
 	let game = new GameService(data.cardService, data.authId);
 	const queue = new QueueService();
-
+	game.test([1, 2, 3, 4,6,5,7,8,9,10]);
 	const ws = new WebSocket(
 		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
 	);
+
+	onMount(() => {
+		new Swiper('.swiper', {
+			slidesPerView: 'auto',
+			spaceBetween: 10,
+		});
+	});
 
 	ws.onopen = function (e) {
 		console.log('OPEN');
@@ -76,7 +86,7 @@
 	class="min-w-full min-h-screen flex items-center justify-center"
 	style="background-color: #1B1B1B;"
 >
-	{#if game.state == GameState.Pending}
+	{#if game.state != GameState.Pending}
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
 				{#each game.players as player}
@@ -97,7 +107,7 @@
 			{:else if game.players.length === 1}
 				<p class="text-yellow-500 text-center">Invite at least one more player to start the game</p>
 			{:else}
-				<div class="text-center mt-6">
+				<div class="text-center mt-6 mb-6 sm:mb-0">
 					<button type="button" on:click={start} class="btn-secondary">
 						<span>Start</span>
 					</button>
@@ -148,16 +158,19 @@
 					<Card {card} delay={0} class="picked-card-animation {card.isWinner ? 'winner' : ''}" />
 				{/each}
 			</div>
-
 			<div class="cards-container">
-				{#each game.cards as card, index}
-					<Card
-						{card}
-						delay={index}
-						class="dealing-card-animation"
-						on:click={() => pick(card.id)}
-					/>
-				{/each}
+				<div class="swiper w-full">
+					<div class="swiper-wrapper">
+						{#each game.cards as card, index}
+							<Card
+								{card}
+								delay={index}
+								class="dealing-card-animation swiper-slide"
+								on:click={() => pick(card.id)}
+							/>
+						{/each}
+					</div>
+				</div>
 			</div>
 		</div>
 	{/if}

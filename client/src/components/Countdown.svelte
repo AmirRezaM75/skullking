@@ -11,10 +11,10 @@
 		timer -= 1;
 		if (timer === 5) {
 			
-			audio.play();
+			// audio.play();
 		}
 		if (timer == 0) {
-			audio.pause()
+			// audio.pause()
 			clearInterval(x);
 		}
 	}, 1000);

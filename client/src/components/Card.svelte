@@ -4,7 +4,7 @@
 
 	export let card: Card;
 	export let delay: number;
-	export {clazz as class}; 
+	export {clazz as class};
 </script>
 
 <!-- TODO: https://stackoverflow.com/questions/74974066 -->
@@ -12,7 +12,7 @@
 <div
 	on:click
 	class="card {card.borderColor} {clazz} {card.disabled ? 'disabled' : ''}"
-	style="background-image: url({card.imageURL}); animation-delay: {delay}s;"
+	style="background-image: url({card.imageURL}); animation-delay: {delay/2}s;"
 >
 	<div
 		class="number {card.backgroundColor} {card.textColor}"
