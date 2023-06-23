@@ -15,22 +15,24 @@
 
 	let game = new GameService(data.cardService, data.authId);
 	const queue = new QueueService();
-	game.test([1, 2, 3, 4, 6, 5, 7, 8, 9, 10]);
+game.test([1,2,3,1,2,3,1,2,3,1,2,3])
 	const ws = new WebSocket(
 		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
 	);
 
+	let deckSwiper: Swiper;
+	let tableSwiper: Swiper;
+
 	onMount(() => {
-		new Swiper('.swiper', {
+		deckSwiper = new Swiper('.deck-swiper', {
 			slidesPerView: 'auto',
-			spaceBetween: 10
 		});
 
-		if (screen.width < 640) {
-			isSidebarOpen = false;
-		} else {
-			isSidebarOpen = true;
-		}
+		tableSwiper = new Swiper('.table-swiper', {
+			slidesPerView: 'auto',
+		});
+
+		isSidebarOpen = screen.width > 640;
 	});
 
 	ws.onopen = function (e) {
@@ -49,6 +51,18 @@
 		if (message) {
 			console.log(message); // TODO: Remove
 			game = await game.handle(message.command, message.content);
+			/* if (message.command === GameCommand.Picked) {
+				setTimeout(() => {
+					tableSwiper.init();
+					tableSwiper.slideTo(game.tableCards.length - 1);
+				}, 1000);
+			}
+
+			if (message.command === GameCommand.Deal) {
+				setTimeout(() => {
+					deckSwiper.init();
+				}, 10000);
+			} */
 			queue.isProcessing = false;
 			run();
 		}
@@ -94,10 +108,7 @@
 	{/each}
 </svelte:head>
 
-<div
-	class="min-w-full min-h-screen flex items-center justify-center"
-	style="background-color: #1B1B1B;"
->
+<div class="board">
 	{#if game.state != GameState.Pending}
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
@@ -168,13 +179,22 @@
 				{/each}
 			</div>
 
-			<div class="table">
-				{#each game.tableCards as card}
-					<Card {card} delay={0} class="picked-card-animation {card.isWinner ? 'winner' : ''}" />
-				{/each}
+			<div class="table-container">
+				<div class="table-swiper w-full">
+					<div class="swiper-wrapper">
+						{#each game.tableCards as card}
+							<Card
+								{card}
+								delay={0}
+								class="picked-card-animation swiper-slide {card.isWinner ? 'winner' : ''}"
+							/>
+						{/each}
+					</div>
+				</div>
 			</div>
+
 			<div class="cards-container">
-				<div class="swiper w-full">
+				<div class="deck-swiper w-full">
 					<div class="swiper-wrapper">
 						{#each game.cards as card, index}
 							<Card

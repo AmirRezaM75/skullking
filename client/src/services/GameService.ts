@@ -194,8 +194,10 @@ class GameService {
 			const card = this.cardService.findById(cardId);
 			if (card) {
 				this.cards.push(card);
+				this.tableCards.push(card)
 			}
 		});
+		return this
 	}
 	deal(content: DealResponse) {
 		this.tableCards = [];
