@@ -11,9 +11,11 @@
 
 	export let data;
 
+	let isSidebarOpen = true;
+
 	let game = new GameService(data.cardService, data.authId);
 	const queue = new QueueService();
-	game.test([1, 2, 3, 4,6,5,7,8,9,10]);
+	game.test([1, 2, 3, 4, 6, 5, 7, 8, 9, 10]);
 	const ws = new WebSocket(
 		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
 	);
@@ -21,8 +23,14 @@
 	onMount(() => {
 		new Swiper('.swiper', {
 			slidesPerView: 'auto',
-			spaceBetween: 10,
+			spaceBetween: 10
 		});
+
+		if (screen.width < 640) {
+			isSidebarOpen = false;
+		} else {
+			isSidebarOpen = true;
+		}
 	});
 
 	ws.onopen = function (e) {
@@ -44,6 +52,10 @@
 			queue.isProcessing = false;
 			run();
 		}
+	}
+
+	function toggleSidebar() {
+		isSidebarOpen = !isSidebarOpen;
 	}
 
 	function start() {
@@ -90,13 +102,11 @@
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
 				{#each game.players as player}
-					<div class="">
-						<div class="bg-gray-700 p-6 rounded-lg text-center">
-							<div class="mb-3">
-								<img src={player.avatar} width="100" height="100" alt="" class="rounded-full" />
-							</div>
-							<span class="text-gray-100 font-bold text-lg uppercase">{player.username}</span>
+					<div class="bg-gray-700 p-6 rounded-lg text-center">
+						<div class="mb-3">
+							<img src={player.avatar} width="100" height="100" alt="" class="rounded-full" />
 						</div>
+						<span class="text-gray-100 font-bold text-lg uppercase">{player.username}</span>
 					</div>
 				{/each}
 			</div>
@@ -115,7 +125,7 @@
 			{/if}
 		</div>
 	{:else}
-		<div class="w-1/6 h-screen bg-gray-950">
+		<div class="sidebar {isSidebarOpen ? 'open-sidebar-animation' : 'close-sidebar-animation'}">
 			<div class="users-container">
 				{#each game.players as player}
 					<User {player} />
@@ -123,14 +133,19 @@
 			</div>
 		</div>
 		<div class="flex-1 h-screen overflow-hidden relative">
+			<div on:click={toggleSidebar} class="sidebar-button">
+				<img
+					width="20"
+					src="/images/arrow-{isSidebarOpen ? 'left' : 'right'}.png"
+					alt="Toggle Sidebar"
+				/>
+			</div>
 			<!-- TODO: Implement later: -->
-			<!-- {#if game.roundNotifier === true}
-				<div class="w-full h-full bg-black flex items-center justify-center z-50 absolute">
-					<div class="text-white font-bold text-5xl text-center back-in-left-animation">
-						Round <span class="text-yellow-400 text-9xl">{game.round}</span>
-					</div>
+			<!-- <div class="w-full h-full bg-black flex items-center justify-center z-50 absolute">
+				<div class="text-white font-bold text-5xl text-center back-in-left-animation">
+					Round <span class="text-yellow-400 text-9xl">{game.round}</span>
 				</div>
-			{/if} -->
+			</div> -->
 
 			<div class="notifier">
 				<p>{game.notifierMessage}</p>

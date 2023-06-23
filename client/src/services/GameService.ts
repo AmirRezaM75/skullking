@@ -47,8 +47,6 @@ class GameService {
 	// because we are busy to complete CSS animations.
 	waiter = 0;
 
-	roundNotifier = false;
-
 	showCountdown = false;
 
 	countdownColor: 'blue' | 'red' = 'blue';

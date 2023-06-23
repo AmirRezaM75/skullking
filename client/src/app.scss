@@ -357,7 +357,7 @@ form {
 }
 
 .cards-container {
-    @apply flex items-center justify-center absolute bottom-0 left-0 w-full px-4;
+    @apply flex items-center justify-center absolute bottom-0 left-0 w-full;
     // The original intention was to position each card lower and have them pop up when hovered over,
     // but we need to modify this for mobile devices since the hover effect doesn't work well on them.
     // Also we'll need to make some adjustments to ensure it works properly with swiper.
@@ -410,6 +410,16 @@ form {
         }
     }
 }
+
+.sidebar {
+    @apply h-screen bg-gray-950;
+    width: 320px;
+}
+
+.sidebar-button {
+    @apply bg-gray-700 w-8 h-16 absolute top-3 rounded-r-lg flex items-center justify-center cursor-pointer;
+}
+
 
 /* ****************** */
 /* *** Animations *** */
@@ -531,6 +541,42 @@ form {
     animation-fill-mode: forwards;
     // I need to make sure hover effect doesn't work while animation is in progress
     pointer-events: none;
+}
+
+.close-sidebar-animation {
+    -webkit-animation-name: closeSidebar;
+    animation-name: closeSidebar;
+    -webkit-animation-duration: .8s;
+    animation-duration: .8s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes closeSidebar {
+    from {
+        margin-left: 0;
+    }
+
+    to {
+        margin-left: -320px;
+    }
+}
+
+.open-sidebar-animation {
+    -webkit-animation-name: openSidebar;
+    animation-name: openSidebar;
+    -webkit-animation-duration: .8s;
+    animation-duration: .8s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes openSidebar {
+    from {
+        margin-left: -320px;
+    }
+
+    to {
+        margin-left: 0;
+    }
 }
 
 @keyframes fadeInDown {
