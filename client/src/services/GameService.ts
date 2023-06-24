@@ -10,7 +10,8 @@ import type {
 	AnnounceTrickWinnerResponse,
 	NextTrickResponse,
 	ReportErrorResponse,
-	AnnounceScoresResponse
+	AnnounceScoresResponse,
+	Table
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -27,7 +28,10 @@ class GameService {
 	// Dealt cards for authenticated user
 	cards: Card[] = [];
 
-	tableCards: Card[] = [];
+	table: Table = {
+		cards: [],
+		hasWinner: false
+	};
 
 	state: GameState = GameState.Pending;
 
@@ -163,20 +167,20 @@ class GameService {
 
 	// To determine when next round is started, use deal()
 	nextTrick(content: NextTrickResponse) {
-		this.tableCards = [];
+		this.table.cards = [];
+		this.table.hasWinner = false;
 		this.round = content.round;
 		this.trick = content.trick;
 	}
 
 	endGame() {
-		this.cards = []
-		this.tableCards = []
+		this.cards = [];
+		this.table.cards = [];
 		const winner = this.players.reduce((previous, current) => {
-			return previous.score > current.score ? previous : current
-		})
+			return previous.score > current.score ? previous : current;
+		});
 
-		this.notifierMessage = `${winner.username} won the game`
-		
+		this.notifierMessage = `${winner.username} won the game`;
 	}
 
 	announceScores(content: AnnounceScoresResponse) {
@@ -189,18 +193,9 @@ class GameService {
 		});
 	}
 
-	test(cards) {
-		cards.forEach((cardId) => {
-			const card = this.cardService.findById(cardId);
-			if (card) {
-				this.cards.push(card);
-				this.tableCards.push(card)
-			}
-		});
-		return this
-	}
 	deal(content: DealResponse) {
-		this.tableCards = [];
+		this.table.cards = [];
+		this.table.hasWinner = false
 		this.state = content.state;
 		this.round = content.round;
 		this.trick = content.trick;
@@ -287,14 +282,14 @@ class GameService {
 
 		const card = this.cardService.findById(content.cardId);
 		if (card) {
-			this.tableCards.push(card);
+			this.table.cards.push(card);
 		}
 
 		// When this is the last person who picked the card
 		// before announcing the trick winner, we need time
 		// to make sure picked-card-animation is done
 		// before winner animation
-		if (this.tableCards.length === this.players.length) {
+		if (this.table.cards.length === this.players.length) {
 			const time = new Time();
 			this.waiter = time.add(2);
 		}
@@ -305,10 +300,17 @@ class GameService {
 			player.picking = false;
 		});
 
+		// We need to reset is_winner which is set from previous announcing
+		this.table.cards.forEach((card) => {
+			card.isWinner = false;
+		});
+
+		this.table.hasWinner = true;
+
 		if (content.playerId === '') {
 			this.notifierMessage = `No one won the trick.`;
 		} else {
-			this.tableCards.forEach((card) => {
+			this.table.cards.forEach((card) => {
 				if (card.id === content.cardId) {
 					card.isWinner = true;
 				}

@@ -86,6 +86,11 @@ export type Card = {
 	disabled: boolean;
 };
 
+export type Table = {
+	cards: Card[];
+	hasWinner: boolean;
+};
+
 export type ReportErrorResponse = {
 	message: string;
 };

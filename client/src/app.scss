@@ -385,10 +385,6 @@ form {
             border-radius: 40%;
         }
 
-        &.winner {
-            transform: scale(1.2) rotate(360deg);
-        }
-
         &.disabled {
             filter: grayscale(1);
             cursor: not-allowed;
@@ -401,6 +397,16 @@ form {
     }
 }
 
+.table-container.has-winner {
+    .card.winner {
+        transform: rotate(360deg);
+    }
+    .card:not(.winner) {
+        filter: grayscale(1);
+        transform: scale(.9);
+    }
+}
+
 /* .table-container .card {
     margin: 0; // Handles with flex gap
     width: 120px;
@@ -408,7 +414,7 @@ form {
 }
  */
 .bids-container {
-    @apply flex justify-center items-center gap-3 mt-16;
+    @apply flex flex-wrap justify-center items-center gap-3 mt-16;
 
     .bid {
         @apply w-14 h-14 text-center text-white bg-slate-700 border-2 cursor-pointer border-lime-primary font-bold text-2xl rounded-lg;

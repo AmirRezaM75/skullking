@@ -15,7 +15,7 @@
 
 	let game = new GameService(data.cardService, data.authId);
 	const queue = new QueueService();
-game.test([1,2,3,1,2,3,1,2,3,1,2,3])
+
 	const ws = new WebSocket(
 		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
 	);
@@ -51,18 +51,18 @@ game.test([1,2,3,1,2,3,1,2,3,1,2,3])
 		if (message) {
 			console.log(message); // TODO: Remove
 			game = await game.handle(message.command, message.content);
-			/* if (message.command === GameCommand.Picked) {
+			if (message.command === GameCommand.Picked) {
 				setTimeout(() => {
 					tableSwiper.init();
-					tableSwiper.slideTo(game.tableCards.length - 1);
-				}, 1000);
+					deckSwiper.init();
+					deckSwiper.update();
+					tableSwiper.slideTo(game.table.cards.length - 1);
+				}, 500);
 			}
 
 			if (message.command === GameCommand.Deal) {
-				setTimeout(() => {
-					deckSwiper.init();
-				}, 10000);
-			} */
+				deckSwiper.init();
+			}
 			queue.isProcessing = false;
 			run();
 		}
@@ -109,7 +109,7 @@ game.test([1,2,3,1,2,3,1,2,3,1,2,3])
 </svelte:head>
 
 <div class="board">
-	{#if game.state != GameState.Pending}
+	{#if game.state == GameState.Pending}
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
 				{#each game.players as player}
@@ -179,10 +179,10 @@ game.test([1,2,3,1,2,3,1,2,3,1,2,3])
 				{/each}
 			</div>
 
-			<div class="table-container">
+			<div class="table-container {game.table.hasWinner ? 'has-winner' : ''}">
 				<div class="table-swiper w-full">
 					<div class="swiper-wrapper">
-						{#each game.tableCards as card}
+						{#each game.table.cards as card}
 							<Card
 								{card}
 								delay={0}
