@@ -231,15 +231,14 @@ func (game *Game) startPicking(hub *Hub) {
 
 	content := responses.StartPicking{
 		PlayerId: pickerId,
-		EndsAt:   time.Now().Add(constants.WaitTime).Unix(),
+		EndsAt:   game.getPickingExpirationTime(),
 		CardIds:  []uint16{},
 		State:    game.State,
 	}
 
 	for _, player := range game.Players {
 		if pickerId == player.Id {
-			cardIds := game.getAvailableCardIdsForPlayerId(pickerId)
-			content.CardIds = cardIds
+			content.CardIds = game.getAvailableCardIdsForPlayerId(pickerId)
 		}
 
 		m := &ServerMessage{
@@ -253,11 +252,26 @@ func (game *Game) startPicking(hub *Hub) {
 	}
 
 	var trick = game.getCurrentTrick()
-	timer := time.NewTimer(constants.WaitTime)
+
+	timer := time.NewTimer(
+		time.Unix(content.EndsAt, 0).Sub(time.Now()),
+	)
 	go func() {
 		<-timer.C
 		game.stopPicking(hub, pickerId, trick)
 	}()
+}
+
+func (game *Game) getPickingExpirationTime() int64 {
+	t := constants.WaitTime
+
+	// We need 2 seconds extra time when the user is the first to pick.
+	// because we have a waiter after announcing the winner and end bidding command.
+	if len(game.getCurrentTrick().PickedCards) == 0 {
+		t += time.Second * 4
+	}
+
+	return time.Now().Add(t).Unix()
 }
 
 // stopPicking needs to get trick as parameter because
