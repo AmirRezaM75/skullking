@@ -52,12 +52,21 @@
 			console.log(message); // TODO: Remove
 			game = await game.handle(message.command, message.content);
 			if (message.command === GameCommand.Picked) {
+				// Picked card animation takes one second to be complete.
 				setTimeout(() => {
-					tableSwiper.init();
 					deckSwiper.init();
 					deckSwiper.update();
+					tableSwiper.init();
+					tableSwiper.update();
 					tableSwiper.slideTo(game.table.cards.length - 1);
 				}, 500);
+			}
+
+			if (message.command === GameCommand.AnnounceTrickWinner) {
+				const index = game.table.cards.findIndex((card) => card.isWinner)
+				if (index !== -1) {
+					tableSwiper.slideTo(index);
+				}
 			}
 
 			if (message.command === GameCommand.Deal) {
