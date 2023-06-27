@@ -29,7 +29,7 @@ func (game *Game) findPlayerIndexForPicking() int {
 	if pickedCardsCount != 0 {
 		index := game.getCurrentTrick().StarterPlayerIndex + pickedCardsCount
 		if index > len(game.Players) {
-			index = 1
+			index -= len(game.Players)
 		}
 		return index
 	}

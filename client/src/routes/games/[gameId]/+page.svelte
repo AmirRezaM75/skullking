@@ -159,12 +159,6 @@
 					alt="Toggle Sidebar"
 				/>
 			</div>
-			<!-- TODO: Implement later: -->
-			<!-- <div class="w-full h-full bg-black flex items-center justify-center z-50 absolute">
-				<div class="text-white font-bold text-5xl text-center back-in-left-animation">
-					Round <span class="text-yellow-400 text-9xl">{game.round}</span>
-				</div>
-			</div> -->
 
 			<div class="notifier">
 				<p>{game.notifierMessage}</p>
