@@ -1,6 +1,6 @@
 import AuthService from './AuthService';
 class ApiService {
-	baseURL = import.meta.env.VITE_BACKEND_URL;
+	baseURL: string = import.meta.env.VITE_BACKEND_URL;
 
 	private authService;
 
@@ -20,6 +20,11 @@ class ApiService {
 				'Content-Type': 'application/json'
 			}
 		});
+	}
+
+	joinGame(gameId: string, token: string): WebSocket {
+		const baseURL = this.baseURL.replace('http', 'ws')
+		return new WebSocket(`${baseURL}/games/join?gameId=${gameId}&token=${token}`);
 	}
 
 	forgotPassword(email: string): Promise<Response> {

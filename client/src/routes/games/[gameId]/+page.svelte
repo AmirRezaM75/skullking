@@ -8,6 +8,7 @@
 	import Swiper from 'swiper';
 	import 'swiper/css';
 	import { onMount } from 'svelte';
+	import ApiService from '../../../services/ApiService.js';
 
 	export let data;
 
@@ -15,10 +16,8 @@
 
 	let game = new GameService(data.cardService, data.authId);
 	const queue = new QueueService();
-
-	const ws = new WebSocket(
-		'ws://localhost:3000/games/join?gameId=' + data.gameId + '&token=' + data.token
-	);
+	const apiService = new ApiService;
+	const ws = apiService.joinGame(data.gameId, data.token);
 
 	let deckSwiper: Swiper;
 	let tableSwiper: Swiper;
