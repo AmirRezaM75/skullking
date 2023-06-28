@@ -29,7 +29,7 @@ func (t Table) pattern() string {
 
 	for _, card := range t.cards {
 		if card.isSuit() {
-			pattern = card.Type
+			return card.Type
 		}
 	}
 

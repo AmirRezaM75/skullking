@@ -60,6 +60,29 @@ func TestPickableCardWhenFirstCardOnTableIsSuit(t *testing.T) {
 	}
 }
 
+func TestPickableCardWhenFirstCardOnTableIsSuit2(t *testing.T) {
+	var table Table
+	var hand Hand
+
+	table.cards = []Card{
+		newCardFromId(Map14),
+		newCardFromId(Parrot3),
+	}
+
+	hand.cards = []Card{
+		newCardFromId(Parrot1),
+		newCardFromId(Map1),
+	}
+
+	expected := []CardId{Map1}
+
+	options := hand.pickables(table)
+
+	if !reflect.DeepEqual(expected, options) {
+		t.Error("Wrong pickable cards.", options)
+	}
+}
+
 func TestUserCanPickAnyCardIfNoCardMatchesTheSuit(t *testing.T) {
 	var table Table
 	var hand Hand
