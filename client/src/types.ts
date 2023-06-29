@@ -110,3 +110,8 @@ export type Message = {
 	command: GameCommand;
 	content: Content;
 };
+
+export type Countdown = {
+	id: number;
+	audio: HTMLAudioElement;
+};

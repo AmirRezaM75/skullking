@@ -16,6 +16,7 @@ import type {
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
 import Time from '../utils/Time';
+import type Swiper from 'swiper';
 
 class GameService {
 	// Authenticated user id
@@ -137,6 +138,38 @@ class GameService {
 		return this;
 	}
 
+	// we need another function which is triggered after main game handler function.
+	// because we need to make sure DOM is updated before working with swiper
+	public postHandler(command: GameCommand, deckSwiper: Swiper, tableSwiper: Swiper) {
+		if (GameCommand.Picked === command) {
+			// Picked card animation takes one second to be complete.
+			setTimeout(() => {
+				deckSwiper.init();
+				deckSwiper.update();
+				tableSwiper.init();
+				tableSwiper.update();
+				tableSwiper.slideTo(this.table.cards.length - 1);
+			}, 500);
+			const audio = new Audio('/sounds/picked.mp3');
+			audio.play();
+		}
+
+		if (GameCommand.AnnounceTrickWinner === command) {
+			const winnerCardIndex = this.table.cards.findIndex((card) => card.isWinner);
+
+			if (winnerCardIndex !== -1) {
+				tableSwiper.slideTo(winnerCardIndex);
+				const audio = new Audio('/sounds/announceTrickWinner.mp3');
+				audio.volume = 0.2;
+				audio.play();
+			}
+		}
+
+		if (GameCommand.Deal === command) {
+			deckSwiper.init();
+		}
+	}
+
 	init(content: any) {
 		this.state = content.state;
 
@@ -184,6 +217,9 @@ class GameService {
 	}
 
 	announceScores(content: AnnounceScoresResponse) {
+		const audio = new Audio('/sounds/announceScores.mp3');
+		audio.play();
+
 		this.players.forEach((player) => {
 			content.scores.forEach((item) => {
 				if (item.playerId === player.id) {
@@ -195,7 +231,7 @@ class GameService {
 
 	deal(content: DealResponse) {
 		this.table.cards = [];
-		this.table.hasWinner = false
+		this.table.hasWinner = false;
 		this.state = content.state;
 		this.round = content.round;
 		this.trick = content.trick;
@@ -261,6 +297,9 @@ class GameService {
 				this.countdownColor = player.id === this.authId ? 'blue' : 'red';
 
 				if (player.id === this.authId) {
+					const audio = new Audio('/sounds/startPicking.mp3')
+					audio.play()
+
 					this.cards.forEach((card) => {
 						if (!content.cardIds.includes(card.id)) {
 							card.disabled = true;

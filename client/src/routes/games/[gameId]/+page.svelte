@@ -1,42 +1,69 @@
 <script lang="ts">
-	import GameService from '../../../services/GameService.js';
-	import { GameState, GameCommand } from '../../../constants.js';
+	import GameService from '../../../services/GameService';
+	import { GameState, GameCommand } from '../../../constants';
 	import User from '../../../components/User.svelte';
 	import Card from '../../../components/Card.svelte';
 	import Countdown from '../../../components/Countdown.svelte';
-	import QueueService from '../../../services/QueueService.js';
+	import QueueService from '../../../services/QueueService';
+	import AudioService from '../../../services/AudioService';
 	import Swiper from 'swiper';
 	import 'swiper/css';
 	import { onMount } from 'svelte';
-	import ApiService from '../../../services/ApiService.js';
+	import ApiService from '../../../services/ApiService';
+	import type { Countdown as CountdownType } from '../../../types';
 
 	export let data;
 
 	let isSidebarOpen = true;
+	let isBackgroundAudioPlaying = false;
+
+	let countdowns: CountdownType[] = [];
 
 	let game = new GameService(data.cardService, data.authId);
 	const queue = new QueueService();
-	const apiService = new ApiService;
+
+	const apiService = new ApiService();
 	const ws = apiService.joinGame(data.gameId, data.token);
+
+	const audioService = new AudioService();
 
 	let deckSwiper: Swiper;
 	let tableSwiper: Swiper;
 
 	onMount(() => {
 		deckSwiper = new Swiper('.deck-swiper', {
-			slidesPerView: 'auto',
+			slidesPerView: 'auto'
 		});
 
 		tableSwiper = new Swiper('.table-swiper', {
-			slidesPerView: 'auto',
+			slidesPerView: 'auto'
 		});
 
 		isSidebarOpen = screen.width > 640;
+
+		[
+			'announceScores',
+			'announceTrickWinner',
+			'background',
+			'countdown',
+			'picked',
+			'start',
+			'startPicking'
+		].forEach((filename) => {
+			const audio = new Audio(`/sounds/${filename}.mp3`);
+			audio.preload = 'auto';
+		});
 	});
 
 	ws.onopen = function (e) {
-		console.log('OPEN');
+		toggleBackgroundAudio();
 	};
+
+	async function toggleBackgroundAudio() {
+		audioService.toggleBackgroundAudio().then(() => {
+			isBackgroundAudioPlaying = audioService.isBackgroundAudioPlaying;
+		});
+	}
 
 	ws.onmessage = async function (e) {
 		let message = JSON.parse(e.data);
@@ -48,32 +75,25 @@
 		const message = queue.pop();
 
 		if (message) {
-			console.log(message); // TODO: Remove
 			game = await game.handle(message.command, message.content);
-			if (message.command === GameCommand.Picked) {
-				// Picked card animation takes one second to be complete.
-				setTimeout(() => {
-					deckSwiper.init();
-					deckSwiper.update();
-					tableSwiper.init();
-					tableSwiper.update();
-					tableSwiper.slideTo(game.table.cards.length - 1);
-				}, 500);
+
+			game.postHandler(message.command, deckSwiper, tableSwiper);
+
+			if (GameCommand.Picked === message.command) {
+				countdowns.forEach((countdown) => {
+					clearInterval(countdown.id)
+					countdown.audio.pause()
+				});
+				countdowns = [];
 			}
 
-			if (message.command === GameCommand.AnnounceTrickWinner) {
-				const index = game.table.cards.findIndex((card) => card.isWinner)
-				if (index !== -1) {
-					tableSwiper.slideTo(index);
-				}
-			}
-
-			if (message.command === GameCommand.Deal) {
-				deckSwiper.init();
-			}
 			queue.isProcessing = false;
 			run();
 		}
+	}
+
+	function addCountdown(event: CustomEvent<CountdownType>) {
+		countdowns.push(event.detail);
 	}
 
 	function toggleSidebar() {
@@ -81,6 +101,8 @@
 	}
 
 	function start() {
+		const audio = new Audio('/sounds/start.mp3');
+		audio.play();
 		ws.send(
 			JSON.stringify({
 				command: GameCommand.Start
@@ -110,8 +132,11 @@
 <svelte:head>
 	<title>Skull King</title>
 	{#each ['chest', 'escape', 'king', 'kraken', 'map', 'mermaid', 'parrot', 'pirate', 'roger', 'whale'] as card}
-		<!-- This will cause the browser to preload the images as soon as the page loads,
-			even if they are not actually present in the DOM yet! -->
+		<!--
+			This will cause the browser to preload the images as soon as the page loads,
+			even if they are not actually present in the DOM yet!
+			as="audio" is not supported in chrome that's why we didn't use the same technique for audio files.
+		-->
 		<link rel="preload" href="/images/cards/{card}.jpg" as="image" />
 	{/each}
 </svelte:head>
@@ -144,11 +169,46 @@
 			{/if}
 		</div>
 	{:else}
-		<div class="sidebar {isSidebarOpen ? 'open-sidebar-animation' : 'close-sidebar-animation'}">
+		<div
+			class="sidebar relative {isSidebarOpen
+				? 'open-sidebar-animation'
+				: 'close-sidebar-animation'}"
+		>
 			<div class="users-container">
 				{#each game.players as player}
 					<User {player} />
 				{/each}
+			</div>
+			<div
+				class="absolute bottom-4 left-4"
+				title="{isBackgroundAudioPlaying ? 'Mute' : 'Unmute'} background music"
+			>
+				<svg
+					fill={isBackgroundAudioPlaying ? 'white' : 'gray'}
+					on:click={toggleBackgroundAudio}
+					class="cursor-pointer"
+					xmlns="http://www.w3.org/2000/svg"
+					xml:space="preserve"
+					width="20"
+					height="20"
+					viewBox="0 0 522.234 522.234"
+				>
+					<path
+						d="M346.35 41.163c-10.855-10.367-25.076-16.078-40.045-16.078-10.832 0-21.445 3.063-30.689 8.857l-159.161 99.761H58.354C26.454 133.703.5 159.655.5 191.556v138.918c0 31.9 25.953 57.854 57.854 57.854h57.773l159.487 99.965c9.244 5.795 19.857 8.857 30.691 8.857 14.969 0 29.189-5.71 40.047-16.078a57.348 57.348 0 0 0 12.979-18.523c3.227-7.353 4.861-15.184 4.861-23.275V82.963c0-8.094-1.635-15.925-4.861-23.278a57.382 57.382 0 0 0-12.981-18.522zm-24.996 219.852v178.257c0 8.803-7.227 15.037-15.049 15.037-2.664 0-5.398-.724-7.939-2.316L137.222 350.989a36.036 36.036 0 0 0-19.138-5.502h-59.73c-8.292 0-15.014-6.722-15.014-15.014V191.556c0-8.291 6.722-15.013 15.014-15.013h60.059c6.77 0 13.4-1.907 19.137-5.502L298.365 70.242c2.541-1.593 5.273-2.316 7.939-2.316 7.822 0 15.049 6.236 15.049 15.038v178.051z"
+					/>
+					<path
+						d="M306.305 497.649c-10.929 0-21.634-3.089-30.957-8.934l-159.365-99.889H58.354C26.177 388.827 0 362.649 0 330.474V191.556c0-32.176 26.177-58.353 58.354-58.353h57.958L275.35 33.519c9.325-5.844 20.029-8.934 30.955-8.934 15.096 0 29.44 5.759 40.391 16.216a57.873 57.873 0 0 1 13.093 18.683c3.254 7.415 4.903 15.314 4.903 23.479v356.309c0 8.163-1.649 16.062-4.903 23.477a57.846 57.846 0 0 1-13.091 18.684c-10.952 10.458-25.297 16.216-40.393 16.216zM58.354 134.203C26.729 134.203 1 159.931 1 191.556v138.918c0 31.625 25.729 57.354 57.354 57.354h57.917l.122.076 159.487 99.965c9.164 5.745 19.685 8.781 30.426 8.781 14.838 0 28.938-5.661 39.701-15.939a56.84 56.84 0 0 0 12.866-18.363c3.198-7.287 4.819-15.05 4.819-23.074V82.963c0-8.025-1.621-15.79-4.819-23.077a56.86 56.86 0 0 0-12.868-18.362c-10.763-10.279-24.861-15.939-39.699-15.939-10.738 0-21.259 3.037-30.424 8.781l-159.283 99.837H58.354zm247.951 320.606c-2.87 0-5.708-.827-8.205-2.393L136.956 351.413a35.493 35.493 0 0 0-18.872-5.426h-59.73c-8.554 0-15.514-6.959-15.514-15.514V191.556c0-8.554 6.959-15.513 15.514-15.513h60.059a35.492 35.492 0 0 0 18.871-5.426L298.1 69.818c2.497-1.565 5.335-2.393 8.205-2.393 8.573 0 15.549 6.97 15.549 15.538v356.308c0 8.568-6.976 15.538-15.549 15.538zM58.354 177.043c-8.003 0-14.514 6.51-14.514 14.513v138.918c0 8.003 6.511 14.514 14.514 14.514h59.73c6.871 0 13.58 1.929 19.403 5.578l161.144 101.003c2.338 1.466 4.991 2.24 7.674 2.24 8.022 0 14.549-6.521 14.549-14.537V82.963c0-8.016-6.526-14.538-14.549-14.538-2.683 0-5.336.774-7.674 2.24l-160.817 100.8a36.502 36.502 0 0 1-19.402 5.578H58.354zM424.273 156.536c-5.266-10.594-18.125-14.911-28.715-9.646-10.594 5.266-14.912 18.123-9.646 28.716 12.426 24.995 18.992 54.604 18.992 85.626 0 31.506-6.754 61.487-19.533 86.705-5.348 10.553-1.129 23.442 9.424 28.79a21.335 21.335 0 0 0 9.664 2.317c7.816 0 15.35-4.294 19.125-11.742 15.807-31.191 24.16-67.869 24.16-106.07.002-37.604-8.115-73.808-23.471-104.696z"
+					/>
+					<path
+						d="M404.459 379.545a21.7 21.7 0 0 1-9.89-2.371c-10.782-5.464-15.108-18.681-9.645-29.462 12.744-25.147 19.479-55.052 19.479-86.479 0-30.948-6.549-60.48-18.939-85.404a21.772 21.772 0 0 1-1.15-16.738 21.773 21.773 0 0 1 11.021-12.648 21.699 21.699 0 0 1 9.739-2.296c8.388 0 15.916 4.662 19.646 12.167 15.391 30.959 23.524 67.239 23.522 104.919 0 38.28-8.373 75.037-24.214 106.296-3.755 7.411-11.255 12.016-19.569 12.016zm.616-234.399c-3.242 0-6.369.737-9.294 2.191a20.784 20.784 0 0 0-10.52 12.071 20.783 20.783 0 0 0 1.098 15.974c12.459 25.062 19.045 54.748 19.045 85.849 0 31.584-6.773 61.645-19.587 86.931-5.215 10.29-1.086 22.904 9.203 28.118a20.705 20.705 0 0 0 9.438 2.264c7.936 0 15.094-4.395 18.679-11.468 15.771-31.12 24.106-67.721 24.106-105.845.002-37.526-8.096-73.652-23.418-104.474-3.559-7.161-10.744-11.611-18.75-11.611z"
+					/>
+					<path
+						d="M456.547 88.245c-10.594 5.266-14.912 18.122-9.646 28.716 20.932 42.105 31.994 91.864 31.994 143.897 0 52.847-11.381 103.237-32.912 145.727-5.348 10.552-1.129 23.441 9.424 28.788a21.325 21.325 0 0 0 9.666 2.318c7.814 0 15.35-4.294 19.123-11.743 24.559-48.462 37.539-105.549 37.539-165.09 0-58.615-12.611-114.968-36.473-162.968-5.266-10.593-18.121-14.913-28.715-9.645z"
+					/>
+					<path
+						d="M465.072 438.19c-3.458 0-6.787-.798-9.893-2.372-5.223-2.646-9.102-7.168-10.923-12.732s-1.367-11.506 1.279-16.728c21.496-42.42 32.858-92.733 32.858-145.501 0-51.958-11.045-101.64-31.941-143.674-5.381-10.824-.952-24.006 9.871-29.386a21.7 21.7 0 0 1 9.742-2.297c8.386 0 15.912 4.663 19.643 12.167 23.896 48.067 36.525 104.498 36.525 163.19 0 59.619-12.999 116.785-37.593 165.315-3.753 7.414-11.252 12.018-19.568 12.018zm.994-351.69c-3.243 0-6.371.738-9.297 2.193-5.004 2.487-8.74 6.774-10.52 12.071s-1.389 10.97 1.098 15.974c20.966 42.172 32.047 92.008 32.047 144.12 0 52.924-11.399 103.394-32.966 145.952-2.526 4.984-2.96 10.654-1.222 15.965s5.44 9.626 10.425 12.151a20.695 20.695 0 0 0 9.44 2.265c7.937 0 15.094-4.395 18.677-11.469 24.523-48.392 37.485-105.401 37.485-164.864 0-58.54-12.594-114.816-36.42-162.745-3.56-7.164-10.744-11.613-18.747-11.613z"
+					/>
+				</svg>
 			</div>
 		</div>
 		<div class="flex-1 h-screen overflow-hidden relative">
@@ -163,7 +223,11 @@
 			<div class="notifier">
 				<p>{game.notifierMessage}</p>
 				{#if game.showCountdown}
-					<Countdown number={game.timer} color={game.countdownColor} />
+					<Countdown
+						number={game.timer}
+						color={game.countdownColor}
+						on:newCountdown={addCountdown}
+					/>
 				{/if}
 			</div>
 
