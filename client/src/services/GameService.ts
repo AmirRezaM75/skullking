@@ -281,10 +281,6 @@ class GameService {
 	startPicking(content: StartPickingResponse) {
 		this.bids = [];
 
-		this.cards.forEach((card) => {
-			card.disabled = false;
-		});
-
 		const now = new Date().getTime() / 1000;
 		this.timer = Math.floor(content.endsAt - now);
 		this.state = content.state;
@@ -312,6 +308,11 @@ class GameService {
 	}
 
 	picked(content: PickedResponse) {
+
+		this.cards.forEach((card) => {
+			card.disabled = false;
+		});
+
 		this.showCountdown = false;
 		const index = this.cards.findIndex((card) => card.id === content.cardId);
 
@@ -405,6 +406,19 @@ class GameService {
 			}
 		}
 		return null;
+	}
+
+	findPickingPlayerId(): string {
+		if (this.state !== GameState.Picking) {
+			return ''
+		}
+
+		for (let i = 0; i < this.players.length; i++) {
+			if (this.players[i].picking) {
+				return this.players[i].id;
+			}
+		}
+		return '';
 	}
 }
 

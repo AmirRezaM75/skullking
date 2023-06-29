@@ -65,6 +65,33 @@
 		});
 	}
 
+	function keyboardHandler(event: KeyboardEvent) {
+		if (event.code === 'KeyM') {
+			toggleBackgroundAudio();
+			return
+		}
+
+		if (event.code === 'KeyS') {
+			toggleSidebar();
+			return
+		}
+
+		const isDigit = /^\d$/.test(event.key);
+
+		if (isDigit && game.state === GameState.Bidding) {
+			bid(parseInt(event.key));
+			return
+		}
+
+		if (isDigit && game.findPickingPlayerId() === data.authId) {
+			const card = game.cards[parseInt(event.key)-1];
+			if (card) {
+				pick(card.id);
+			}
+			return
+		}
+	}
+
 	ws.onmessage = async function (e) {
 		let message = JSON.parse(e.data);
 		queue.push(message);
@@ -81,8 +108,8 @@
 
 			if (GameCommand.Picked === message.command) {
 				countdowns.forEach((countdown) => {
-					clearInterval(countdown.id)
-					countdown.audio.pause()
+					clearInterval(countdown.id);
+					countdown.audio.pause();
 				});
 				countdowns = [];
 			}
@@ -128,6 +155,8 @@
 		);
 	}
 </script>
+
+<svelte:window on:keydown|preventDefault={keyboardHandler} />
 
 <svelte:head>
 	<title>Skull King</title>
@@ -186,6 +215,7 @@
 				<svg
 					fill={isBackgroundAudioPlaying ? 'white' : 'gray'}
 					on:click={toggleBackgroundAudio}
+					on:keydown={keyboardHandler}
 					class="cursor-pointer"
 					xmlns="http://www.w3.org/2000/svg"
 					xml:space="preserve"
@@ -212,7 +242,7 @@
 			</div>
 		</div>
 		<div class="flex-1 h-screen overflow-hidden relative">
-			<div on:click={toggleSidebar} class="sidebar-button">
+			<div on:click={toggleSidebar} on:keydown={keyboardHandler} class="sidebar-button">
 				<img
 					width="20"
 					src="/images/arrow-{isSidebarOpen ? 'left' : 'right'}.png"
