@@ -13,7 +13,8 @@ import type {
 	AnnounceScoresResponse,
 	Table,
 	InitResponse,
-	PlayerResponse
+	PlayerResponse,
+	LeftResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -237,7 +238,7 @@ class GameService {
 		this.addPlayer(content);
 	}
 
-	left(content: any) {
+	left(content: LeftResponse) {
 		this.deletePlayerById(content.playerId);
 	}
 

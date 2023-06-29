@@ -629,9 +629,7 @@ func (game *Game) Join(hub *Hub, player *Player) {
 
 func (game *Game) Left(hub *Hub, playerId string) {
 	m := &ServerMessage{
-		Content: struct {
-			PlayerId string `json:"playerId"`
-		}{PlayerId: playerId},
+		Content: responses.Left{PlayerId: playerId},
 		Command: constants.CommandLeft,
 		GameId:  game.Id,
 	}

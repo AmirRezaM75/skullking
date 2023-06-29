@@ -106,3 +106,7 @@ type Init struct {
 	CreatorId      string   `json:"creatorId"`
 	TableCardIds   []uint16 `json:"tableCardIds"`
 }
+
+type Left struct {
+	PlayerId string `json:"playerId"`
+}

@@ -136,3 +136,7 @@ export type InitResponse = {
 	creatorId: string
 	tableCardIds: number[]
 }
+
+export type LeftResponse = {
+	playerId: string
+}
