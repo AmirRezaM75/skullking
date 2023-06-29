@@ -115,3 +115,24 @@ export type Countdown = {
 	id: number;
 	audio: HTMLAudioElement;
 };
+
+export type PlayerResponse = {
+	id: string
+	username: string
+	avatar: string
+	score: number
+	bid: number
+	handCardIds: number[]
+	pickableCardIds: number[]
+}
+
+export type InitResponse = {
+	round: number
+	trick: number
+	state: GameState
+	expirationTime: number
+	pickingUserId: string
+	players: PlayerResponse[]
+	creatorId: string
+	tableCardIds: number[]
+}

@@ -158,25 +158,25 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if _, exists := game.Players[user.Id.Hex()]; exists {
 		player = game.Players[user.Id.Hex()]
 		player.Connection = connection
+		player.Message = make(chan *models.ServerMessage, 10)
 		game.Initialize(gameHandler.hub, player.Id)
-		return
+	} else {
+		player = &models.Player{
+			Id:         user.Id.Hex(),
+			Username:   user.Username,
+			GameId:     gameId,
+			Avatar:     game.GetAvailableAvatar(),
+			Connection: connection,
+			Message:    make(chan *models.ServerMessage, 10),
+			Index:      int(time.Now().UnixMilli()),
+		}
+
+		gameHandler.hub.Subscribe(player)
+
+		game.Initialize(gameHandler.hub, player.Id)
+
+		game.Join(gameHandler.hub, player)
 	}
-
-	player = &models.Player{
-		Id:         user.Id.Hex(),
-		Username:   user.Username,
-		GameId:     gameId,
-		Avatar:     game.GetAvailableAvatar(),
-		Connection: connection,
-		Message:    make(chan *models.ServerMessage, 10),
-		Index:      int(time.Now().UnixMilli()),
-	}
-
-	gameHandler.hub.Subscribe(player)
-
-	game.Initialize(gameHandler.hub, player.Id)
-
-	game.Join(gameHandler.hub, player)
 
 	go player.Write()
 

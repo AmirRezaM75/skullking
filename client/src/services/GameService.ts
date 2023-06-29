@@ -11,7 +11,9 @@ import type {
 	NextTrickResponse,
 	ReportErrorResponse,
 	AnnounceScoresResponse,
-	Table
+	Table,
+	InitResponse,
+	PlayerResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -170,15 +172,56 @@ class GameService {
 		}
 	}
 
-	init(content: any) {
+	init(content: InitResponse) {
+		this.round = content.round;
+		this.trick = content.trick;
 		this.state = content.state;
+
+		if (content.tableCardIds) {
+			content.tableCardIds.forEach((cardId) => {
+				const card = this.cardService.findById(cardId);
+				if (card) {
+					this.table.cards.push(card);
+					// TODO: announceTrickWinner has not been implemented
+				}
+			});
+		}
 
 		content.players.forEach((player) => {
 			this.addPlayer(player);
-			if (player.dealtCards) {
-				this.cards = player.dealtCards;
+
+			if (player.handCardIds && player.id == this.authId) {
+				player.handCardIds.forEach((cardId) => {
+					const card = this.cardService.findById(cardId);
+					if (card) {
+						this.cards.push(card);
+					}
+				});
 			}
 		});
+
+		if (content.state === GameState.Bidding) {
+			this.startBidding({
+				endsAt: content.expirationTime,
+				state: content.state
+			});
+
+			const player = content.players.find((player) => player.id === this.authId);
+			if (player) {
+				this.bid = player.bid;
+			}
+		}
+
+		if (content.state === GameState.Picking) {
+			const player = content.players.find((player) => player.id === this.authId);
+
+			this.startPicking({
+				state: content.state,
+				endsAt: content.expirationTime,
+				playerId: content.pickingUserId,
+				cardIds: player ? player.pickableCardIds ?? [] : []
+			});
+		}
 
 		const creator = this.findPlayerById(content.creatorId);
 
@@ -190,7 +233,7 @@ class GameService {
 		}
 	}
 
-	joined(content: any) {
+	joined(content: PlayerResponse) {
 		this.addPlayer(content);
 	}
 
@@ -293,8 +336,8 @@ class GameService {
 				this.countdownColor = player.id === this.authId ? 'blue' : 'red';
 
 				if (player.id === this.authId) {
-					const audio = new Audio('/sounds/startPicking.mp3')
-					audio.play()
+					const audio = new Audio('/sounds/startPicking.mp3');
+					audio.play();
 
 					this.cards.forEach((card) => {
 						if (!content.cardIds.includes(card.id)) {
@@ -308,7 +351,6 @@ class GameService {
 	}
 
 	picked(content: PickedResponse) {
-
 		this.cards.forEach((card) => {
 			card.disabled = false;
 		});
@@ -371,7 +413,7 @@ class GameService {
 		alert(content.message);
 	}
 
-	addPlayer(player: any) {
+	addPlayer(player: PlayerResponse) {
 		// When user joins a game, it receives "INIT" and "JOINED" commands
 		// at the same time, to avoid inserting auth user data twice
 		// we need to check if user id is already exists or exclude
@@ -385,8 +427,8 @@ class GameService {
 			id: player.id,
 			username: player.username,
 			picking: false,
-			bid: 0, // TODO: Get from server
-			score: 0 // TODO: Get from server
+			bid: player.bid,
+			score: player.score
 		};
 
 		this.players.push(p);
@@ -410,7 +452,7 @@ class GameService {
 
 	findPickingPlayerId(): string {
 		if (this.state !== GameState.Picking) {
-			return ''
+			return '';
 		}
 
 		for (let i = 0; i < this.players.length; i++) {

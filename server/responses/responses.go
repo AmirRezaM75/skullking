@@ -86,8 +86,23 @@ type CreateGame struct {
 	Id string `json:"id"`
 }
 
-type Joined struct {
-	Id       string `json:"id"`
-	Username string `json:"username"`
-	Avatar   string `json:"avatar"`
+type Player struct {
+	Id              string   `json:"id"`
+	Username        string   `json:"username"`
+	Avatar          string   `json:"avatar"`
+	Score           int      `json:"score"`
+	Bid             int      `json:"bid"`
+	HandCardIds     []uint16 `json:"handCardIds"`
+	PickableCardIds []uint16 `json:"pickableCardIds"`
+}
+
+type Init struct {
+	Round          int      `json:"round"`
+	Trick          int      `json:"trick"`
+	State          string   `json:"state"`
+	ExpirationTime int64    `json:"expirationTime"`
+	PickingUserId  string   `json:"pickingUserId"`
+	Players        []Player `json:"players"`
+	CreatorId      string   `json:"creatorId"`
+	TableCardIds   []uint16 `json:"tableCardIds"`
 }

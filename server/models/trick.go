@@ -28,13 +28,14 @@ func (trick Trick) isPlayerPicked(playerId string) bool {
 	return false
 }
 
-func (trick Trick) getPickedCardByPlayerId(playerId string) *PickedCard {
+func (trick Trick) getAllPickedIntCardIds() []uint16 {
+	var ids []uint16
+
 	for _, pickedCard := range trick.PickedCards {
-		if playerId == pickedCard.PlayerId {
-			return &pickedCard
-		}
+		ids = append(ids, uint16(pickedCard.CardId))
 	}
-	return nil
+
+	return ids
 }
 
 func (trick Trick) getAllPickedCardIds() []CardId {

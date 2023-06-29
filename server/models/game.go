@@ -16,7 +16,7 @@ type Game struct {
 	Round          int
 	Trick          int
 	State          string
-	ExpirationTime int
+	ExpirationTime int64
 	Players        map[string]*Player
 	Rounds         [constants.MaxRounds]*Round
 	CreatorId      string
@@ -174,17 +174,21 @@ func (game *Game) startBidding(hub *Hub) {
 
 	game.State = constants.StateBidding
 
+	content := responses.StartBidding{
+		EndsAt: time.Now().Add(duration).Unix(),
+		State:  game.State,
+		Round:  game.Round,
+	}
+
 	m := &ServerMessage{
-		Content: responses.StartBidding{
-			EndsAt: time.Now().Add(duration).Unix(),
-			State:  game.State,
-			Round:  game.Round,
-		},
+		Content: content,
 		Command: constants.CommandStartBidding,
 		GameId:  game.Id,
 	}
 
 	hub.Dispatch <- m
+
+	game.ExpirationTime = content.EndsAt
 
 	timer := time.NewTimer(duration)
 
@@ -195,6 +199,7 @@ func (game *Game) startBidding(hub *Hub) {
 }
 
 func (game *Game) endBidding(hub *Hub) {
+	game.ExpirationTime = 0
 	game.State = "" // TODO: Better name!?
 
 	var bids []responses.Bid
@@ -238,7 +243,7 @@ func (game *Game) startPicking(hub *Hub) {
 
 	for _, player := range game.Players {
 		if pickerId == player.Id {
-			content.CardIds = game.getAvailableCardIdsForPlayerId(pickerId)
+			content.CardIds = game.getPickableIntCardIds(pickerId)
 		}
 
 		m := &ServerMessage{
@@ -250,6 +255,8 @@ func (game *Game) startPicking(hub *Hub) {
 
 		hub.Dispatch <- m
 	}
+
+	game.ExpirationTime = content.EndsAt
 
 	var trick = game.getCurrentTrick()
 
@@ -285,9 +292,9 @@ func (game *Game) stopPicking(hub *Hub, playerId string, trick *Trick) {
 	}
 }
 
-func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []uint16 {
-	var availableCardIds []uint16
-	remainingCardIds := game.getRemainingCardIdsForPlayerId(playerId)
+func (game *Game) getPickableIntCardIds(playerId string) []uint16 {
+	var cardIds []uint16
+	remainingCardIds := game.getCurrentRound().getRemainingCardIds(playerId)
 
 	var trick = game.getCurrentTrick()
 
@@ -299,13 +306,15 @@ func (game *Game) getAvailableCardIdsForPlayerId(playerId string) []uint16 {
 	pickableCardIds := hand.pickables(table)
 
 	for _, pickableCardId := range pickableCardIds {
-		availableCardIds = append(availableCardIds, uint16(pickableCardId))
+		cardIds = append(cardIds, uint16(pickableCardId))
 	}
 
-	return availableCardIds
+	return cardIds
 }
 
 func (game *Game) endPicking(hub *Hub) {
+	game.ExpirationTime = 0
+
 	if game.isTrickOver() {
 		game.announceTrickWinner(hub)
 		game.nextTrick(hub)
@@ -424,7 +433,7 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 		return
 	}
 
-	availableCardIds := game.getAvailableCardIdsForPlayerId(pickerId)
+	availableCardIds := game.getPickableIntCardIds(pickerId)
 
 	pickedCard := PickedCard{
 		PlayerId: pickerId,
@@ -446,73 +455,35 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	hub.Dispatch <- m
 }
 
-func (game *Game) getRemainingCardIdsForPlayerId(playerId string) []CardId {
-	var remainingCardIds []CardId
-	var round = game.getCurrentRound()
-	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
-
-outerLoop:
-	for _, dealtCardId := range round.DealtCards[playerId] {
-		for _, pickedCardId := range pickedCardIds {
-			if pickedCardId == dealtCardId {
-				continue outerLoop
-			}
-		}
-		remainingCardIds = append(remainingCardIds, dealtCardId)
-	}
-
-	return remainingCardIds
-}
-
 func (game *Game) Initialize(hub *Hub, receiverId string) {
-
-	type Player struct {
-		Id           string   `json:"id"`
-		Username     string   `json:"username"`
-		Avatar       string   `json:"avatar"`
-		Score        int      `json:"score"`
-		Bids         int      `json:"bids"`
-		PickedCardId CardId   `json:"pickedCardId"`
-		DealtCards   []CardId `json:"dealtCards"`
-	}
-
-	var players []Player
+	var players []responses.Player
 
 	for _, player := range game.getPlayers() {
-		var p Player
+		var p responses.Player
 
 		p.Id = player.Id
 		p.Username = player.Username
 		p.Avatar = player.Avatar
+		p.Score = player.Score
 
 		if game.Round != 0 {
 			var round = game.getCurrentRound()
-			var trick = game.getCurrentTrick()
-			pickedCard := trick.getPickedCardByPlayerId(player.Id)
-			if pickedCard != nil {
-				p.PickedCardId = pickedCard.CardId
-			}
 
-			p.Bids = round.Bids[player.Id]
+			if player.Id == receiverId || game.State != constants.StateBidding {
+				p.Bid = round.Bids[player.Id]
+			}
 
 			// Receiver must not be aware of other cards
 			if player.Id == receiverId {
-				p.DealtCards = round.DealtCards[player.Id]
+				p.HandCardIds = round.getRemainingIntCardIds(player.Id)
+				p.PickableCardIds = game.getPickableIntCardIds(receiverId)
 			}
 		}
 
 		players = append(players, p)
 	}
 
-	content := struct {
-		Round          int      `json:"round"`
-		Trick          int      `json:"trick"`
-		State          string   `json:"state"`
-		ExpirationTime int      `json:"expirationTime"`
-		PickingUserId  string   `json:"pickingUserId"`
-		Players        []Player `json:"players"`
-		CreatorId      string   `json:"creatorId"`
-	}{
+	content := responses.Init{
 		Round:          game.Round,
 		Trick:          game.Trick,
 		State:          game.State,
@@ -523,8 +494,8 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 
 	if game.Round != 0 {
 		var trick = game.getCurrentTrick()
-
 		content.PickingUserId = trick.PickingUserId
+		content.TableCardIds = trick.getAllPickedIntCardIds()
 	}
 
 	m := &ServerMessage{
@@ -548,7 +519,7 @@ func (game *Game) validateUserPickedCard(pickedCardId uint16, playerId string) e
 		return errors.New("it's not your turn to pick a card")
 	}
 
-	cardIds := game.getAvailableCardIdsForPlayerId(playerId)
+	cardIds := game.getPickableIntCardIds(playerId)
 
 	var exists = false
 	for _, cardId := range cardIds {
@@ -644,7 +615,7 @@ func (game *Game) Bid(hub *Hub, playerId string, number int) {
 func (game *Game) Join(hub *Hub, player *Player) {
 	m := &ServerMessage{
 		Command: constants.CommandJoined,
-		Content: responses.Joined{
+		Content: responses.Player{
 			Id:       player.Id,
 			Username: player.Username,
 			Avatar:   player.Avatar,

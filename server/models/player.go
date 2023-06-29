@@ -39,6 +39,7 @@ func (player *Player) Read(hub *Hub) {
 	defer func() {
 		hub.Unsubscribe(player)
 		_ = player.Connection.Close()
+		close(player.Message)
 	}()
 
 	var message ClientMessage

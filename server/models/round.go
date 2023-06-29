@@ -86,3 +86,39 @@ func (round Round) getBonusPointByPlayerId(playerId string) int {
 
 	return bonus
 }
+
+func (round Round) getRemainingCardIds(playerId string) []CardId {
+	var remainingCardIds []CardId
+
+	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
+
+outerLoop:
+	for _, dealtCardId := range round.DealtCards[playerId] {
+		for _, pickedCardId := range pickedCardIds {
+			if pickedCardId == dealtCardId {
+				continue outerLoop
+			}
+		}
+		remainingCardIds = append(remainingCardIds, dealtCardId)
+	}
+
+	return remainingCardIds
+}
+
+func (round Round) getRemainingIntCardIds(playerId string) []uint16 {
+	var remainingCardIds []uint16
+
+	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
+
+outerLoop:
+	for _, dealtCardId := range round.DealtCards[playerId] {
+		for _, pickedCardId := range pickedCardIds {
+			if pickedCardId == dealtCardId {
+				continue outerLoop
+			}
+		}
+		remainingCardIds = append(remainingCardIds, uint16(dealtCardId))
+	}
+
+	return remainingCardIds
+}

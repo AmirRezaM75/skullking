@@ -94,9 +94,13 @@
 	}
 
 	ws.onmessage = async function (e) {
-		let message = JSON.parse(e.data);
-		queue.push(message);
-		await run();
+		try {
+			let message = JSON.parse(e.data);
+			queue.push(message);
+			await run();
+		} catch (error) {
+			// If responses is empty or malformed we don't want to stop executing
+		}
 	};
 
 	async function run() {
