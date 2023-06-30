@@ -119,7 +119,7 @@ func (service UserService) MarkEmailAsVerified(userId string) {
 }
 
 func (service UserService) SendResetLink(email string) error {
-	templateFile, err := template.ParseFiles("app/resources/views/email/reset-password-notification.html")
+	templateFile, err := template.ParseFiles("resources/views/email/reset-password-notification.html")
 
 	if err != nil {
 		return errors.New("can't parse reset password notification file")
@@ -186,6 +186,7 @@ func (service UserService) SendResetLink(email string) error {
 	err = mail.Send()
 
 	if err != nil {
+		fmt.Println("SendResetLink: ", err)
 		return errors.New("could not send reset password notification")
 	}
 
