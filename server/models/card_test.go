@@ -179,3 +179,19 @@ func TestSkullKingWinsJollyRoger(t *testing.T) {
 		t.Errorf("Wrong winner card.")
 	}
 }
+
+func TestMermaidWinsJollyRoger(t *testing.T) {
+	CardIds := []CardId{Roger1, Mermaid1}
+	cardId := winner(CardIds)
+	if Mermaid1 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
+func TestMermaidWinsJollyRoger2(t *testing.T) {
+	CardIds := []CardId{Mermaid1, Roger1}
+	cardId := winner(CardIds)
+	if Mermaid1 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}

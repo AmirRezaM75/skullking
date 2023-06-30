@@ -585,28 +585,28 @@ func winner(cardIds []CardId) CardId {
 				lead = card
 			}
 
-			if (card.isParrot() || card.isMap() || card.isChest()) &&
-				lead.isEscape() {
+			if card.isStandardSuit() && lead.isEscape() {
 				lead = card
 			}
 
-			if (card.isRoger() || card.isMermaid() || card.isPirate() || card.isKing()) &&
-				(lead.isStandardSuit() || lead.isEscape()) {
+			if card.isRoger() && (lead.isStandardSuit() || lead.isEscape()) {
 				lead = card
 			}
 
-			if card.isPirate() &&
-				(lead.isRoger() || lead.isMermaid()) {
+			if card.isCharacter() &&
+				(lead.isSuit() || lead.isEscape()) {
 				lead = card
 			}
 
-			if card.isKing() &&
-				(lead.isPirate() || lead.isRoger()) {
+			if card.isPirate() && lead.isMermaid() {
 				lead = card
 			}
 
-			if card.isMermaid() &&
-				lead.isKing() {
+			if card.isKing() && lead.isPirate() {
+				lead = card
+			}
+
+			if card.isMermaid() && lead.isKing() {
 				lead = card
 			}
 		}
