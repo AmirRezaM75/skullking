@@ -3,10 +3,10 @@ version: "3.8"
 services:
   app:
     container_name: sk-app
-    image: skull-king
+    image: sk-app
     build:
       context: .
-      dockerfile: ./docker/development/Dockerfile
+      dockerfile: ./docker/production/Dockerfile
     volumes:
       - .:/app
     ports:
@@ -22,12 +22,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-  mailhog:
-    container_name: sk-mailhog
-    image: mailhog/mailhog
-    ports:
-      - '${MAILHOG_PORT:-1025}:1025'
-      - '${MAILHOG_DASHBOARD_PORT:-8025}:8025'
   redis:
     container_name: sk-redis
     image: redis:alpine
