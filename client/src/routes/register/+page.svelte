@@ -10,8 +10,11 @@
 	let email: string = '';
 	let password: string = '';
 	let errors = new ServerValidationError();
+	let loading = false;
 
 	async function register() {
+		loading = true
+		
 		const apiService = new ApiService();
 		const response = await apiService.register(username, email, password);
 
@@ -38,6 +41,8 @@
 
 			window.location.href = '/verify-email';
 		}
+
+		loading = false
 	}
 
 	function clearError(event: Event) {
@@ -101,7 +106,12 @@
 				{/if}
 			</div>
 
-			<button type="submit" class="btn">Join the crew</button>
+			<button type="submit" class="btn">
+				{#if loading}
+					<span class="circle-loader mr-2" />
+				{/if}
+				Join the crew
+			</button>
 
 			<a href="/login" class="text-blue-400 inline-block mt-3">Already have an account?</a>
 		</form>
