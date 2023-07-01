@@ -53,7 +53,7 @@ func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (router *Router) handle(path, method string, handler http.HandlerFunc) *Route {
 	r := regexp.MustCompile(`:(\w+)`)
-	path = r.ReplaceAllString(path, "(?P<$1>(?:=|\\w)+)")
+	path = r.ReplaceAllString(path, "(?P<$1>(?:\\w|-)+)")
 
 	route := &Route{
 		path:    path,
