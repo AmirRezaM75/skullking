@@ -68,6 +68,7 @@
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
 	<div class="w-80 max-w-lg">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Login</h1>
+
 		<form on:submit={login} on:keydown={clearError}>
 			<div class="mb-3">
 				<label for="username">Username</label>
@@ -104,7 +105,11 @@
 
 			<button type="submit" class="btn">Login</button>
 
-			<a href="/forgot-password" class="text-gray-200 inline-block mt-3">Forgot your password?</a>
+			<a href="/register" class="text-blue-400 hover:text-blue-300 block mt-3">Not registered?</a>
+
+			<a href="/forgot-password" class="text-blue-400 hover:text-blue-300 inline-block">
+				Forgot your password?
+			</a>
 		</form>
 	</div>
 </div>

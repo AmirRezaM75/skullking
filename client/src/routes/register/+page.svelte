@@ -102,6 +102,8 @@
 			</div>
 
 			<button type="submit" class="btn">Join the crew</button>
+
+			<a href="/login" class="text-blue-400 inline-block mt-3">Already have an account?</a>
 		</form>
 	</div>
 </div>
