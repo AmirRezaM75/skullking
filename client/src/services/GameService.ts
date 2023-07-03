@@ -157,6 +157,15 @@ class GameService {
 			audio.play();
 		}
 
+		if (GameCommand.Init === command) {
+			setTimeout(() => {
+				deckSwiper.init();
+				deckSwiper.update();
+				tableSwiper.init();
+				tableSwiper.update();
+			}, 500);
+		}
+
 		if (GameCommand.AnnounceTrickWinner === command) {
 			const winnerCardIndex = this.table.cards.findIndex((card) => card.isWinner);
 
