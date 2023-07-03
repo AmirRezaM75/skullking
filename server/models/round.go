@@ -122,3 +122,15 @@ outerLoop:
 
 	return remainingCardIds
 }
+
+func (round Round) getWonTricksCount(playerId string) uint {
+	var count uint
+
+	for _, trick := range round.Tricks {
+		if trick.WinnerPlayerId == playerId {
+			count += 1
+		}
+	}
+
+	return count
+}

@@ -286,6 +286,11 @@ class GameService {
 				this.cards.push(card);
 			}
 		});
+
+		this.players.forEach(player => {
+			player.wonTricksCount = 0
+			player.bid = 0
+		})
 	}
 
 	startBidding(content: StartBiddingResponse) {
@@ -352,6 +357,11 @@ class GameService {
 	}
 
 	picked(content: PickedResponse) {
+		this.players.forEach((player) => {
+			player.picking = false;
+		});
+		this.notifierMessage = ''
+
 		this.cards.forEach((card) => {
 			card.disabled = false;
 		});
@@ -379,10 +389,6 @@ class GameService {
 	}
 
 	announceTrickWinner(content: AnnounceTrickWinnerResponse) {
-		this.players.forEach((player) => {
-			player.picking = false;
-		});
-
 		// We need to reset is_winner which is set from previous announcing
 		this.table.cards.forEach((card) => {
 			card.isWinner = false;
@@ -401,6 +407,7 @@ class GameService {
 
 			this.players.forEach((player) => {
 				if (player.id === content.playerId) {
+					player.wonTricksCount++
 					this.notifierMessage = `${player.username} Won the trick.`;
 				}
 			});
@@ -429,7 +436,8 @@ class GameService {
 			username: player.username,
 			picking: false,
 			bid: player.bid,
-			score: player.score
+			score: player.score,
+			wonTricksCount: player.wonTricksCount
 		};
 
 		this.players.push(p);

@@ -43,6 +43,7 @@ export type Player = {
 	score: number;
 	picking: boolean;
 	bid: number;
+	wonTricksCount: number;
 };
 
 export type DealResponse = {
@@ -124,6 +125,7 @@ export type PlayerResponse = {
 	bid: number
 	handCardIds: number[]
 	pickableCardIds: number[]
+	wonTricksCount: number
 }
 
 export type InitResponse = {

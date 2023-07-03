@@ -94,6 +94,7 @@ type Player struct {
 	Bid             int      `json:"bid"`
 	HandCardIds     []uint16 `json:"handCardIds"`
 	PickableCardIds []uint16 `json:"pickableCardIds"`
+	WonTricksCount  uint     `json:"wonTricksCount"`
 }
 
 type Init struct {

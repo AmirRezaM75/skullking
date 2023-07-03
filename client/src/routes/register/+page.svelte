@@ -113,7 +113,7 @@
 				Join the crew
 			</button>
 
-			<a href="/login" class="text-blue-400 inline-block mt-3">Already have an account?</a>
+			<a href="/login" class="text-blue-400 hover:text-blue-300 inline-block mt-3">Already have an account?</a>
 		</form>
 	</div>
 </div>

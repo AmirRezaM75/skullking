@@ -469,6 +469,8 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		if game.Round != 0 {
 			var round = game.getCurrentRound()
 
+			p.WonTricksCount = round.getWonTricksCount(player.Id)
+
 			if player.Id == receiverId || game.State != constants.StateBidding {
 				p.Bid = round.Bids[player.Id]
 			}
