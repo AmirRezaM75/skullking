@@ -159,16 +159,18 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		player = game.Players[user.Id.Hex()]
 		player.Connection = connection
 		player.Message = make(chan *models.ServerMessage, 10)
+		player.IsConnected = true
 		game.Initialize(gameHandler.hub, player.Id)
 	} else {
 		player = &models.Player{
-			Id:         user.Id.Hex(),
-			Username:   user.Username,
-			GameId:     gameId,
-			Avatar:     game.GetAvailableAvatar(),
-			Connection: connection,
-			Message:    make(chan *models.ServerMessage, 10),
-			Index:      int(time.Now().UnixMilli()),
+			Id:          user.Id.Hex(),
+			Username:    user.Username,
+			GameId:      gameId,
+			Avatar:      game.GetAvailableAvatar(),
+			Connection:  connection,
+			Message:     make(chan *models.ServerMessage, 10),
+			Index:       int(time.Now().UnixMilli()),
+			IsConnected: true,
 		}
 
 		gameHandler.hub.Subscribe(player)

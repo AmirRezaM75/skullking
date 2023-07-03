@@ -17,11 +17,26 @@ type Player struct {
 	Index      int
 	Connection *websocket.Conn
 	Message    chan *ServerMessage
+	// To determine whether a player is currently participating in the game or has left,
+	// it can be useful to check whether their corresponding channel is open or closed.
+	IsConnected bool
+}
+
+func (player *Player) disconnect() {
+	if player.IsConnected {
+		_ = player.Connection.Close()
+		player.IsConnected = false
+		// to avoid close of closed channel panic
+		// first we need to check if channel is open or not
+		if _, ok := <-player.Message; ok {
+			close(player.Message)
+		}
+	}
 }
 
 func (player *Player) Write() {
 	defer func() {
-		_ = player.Connection.Close()
+		player.disconnect()
 	}()
 
 	for {
@@ -37,9 +52,8 @@ func (player *Player) Write() {
 
 func (player *Player) Read(hub *Hub) {
 	defer func() {
+		player.disconnect()
 		hub.Unsubscribe(player)
-		_ = player.Connection.Close()
-		close(player.Message)
 	}()
 
 	var message ClientMessage

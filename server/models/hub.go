@@ -34,13 +34,16 @@ func (h *Hub) Run() {
 				// If there is no specific receiver broadcast it to all players
 				if message.ReceiverId == "" {
 					for _, player := range game.Players {
-						if message.ExcludedId != player.Id {
+						if message.ExcludedId != player.Id && player.IsConnected {
 							player.Message <- message
 						}
 					}
 				} else {
 					if _, ok = game.Players[message.ReceiverId]; ok {
-						game.Players[message.ReceiverId].Message <- message
+						var p = game.Players[message.ReceiverId]
+						if p.IsConnected {
+							p.Message <- message
+						}
 					}
 				}
 			}
