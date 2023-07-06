@@ -36,28 +36,22 @@ the Seven Seas!
 
 # Rules
 
-Special cards allow you to break the rules governing
-numbered cards
+- If multiple pirates are played in a trick, the first player who plays one wins it.
 
-If multiple pirates are played in a trick, the first player who plays one wins it
-
-In the rare event that each player plays
-an escape card, Tigress as an escape, or a loot card, in the
+- In the rare event that each player plays an escape card in the
 same trick; the first card played wins the trick.
 
-If a Pirate, the Skull King, and a Mermaid are all played in the same trick,
+- If a Pirate, the Skull King, and a Mermaid are all played in the same trick,
 the Mermaid always wins the trick, regardless of order of play.
 
-When you lead a trick, you may choose to play either a suit card or a special card.
+- The next trick is led by the player who would have won the trick.
 
-The next trick is led by the player who would have won the trick.
-
-The player to the left of the current round's starting player becomes the starting player for the next round.
+- The player to the left of the current round's starting player becomes the starting player for the next round.
 
 ## When a suit card is led
 
 If a suit card is played first in a trick (lead), all players must
-‘follow suit’ and play that same suit (if they are going to
+‘follow suit’and play that same suit (if they are going to
 play a numbered card). If you don’t have the suit that was
 lead, you may play any other suit.
 
