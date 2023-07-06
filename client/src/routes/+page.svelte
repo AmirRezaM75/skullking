@@ -19,7 +19,12 @@
 </script>
 
 <svelte:head>
-	<title>Skull King</title>
+	<title>Skull King Online</title>
+	<meta
+		name="description"
+		content="Play Skull King online for free! Join the fun with this fast-paced card game that's perfect for game night with friends and family."
+	/>
+	<meta name="keywords" content="skull king, SkullKing, skull king online"/>
 </svelte:head>
 
 <div class="background">
@@ -29,7 +34,12 @@
 			<h1 class="title-primary">Skull King</h1>
 			<div class="mt-10">
 				{#if data.action == 'play'}
-					<button type="button" on:click={createGame} class="btn-secondary" class:cursor-wait={loading}>
+					<button
+						type="button"
+						on:click={createGame}
+						class="btn-secondary"
+						class:cursor-wait={loading}
+					>
 						{#if loading}
 							<span class="circle-loader mr-2" />
 						{/if}
