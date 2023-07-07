@@ -1,5 +1,7 @@
 package models
 
+import "github.com/AmirRezaM75/skull-king/responses"
+
 type Trick struct {
 	Number int
 	// This is useful to find out who is eligible when receiving 'PICK' command.
@@ -28,14 +30,17 @@ func (trick Trick) isPlayerPicked(playerId string) bool {
 	return false
 }
 
-func (trick Trick) getAllPickedIntCardIds() []uint16 {
-	var ids []uint16
+func (trick Trick) getAllPickedCards() []responses.TableCard {
+	var tableCards []responses.TableCard
 
 	for _, pickedCard := range trick.PickedCards {
-		ids = append(ids, uint16(pickedCard.CardId))
+		tableCards = append(tableCards, responses.TableCard{
+			PlayerId: pickedCard.PlayerId,
+			CardId:   uint16(pickedCard.CardId),
+		})
 	}
 
-	return ids
+	return tableCards
 }
 
 func (trick Trick) getAllPickedCardIds() []CardId {

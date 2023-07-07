@@ -129,6 +129,11 @@ export type PlayerResponse = {
 	wonTricksCount: number;
 };
 
+export type TableCardResponse = {
+	playerId: string;
+	cardId: number;
+}
+
 export type InitResponse = {
 	round: number;
 	trick: number;
@@ -137,7 +142,7 @@ export type InitResponse = {
 	pickingUserId: string;
 	players: PlayerResponse[];
 	creatorId: string;
-	tableCardIds: number[];
+	tableCards: TableCardResponse[];
 };
 
 export type LeftResponse = {

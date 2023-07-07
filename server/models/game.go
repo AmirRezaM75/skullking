@@ -497,7 +497,7 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 	if game.Round != 0 {
 		var trick = game.getCurrentTrick()
 		content.PickingUserId = trick.PickingUserId
-		content.TableCardIds = trick.getAllPickedIntCardIds()
+		content.TableCards = trick.getAllPickedCards()
 	}
 
 	m := &ServerMessage{

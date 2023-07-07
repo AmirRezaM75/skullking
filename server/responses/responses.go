@@ -97,15 +97,20 @@ type Player struct {
 	WonTricksCount  uint     `json:"wonTricksCount"`
 }
 
+type TableCard struct {
+	PlayerId string `json:"playerId"`
+	CardId   uint16 `json:"cardId"`
+}
+
 type Init struct {
-	Round          int      `json:"round"`
-	Trick          int      `json:"trick"`
-	State          string   `json:"state"`
-	ExpirationTime int64    `json:"expirationTime"`
-	PickingUserId  string   `json:"pickingUserId"`
-	Players        []Player `json:"players"`
-	CreatorId      string   `json:"creatorId"`
-	TableCardIds   []uint16 `json:"tableCardIds"`
+	Round          int         `json:"round"`
+	Trick          int         `json:"trick"`
+	State          string      `json:"state"`
+	ExpirationTime int64       `json:"expirationTime"`
+	PickingUserId  string      `json:"pickingUserId"`
+	Players        []Player    `json:"players"`
+	CreatorId      string      `json:"creatorId"`
+	TableCards     []TableCard `json:"tableCards"`
 }
 
 type Left struct {

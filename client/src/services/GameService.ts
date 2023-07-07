@@ -159,10 +159,17 @@ class GameService {
 
 		if (GameCommand.Init === command) {
 			setTimeout(() => {
-				deckSwiper.init();
-				deckSwiper.update();
-				tableSwiper.init();
-				tableSwiper.update();
+				// First we need to check if is there any cards in deck and table to avoid following error
+				// swiper.el.querySelectorAll is not a function or its return value is not iterable
+				if (this.table.cards.length !== 0) {
+					tableSwiper.init();
+					tableSwiper.update();
+				}
+
+				if (this.cards.length !== 0) {
+					deckSwiper.init();
+					deckSwiper.update();
+				}
 			}, 500);
 		}
 
@@ -187,10 +194,13 @@ class GameService {
 		this.trick = content.trick;
 		this.state = content.state;
 
-		if (content.tableCardIds) {
-			content.tableCardIds.forEach((cardId) => {
-				const card = this.cardService.findById(cardId);
+		if (content.tableCards) {
+			content.tableCards.forEach((tableCard) => {
+				const card = this.cardService.findById(tableCard.cardId);
+				const player = content.players.find((player) => player.id === tableCard.playerId);
+
 				if (card) {
+					card.ownerUsername = player ? player.username : ''
 					this.table.cards.push(card);
 					// TODO: announceTrickWinner has not been implemented
 				}
