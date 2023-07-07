@@ -368,7 +368,7 @@ form {
 .table-container,
 .cards-container {
     .card {
-        @apply bg-cover cursor-pointer rounded-2xl border-4 mr-2;
+        @apply bg-cover cursor-pointer rounded-2xl border-4 mr-2 overflow-hidden;
         // @apply mx-2;
         width: 170px;
         height: $cardHeight;
@@ -381,7 +381,7 @@ form {
         } */
 
         .number {
-            @apply flex items-center justify-center font-bold text-xl w-9 h-9 mt-2 ml-2;
+            @apply flex items-center justify-center font-bold text-xl w-9 h-9 mt-2 ml-2 absolute top-0;
             border-radius: 40%;
         }
 
@@ -397,22 +397,23 @@ form {
     }
 }
 
-.table-container.has-winner {
-    .card.winner {
-        transform: rotate(360deg);
+.table-container {
+    &.has-winner {
+        .card.winner {
+            transform: rotate(360deg);
+        }
+        .card:not(.winner) {
+            filter: grayscale(1);
+            transform: scale(0.9);
+        }
     }
-    .card:not(.winner) {
-        filter: grayscale(1);
-        transform: scale(.9);
+    .card {
+        .card-owner {
+            @apply w-full absolute bottom-0 left-0 text-center;
+        }
     }
 }
 
-/* .table-container .card {
-    margin: 0; // Handles with flex gap
-    width: 120px;
-    height: 160px;
-}
- */
 .bids-container {
     @apply flex flex-wrap justify-center items-center gap-3 mt-16;
 

@@ -40,7 +40,7 @@ class CardService {
 			case CardType.Roger:
 				return 'border-black';
 			default:
-				return '';
+				return 'border-white';
 		}
 	}
 
@@ -58,7 +58,7 @@ class CardService {
 			case CardType.Roger:
 				return 'bg-black';
 			default:
-				return '';
+				return 'bg-white';
 		}
 	}
 

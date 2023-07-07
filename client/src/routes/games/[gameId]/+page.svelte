@@ -261,6 +261,7 @@
 					<div class="swiper-wrapper">
 						{#each game.table.cards as card}
 							<Card
+								showCardOwner={true}
 								{card}
 								delay={0}
 								class="picked-card-animation swiper-slide {card.isWinner ? 'winner' : ''}"

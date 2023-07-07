@@ -296,10 +296,10 @@ class GameService {
 			}
 		});
 
-		this.players.forEach(player => {
-			player.wonTricksCount = 0
-			player.bid = 0
-		})
+		this.players.forEach((player) => {
+			player.wonTricksCount = 0;
+			player.bid = 0;
+		});
 	}
 
 	startBidding(content: StartBiddingResponse) {
@@ -369,7 +369,7 @@ class GameService {
 		this.players.forEach((player) => {
 			player.picking = false;
 		});
-		this.notifierMessage = ''
+		this.notifierMessage = '';
 
 		this.cards.forEach((card) => {
 			card.disabled = false;
@@ -383,7 +383,10 @@ class GameService {
 		}
 
 		const card = this.cardService.findById(content.cardId);
+		const player = this.findPlayerById(content.playerId);
+
 		if (card) {
+			card.ownerUsername = player ? player.username : ''
 			this.table.cards.push(card);
 		}
 
@@ -416,7 +419,7 @@ class GameService {
 
 			this.players.forEach((player) => {
 				if (player.id === content.playerId) {
-					player.wonTricksCount++
+					player.wonTricksCount++;
 					this.notifierMessage = `${player.username} Won the trick.`;
 				}
 			});

@@ -54,7 +54,7 @@ export type DealResponse = {
 };
 
 export type PickedResponse = {
-	playerId: number;
+	playerId: string;
 	cardId: number;
 };
 
@@ -85,6 +85,7 @@ export type Card = {
 	imageURL: string;
 	isWinner: boolean;
 	disabled: boolean;
+	ownerUsername: string;
 };
 
 export type Table = {
@@ -118,27 +119,27 @@ export type Countdown = {
 };
 
 export type PlayerResponse = {
-	id: string
-	username: string
-	avatar: string
-	score: number
-	bid: number
-	handCardIds: number[]
-	pickableCardIds: number[]
-	wonTricksCount: number
-}
+	id: string;
+	username: string;
+	avatar: string;
+	score: number;
+	bid: number;
+	handCardIds: number[];
+	pickableCardIds: number[];
+	wonTricksCount: number;
+};
 
 export type InitResponse = {
-	round: number
-	trick: number
-	state: GameState
-	expirationTime: number
-	pickingUserId: string
-	players: PlayerResponse[]
-	creatorId: string
-	tableCardIds: number[]
-}
+	round: number;
+	trick: number;
+	state: GameState;
+	expirationTime: number;
+	pickingUserId: string;
+	players: PlayerResponse[];
+	creatorId: string;
+	tableCardIds: number[];
+};
 
 export type LeftResponse = {
-	playerId: string
-}
+	playerId: string;
+};
