@@ -3,7 +3,7 @@ package responses
 // @link https://github.com/golang/go/issues/44692
 // I can't use uint8 for cardId. This is due to byte being an alias for uint8
 
-type DealResponse struct {
+type Deal struct {
 	Round int      `json:"round"`
 	Trick int      `json:"trick"`
 	Cards []uint16 `json:"cards"`

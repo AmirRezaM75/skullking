@@ -149,7 +149,7 @@ func (game *Game) NextRound(hub *Hub) {
 	game.Rounds[game.Round-1] = &round
 
 	for _, player := range game.Players {
-		content := responses.DealResponse{
+		content := responses.Deal{
 			Round: game.Round,
 			Trick: game.Trick,
 			Cards: round.getDealtCardIdsByPlayerId(player.Id),

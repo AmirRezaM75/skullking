@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/responses"
 	"net/http"
@@ -57,6 +58,17 @@ func (userHandler UserHandler) Register(w http.ResponseWriter, r *http.Request) 
 	}
 
 	user, err := userHandler.service.Create(payload.Email, payload.Username, payload.Password)
+
+	if err != nil {
+		var response = ErrorResponse{
+			Message: "Can not persist user into database.",
+		}
+
+		fmt.Println("Can not persist user into database: ", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
 
 	_ = userHandler.service.SendEmailVerificationNotification(user.Id.Hex(), user.Email)
 
