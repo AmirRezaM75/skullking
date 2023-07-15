@@ -272,9 +272,11 @@ func (game *Game) startPicking(hub *Hub) {
 func (game *Game) getPickingExpirationTime() int64 {
 	t := constants.WaitTime
 
-	// We need 2 seconds extra time when the user is the first to pick.
-	// because we have a waiter after announcing the winner and end bidding command.
-	if len(game.getCurrentTrick().PickedCards) == 0 {
+	var trick = game.getCurrentTrick()
+
+	// We need 4 seconds extra time to make sure all animations are completed in client side
+	// 2 seconds waiting for announcing trick winner + 2 seconds for picked card animation
+	if trick.Number != 1 && len(trick.PickedCards) == 0 {
 		t += time.Second * 4
 	}
 
