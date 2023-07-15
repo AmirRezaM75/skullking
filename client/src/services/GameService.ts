@@ -299,7 +299,7 @@ class GameService {
 		this.round = content.round;
 		this.trick = content.trick;
 		// Using map() raises typescript warning because of nullable findById
-		content.cards.forEach((cardId) => {
+		content.cards.sort((a,b) => a-b).forEach((cardId) => {
 			const card = this.cardService.findById(cardId);
 			if (card) {
 				this.cards.push(card);
