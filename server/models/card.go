@@ -94,6 +94,25 @@ const (
 	Kraken
 	Mermaid1
 	Mermaid2
+	Pirate1
+	Pirate2
+	Pirate3
+	Pirate4
+	Pirate5
+	Roger1
+	Roger2
+	Roger3
+	Roger4
+	Roger5
+	Roger6
+	Roger7
+	Roger8
+	Roger9
+	Roger10
+	Roger11
+	Roger12
+	Roger13
+	Roger14
 	Parrot1
 	Parrot2
 	Parrot3
@@ -136,25 +155,6 @@ const (
 	Chest12
 	Chest13
 	Chest14
-	Roger1
-	Roger2
-	Roger3
-	Roger4
-	Roger5
-	Roger6
-	Roger7
-	Roger8
-	Roger9
-	Roger10
-	Roger11
-	Roger12
-	Roger13
-	Roger14
-	Pirate1
-	Pirate2
-	Pirate3
-	Pirate4
-	Pirate5
 	Escape1
 	Escape2
 	Escape3

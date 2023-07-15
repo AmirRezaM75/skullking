@@ -11,8 +11,11 @@
 	let password: string = '';
 	let errors = new ServerValidationError();
 	let message: string = '';
+	let loading = false;
 
 	async function login() {
+		loading = true
+
 		const apiService = new ApiService();
 		const response = await apiService.login(username, password);
 
@@ -49,6 +52,8 @@
 				window.location.href = 'verify-email';
 			}
 		}
+
+		loading = false
 	}
 
 	function clearError(event: Event) {
@@ -103,7 +108,12 @@
 				{/if}
 			</div>
 
-			<button type="submit" class="btn">Login</button>
+			<button type="submit" class="btn">
+				{#if loading}
+					<span class="circle-loader mr-2" />
+				{/if}
+				Login
+			</button>
 
 			<a href="/register" class="text-blue-400 hover:text-blue-300 block mt-3">Not registered?</a>
 

@@ -21,6 +21,7 @@
 	let countdowns: CountdownType[] = [];
 
 	let game = new GameService(data.cardService, data.authId);
+
 	const queue = new QueueService();
 
 	const apiService = new ApiService();

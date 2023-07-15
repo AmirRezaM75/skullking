@@ -39,9 +39,18 @@ func (ur userRepository) Create(user models.User) (*models.User, error) {
 func (ur userRepository) FindByUsername(username string) *models.User {
 	filter := bson.D{{"username", username}}
 
+	collation := &options.Collation{
+		Strength: 1,
+		Locale:   "en",
+	}
+
 	var user models.User
 
-	err := ur.db.Collection(UsersTable).FindOne(context.Background(), filter).Decode(&user)
+	err := ur.db.Collection(UsersTable).FindOne(
+		context.Background(),
+		filter,
+		options.FindOne().SetCollation(collation),
+	).Decode(&user)
 
 	if err != nil {
 		return nil
@@ -73,9 +82,18 @@ func (ur userRepository) FindById(userId string) *models.User {
 func (ur userRepository) FindByEmail(email string) *models.User {
 	filter := bson.D{{"email", email}}
 
+	collation := &options.Collation{
+		Strength: 1,
+		Locale:   "en",
+	}
+
 	var user models.User
 
-	err := ur.db.Collection(UsersTable).FindOne(context.Background(), filter).Decode(&user)
+	err := ur.db.Collection(UsersTable).FindOne(
+		context.Background(),
+		filter,
+		options.FindOne().SetCollation(collation),
+	).Decode(&user)
 
 	if err != nil {
 		return nil
@@ -85,10 +103,15 @@ func (ur userRepository) FindByEmail(email string) *models.User {
 }
 
 func (ur userRepository) exists(filter bson.D) bool {
+	collation := &options.Collation{
+		Strength: 1,
+		Locale:   "en",
+	}
+
 	count, err := ur.db.Collection(UsersTable).CountDocuments(
 		context.Background(),
 		filter,
-		options.Count().SetLimit(1),
+		options.Count().SetLimit(1).SetCollation(collation),
 	)
 
 	if err != nil {

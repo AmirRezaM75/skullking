@@ -299,7 +299,7 @@ class GameService {
 		this.round = content.round;
 		this.trick = content.trick;
 		// Using map() raises typescript warning because of nullable findById
-		content.cards.forEach((cardId) => {
+		content.cards.sort((a,b) => a-b).forEach((cardId) => {
 			const card = this.cardService.findById(cardId);
 			if (card) {
 				this.cards.push(card);
@@ -329,17 +329,12 @@ class GameService {
 		this.showCountdown = false;
 		this.bids = [];
 		this.state = GameState.EndBidding;
-		// I wanna show bids order by players listed on left side of the screen
-		this.players.forEach((player) => {
-			content.bids.forEach((bid) => {
-				if (bid.playerId == player.id) {
-					player.bid = bid.number;
-					this.bids.push(bid.number);
-				}
-			});
+		content.bids.forEach((bid) => {
+			const player = this.findPlayerById(bid.playerId)
+			if (player) {
+				player.bid = bid.number
+			}
 		});
-		const time = new Time();
-		this.waiter = time.add(2);
 	}
 
 	bade(content: BadeResponse) {

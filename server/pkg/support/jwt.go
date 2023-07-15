@@ -10,7 +10,7 @@ import (
 func GenerateJWT(id string) (string, error) {
 	claims := jwt.RegisteredClaims{
 		ID:        id,
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 3)),
 		Issuer:    os.Getenv("APP_URL"),
 	}
 
