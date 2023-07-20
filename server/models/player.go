@@ -26,11 +26,6 @@ func (player *Player) disconnect() {
 	if player.IsConnected {
 		_ = player.Connection.Close()
 		player.IsConnected = false
-		// to avoid close of closed channel panic
-		// first we need to check if channel is open or not
-		if _, ok := <-player.Message; ok {
-			close(player.Message)
-		}
 	}
 }
 
@@ -53,6 +48,7 @@ func (player *Player) Write() {
 func (player *Player) Read(hub *Hub) {
 	defer func() {
 		player.disconnect()
+		close(player.Message)
 		hub.Unsubscribe(player)
 	}()
 
