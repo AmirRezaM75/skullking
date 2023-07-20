@@ -3,6 +3,7 @@
 	import { GameState, GameCommand } from '../../../constants';
 	import User from '../../../components/User.svelte';
 	import Card from '../../../components/Card.svelte';
+	import GameLinkDialog from '../../../components/GameLinkDialog.svelte';
 	import Countdown from '../../../components/Countdown.svelte';
 	import QueueService from '../../../services/QueueService';
 	import AudioService from '../../../services/AudioService';
@@ -181,7 +182,7 @@
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
 				{#each game.players as player}
-					<div class="bg-gray-700 p-6 rounded-lg text-center">
+					<div class="bg-slate-700 p-6 rounded-lg text-center">
 						<div class="mb-3">
 							<img src={player.avatar} width="100" height="100" alt="" class="rounded-full" />
 						</div>
@@ -193,9 +194,7 @@
 				<p class="text-yellow-500 text-center">
 					Wait for {game.creator.username} to start the game.
 				</p>
-			{:else if game.players.length === 1}
-				<p class="text-yellow-500 text-center">Invite at least one more player to start the game</p>
-			{:else}
+			{:else if game.players.length != 1}
 				<div class="text-center mt-6 mb-6 sm:mb-0">
 					<button type="button" on:click={start} class="btn-secondary">
 						<span>Start</span>
@@ -203,6 +202,9 @@
 				</div>
 			{/if}
 		</div>
+		{#if game.players.length === 1}
+			<GameLinkDialog/>
+		{/if}
 	{:else}
 		<div
 			class="sidebar relative {isSidebarOpen
