@@ -82,60 +82,49 @@ class GameService {
 			this.waiter = 0;
 		}
 
-		if (GameCommand.Init == command) {
-			this.init(content);
-		}
-
-		if (GameCommand.Joined == command) {
-			this.joined(content);
-		}
-
-		if (GameCommand.Left == command) {
-			this.left(content);
-		}
-
-		if (GameCommand.AnnounceScores == command) {
-			this.announceScores(content);
-		}
-
-		if (GameCommand.Deal == command) {
-			this.deal(content);
-		}
-
-		if (GameCommand.StartBidding === command) {
-			this.startBidding(content);
-		}
-
-		if (GameCommand.EndBidding === command) {
-			this.endBidding(content);
-		}
-
-		if (GameCommand.Bade === command) {
-			this.bade(content);
-		}
-
-		if (GameCommand.StartPicking === command) {
-			this.startPicking(content);
-		}
-
-		if (GameCommand.Picked === command) {
-			this.picked(content);
-		}
-
-		if (GameCommand.AnnounceTrickWinner === command) {
-			this.announceTrickWinner(content);
-		}
-
-		if (GameCommand.NextTrick === command) {
-			this.nextTrick(content);
-		}
-
-		if (GameCommand.EndGame == command) {
-			this.endGame();
-		}
-
-		if (GameCommand.ReportError == command) {
-			this.reportError(content);
+		switch (command) {
+			case GameCommand.Init:
+				this.init(content);
+				break;
+			case GameCommand.Joined:
+				this.joined(content);
+				break;
+			case GameCommand.Left:
+				this.left(content);
+				break;
+			case GameCommand.AnnounceScores:
+				this.announceScores(content);
+				break;
+			case GameCommand.Deal:
+				this.deal(content);
+				break;
+			case GameCommand.StartBidding:
+				this.startBidding(content);
+				break;
+			case GameCommand.EndBidding:
+				this.endBidding(content);
+				break;
+			case GameCommand.Bade:
+				this.bade(content);
+				break;
+			case GameCommand.StartPicking:
+				this.startPicking(content);
+				break;
+			case GameCommand.Picked:
+				this.picked(content);
+				break;
+			case GameCommand.AnnounceTrickWinner:
+				this.announceTrickWinner(content);
+				break;
+			case GameCommand.NextTrick:
+				this.nextTrick(content);
+				break;
+			case GameCommand.EndGame:
+				this.endGame();
+				break;
+			case GameCommand.ReportError:
+				this.reportError(content);
+				break;
 		}
 
 		return this;
