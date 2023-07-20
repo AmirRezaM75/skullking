@@ -418,12 +418,12 @@ form {
     @apply flex flex-wrap justify-center items-center gap-3 mt-16;
 
     .bid {
-        @apply w-14 h-14 text-center text-white bg-slate-700 border-2 cursor-pointer border-lime-primary font-bold text-2xl rounded-lg select-none;
+        @apply w-14 h-14 text-center text-white border-white bg-slate-700 border-2 cursor-pointer font-bold text-2xl rounded-lg select-none;
         line-height: 3.15rem;
         transition: all 0.2s;
         &:hover,
         &.active {
-            @apply text-orange-400 border-orange-400 bg-slate-800;
+            @apply text-lime-primary border-lime-primary bg-slate-800;
         }
     }
 }
