@@ -125,7 +125,8 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 	game := gameHandler.hub.Games[gameId]
 
-	if len(game.Players) == constants.MaxPlayers {
+	if _, exists := game.Players[user.Id.Hex()]; !exists &&
+		len(game.Players) == constants.MaxPlayers {
 		response := struct {
 			Message string `json:"message"`
 		}{Message: "Game is already full."}
