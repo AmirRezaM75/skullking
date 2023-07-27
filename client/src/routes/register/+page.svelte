@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Navigation from '../../components/Navigation.svelte';
 	import ApiService from '../../services/ApiService';
 	import AuthService from '../../services/AuthService';
 	import type { User } from '../../types';
@@ -60,7 +61,8 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
-	<div class="w-80 max-w-lg">
+	<Navigation/>
+	<div class="w-80">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Register</h1>
 		<form on:submit={register} on:keydown={clearError}>
 			<div class="mb-3">

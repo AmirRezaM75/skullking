@@ -70,6 +70,10 @@ form {
     .circle-loader {
         @apply w-4 h-4 inline-block border-black border-l-white;
     }
+
+    &.danger {
+        background: linear-gradient(45deg, #ef4444, #fca5a5);
+    }
 }
 
 .plate {

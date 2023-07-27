@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Navigation from '../../components/Navigation.svelte';
 	import ApiService from '../../services/ApiService';
 	import ServerValidationError from '../../utils/ServerValidationError';
 
@@ -51,9 +52,10 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
-	<div class="max-w-md">
+	<Navigation/>
+	<div class="max-w-sm">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Reset Password</h1>
-		<div class="plate">
+		<div>
 			<p class="text-gray-100">
 				After you submit your new password, you will be redirected to the login page where you can
 				log in with your new credentials.

@@ -24,9 +24,17 @@ class AuthService {
 		return user;
 	}
 
+	isLoggedIn(): boolean {
+		return this.user() !== null
+	}
+
 	save(user: User) {
 		const item = JSON.stringify(user);
 		localStorage.setItem('user', item);
+	}
+
+	logout() {
+		localStorage.removeItem('user')
 	}
 
 	markEmailAsVerified() {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Navigation from '../../components/Navigation.svelte';
 	import ApiService from '../../services/ApiService.js';
 	let loading = false;
 
@@ -35,6 +36,7 @@
 </script>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
+	<Navigation/>
 	<div class="max-w-md">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Email Verification</h1>
 		<div class="plate">
@@ -57,6 +59,7 @@
 					<span>Resend</span>
 				</button>
 			{/if}
+			<p class="text-gray-400 mt-3">If you have already confirmed your email on other devices or browsers, please log out and log back in once more.</p>
 		</div>
 	</div>
 </div>

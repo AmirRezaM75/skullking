@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Navigation from '../../components/Navigation.svelte';
 	import { IntendedGameId } from '../../constants';
 	import ApiService from '../../services/ApiService';
 	import AuthService from '../../services/AuthService';
@@ -71,7 +72,8 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
-	<div class="w-80 max-w-lg">
+	<Navigation/>
+	<div class="w-80">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Login</h1>
 
 		<form on:submit={login} on:keydown={clearError}>

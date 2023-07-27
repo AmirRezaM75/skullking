@@ -1,5 +1,6 @@
 <script lang="ts">
-	import ApiService from '../services/ApiService.js';
+	import Navigation from '../components/Navigation.svelte';
+	import ApiService from '../services/ApiService';
 	let loading = false;
 	async function createGame() {
 		if (loading == true) {
@@ -26,6 +27,8 @@
 	/>
 	<meta name="keywords" content="skull king, SkullKing, skull king online"/>
 </svelte:head>
+
+<Navigation/>
 
 <div class="background">
 	<div class="inner">

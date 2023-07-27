@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Navigation from '../../components/Navigation.svelte';
 	import ApiService from '../../services/ApiService';
 
 	let email = '';
@@ -28,10 +29,11 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
+	<Navigation/>
 	{#if !sent}
-		<div class="max-w-md">
+		<div class="max-w-sm">
 			<h1 class="font-bold text-white text-3xl mb-8 text-center">Forgot Password?</h1>
-			<div class="plate">
+			<div>
 				<p class="text-gray-100">
 					Don't worry it happens. please enter the address associated with your account.
 				</p>
