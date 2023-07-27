@@ -29,7 +29,7 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
-	<Navigation/>
+	<Navigation />
 	{#if !sent}
 		<div class="max-w-sm">
 			<h1 class="font-bold text-white text-3xl mb-8 text-center">Forgot Password?</h1>

@@ -9,7 +9,7 @@ export async function load({ params }) {
 	const user = auth.user();
 
 	if (!user) {
-		sessionStorage.setItem(IntendedGameId, params.gameId)
+		sessionStorage.setItem(IntendedGameId, params.gameId);
 		throw redirect(302, '/login');
 	} else if (!user.verified) {
 		throw redirect(302, '/verify-email');
@@ -23,7 +23,7 @@ export async function load({ params }) {
 		token: user.token,
 		authId: user.id,
 		cardService: cardService
-	}
+	};
 }
 
 export const ssr = false;

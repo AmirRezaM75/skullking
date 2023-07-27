@@ -203,7 +203,7 @@
 			{/if}
 		</div>
 		{#if game.players.length === 1}
-			<GameLinkDialog/>
+			<GameLinkDialog />
 		{/if}
 	{:else}
 		<div

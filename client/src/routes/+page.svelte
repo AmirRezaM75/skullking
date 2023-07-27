@@ -25,10 +25,10 @@
 		name="description"
 		content="Play Skull King online for free! Join the fun with this fast-paced card game that's perfect for game night with friends and family."
 	/>
-	<meta name="keywords" content="skull king, SkullKing, skull king online"/>
+	<meta name="keywords" content="skull king, SkullKing, skull king online" />
 </svelte:head>
 
-<Navigation/>
+<Navigation />
 
 <div class="background">
 	<div class="inner">

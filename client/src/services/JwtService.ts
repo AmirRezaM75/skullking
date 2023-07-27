@@ -1,5 +1,5 @@
 class JwtService {
-    /** @link https://stackoverflow.com/a/38552302/5827477 */
+	/** @link https://stackoverflow.com/a/38552302/5827477 */
 	decode(token: string) {
 		const base64Url = token.split('.')[1];
 		const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -17,4 +17,4 @@ class JwtService {
 	}
 }
 
-export default JwtService
+export default JwtService;

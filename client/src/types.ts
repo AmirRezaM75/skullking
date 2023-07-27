@@ -132,7 +132,7 @@ export type PlayerResponse = {
 export type TableCardResponse = {
 	playerId: string;
 	cardId: number;
-}
+};
 
 export type InitResponse = {
 	round: number;

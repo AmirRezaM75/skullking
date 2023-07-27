@@ -3,11 +3,11 @@
 
 	const authService = new AuthService();
 
-	let isLoggedIn = authService.isLoggedIn()
+	let isLoggedIn = authService.isLoggedIn();
 
 	function logout() {
 		authService.logout();
-		isLoggedIn = authService.isLoggedIn()
+		isLoggedIn = authService.isLoggedIn();
 	}
 </script>
 

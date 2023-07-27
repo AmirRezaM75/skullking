@@ -6,17 +6,19 @@
 	let status = 'loading';
 
 	onMount(async () => {
-		const apiService = new ApiService
-		const response = await apiService.verifyEmail(window.location.pathname + window.location.search)
-        
-        if (response.status === 200) {
-            status = 'succeeded'
-			const authService = new AuthService
-			authService.markEmailAsVerified()
-			setTimeout(() => window.location.href = '/', 1500)
-        } else {
-            status = 'failed'
-        }
+		const apiService = new ApiService();
+		const response = await apiService.verifyEmail(
+			window.location.pathname + window.location.search
+		);
+
+		if (response.status === 200) {
+			status = 'succeeded';
+			const authService = new AuthService();
+			authService.markEmailAsVerified();
+			setTimeout(() => (window.location.href = '/'), 1500);
+		} else {
+			status = 'failed';
+		}
 	});
 </script>
 

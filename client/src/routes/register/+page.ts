@@ -5,11 +5,11 @@ export function load() {
 	const auth = new AuthService();
 	const user = auth.user();
 	if (user) {
-        if (user.verified) {
-            throw redirect(302, '/')
-        } else {
-            throw redirect(302, 'verify-email')
-        }
+		if (user.verified) {
+			throw redirect(302, '/');
+		} else {
+			throw redirect(302, 'verify-email');
+		}
 	}
 }
 

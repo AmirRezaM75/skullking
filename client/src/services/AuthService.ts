@@ -25,7 +25,7 @@ class AuthService {
 	}
 
 	isLoggedIn(): boolean {
-		return this.user() !== null
+		return this.user() !== null;
 	}
 
 	save(user: User) {
@@ -34,7 +34,7 @@ class AuthService {
 	}
 
 	logout() {
-		localStorage.removeItem('user')
+		localStorage.removeItem('user');
 	}
 
 	markEmailAsVerified() {

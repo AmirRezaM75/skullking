@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   app:
@@ -9,4 +9,4 @@ services:
       - ${APP_PORT:-3000}:3000
     volumes:
       - ./:/app
-    command: ["node", "/app/build/index.js"]
+    command: ['node', '/app/build/index.js']

@@ -52,7 +52,7 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
-	<Navigation/>
+	<Navigation />
 	<div class="max-w-sm">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Reset Password</h1>
 		<div>

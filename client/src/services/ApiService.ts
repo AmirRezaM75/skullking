@@ -23,7 +23,7 @@ class ApiService {
 	}
 
 	joinGame(gameId: string, token: string): WebSocket {
-		const baseURL = this.baseURL.replace('http', 'ws')
+		const baseURL = this.baseURL.replace('http', 'ws');
 		return new WebSocket(`${baseURL}/games/join?gameId=${gameId}&token=${token}`);
 	}
 

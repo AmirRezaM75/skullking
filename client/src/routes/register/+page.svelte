@@ -14,8 +14,8 @@
 	let loading = false;
 
 	async function register() {
-		loading = true
-		
+		loading = true;
+
 		const apiService = new ApiService();
 		const response = await apiService.register(username, email, password);
 
@@ -43,7 +43,7 @@
 			window.location.href = '/verify-email';
 		}
 
-		loading = false
+		loading = false;
 	}
 
 	function clearError(event: Event) {
@@ -61,7 +61,7 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
-	<Navigation/>
+	<Navigation />
 	<div class="w-80">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Register</h1>
 		<form on:submit={register} on:keydown={clearError}>
@@ -115,7 +115,9 @@
 				Join the crew
 			</button>
 
-			<a href="/login" class="text-blue-400 hover:text-blue-300 inline-block mt-3">Already have an account?</a>
+			<a href="/login" class="text-blue-400 hover:text-blue-300 inline-block mt-3"
+				>Already have an account?</a
+			>
 		</form>
 	</div>
 </div>

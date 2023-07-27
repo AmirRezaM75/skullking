@@ -4,9 +4,9 @@ export function load() {
 	const auth = new AuthService();
 	const user = auth.user();
 
-    const data = {
-        action: 'login'
-    }
+	const data = {
+		action: 'login'
+	};
 
 	if (user && user.verified) {
 		data.action = 'play';

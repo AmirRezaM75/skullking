@@ -189,7 +189,7 @@ class GameService {
 				const player = content.players.find((player) => player.id === tableCard.playerId);
 
 				if (card) {
-					card.ownerUsername = player ? player.username : ''
+					card.ownerUsername = player ? player.username : '';
 					this.table.cards.push(card);
 					// TODO: announceTrickWinner has not been implemented
 				}
@@ -288,12 +288,14 @@ class GameService {
 		this.round = content.round;
 		this.trick = content.trick;
 		// Using map() raises typescript warning because of nullable findById
-		content.cards.sort((a,b) => a-b).forEach((cardId) => {
-			const card = this.cardService.findById(cardId);
-			if (card) {
-				this.cards.push(card);
-			}
-		});
+		content.cards
+			.sort((a, b) => a - b)
+			.forEach((cardId) => {
+				const card = this.cardService.findById(cardId);
+				if (card) {
+					this.cards.push(card);
+				}
+			});
 
 		this.players.forEach((player) => {
 			player.wonTricksCount = 0;
@@ -319,9 +321,9 @@ class GameService {
 		this.bids = [];
 		this.state = GameState.EndBidding;
 		content.bids.forEach((bid) => {
-			const player = this.findPlayerById(bid.playerId)
+			const player = this.findPlayerById(bid.playerId);
 			if (player) {
-				player.bid = bid.number
+				player.bid = bid.number;
 			}
 		});
 	}
@@ -380,7 +382,7 @@ class GameService {
 		const player = this.findPlayerById(content.playerId);
 
 		if (card) {
-			card.ownerUsername = player ? player.username : ''
+			card.ownerUsername = player ? player.username : '';
 			this.table.cards.push(card);
 		}
 

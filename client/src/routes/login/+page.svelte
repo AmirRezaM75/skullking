@@ -15,7 +15,7 @@
 	let loading = false;
 
 	async function login() {
-		loading = true
+		loading = true;
 
 		const apiService = new ApiService();
 		const response = await apiService.login(username, password);
@@ -54,7 +54,7 @@
 			}
 		}
 
-		loading = false
+		loading = false;
 	}
 
 	function clearError(event: Event) {
@@ -72,7 +72,7 @@
 </svelte:head>
 
 <div class="w-screen h-screen flex items-center justify-center bg-slate-900">
-	<Navigation/>
+	<Navigation />
 	<div class="w-80">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Login</h1>
 

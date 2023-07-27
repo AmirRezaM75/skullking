@@ -10,7 +10,7 @@ export function load() {
 		throw redirect(302, '/');
 	}
 
-	return user
+	return user;
 }
 
 export const ssr = false;
