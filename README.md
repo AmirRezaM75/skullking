@@ -3,6 +3,8 @@
 This program is a digital version of a board game that belongs to the original series
 of [Grandpa Skull King](https://www.grandpabecksgames.com/pages/skull-king).
 
+![alt text](./demo.png)
+
 Skull King is a trick-taking game in which you will bid
 the exact number of tricks you predict you will win each
 round. You’ll battle with your rivals as you strive to keep
