@@ -13,11 +13,13 @@
 	import ApiService from '../../../services/ApiService';
 	import type { Countdown as CountdownType } from '../../../types';
 	import AudioIcon from '../../../components/AudioIcon.svelte';
+	import ConnectionErrorDialog from '../../../components/ConnectionErrorDialog.svelte';
 
 	export let data;
 
 	let isSidebarOpen = true;
 	let isBackgroundAudioPlaying = false;
+	let disconnected = false;
 
 	let countdowns: CountdownType[] = [];
 
@@ -60,6 +62,10 @@
 
 	ws.onopen = function (e) {
 		toggleBackgroundAudio();
+	};
+
+	ws.onclose = function (e) {
+		disconnected = true;
 	};
 
 	async function toggleBackgroundAudio() {
@@ -178,6 +184,9 @@
 </svelte:head>
 
 <div class="board">
+	{#if disconnected}
+		<ConnectionErrorDialog/>
+	{/if}
 	{#if game.state == GameState.Pending}
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">

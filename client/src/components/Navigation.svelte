@@ -21,7 +21,7 @@
 		</div>
 		<div class="flex items-center">
 			{#if isLoggedIn}
-				<button type="button" class="btn danger" on:click={logout}>Logout</button>
+				<button type="button" class="btn danger-gradient" on:click={logout}>Logout</button>
 			{:else}
 				<a href="/register" class="mr-4 hidden sm:inline-block">Register</a>
 				<a href="/login" class="btn">Login</a>

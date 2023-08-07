@@ -24,7 +24,7 @@
 		{#if copied}
 			<p class="text-lime-primary py-2.5">The link has been copied successfully</p>
 		{:else}
-			<button type="button" class="btn" on:click={copyLink}>
+			<button type="button" class="btn primary-gradient" on:click={copyLink}>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="20"
@@ -51,9 +51,5 @@
 <style lang="scss">
 	.dialog-box {
 		@apply absolute bottom-5 left-5 right-5 p-5 max-w-md rounded-md bg-slate-700 text-lg;
-
-		button {
-			background: linear-gradient(45deg, aqua, var(--lime-primary));
-		}
 	}
 </style>

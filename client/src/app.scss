@@ -71,8 +71,16 @@ form {
 		@apply w-4 h-4 inline-block border-black border-l-white;
 	}
 
-	&.danger {
+	&.danger-gradient {
 		background: linear-gradient(45deg, #ef4444, #fca5a5);
+	}
+
+	&.light-gradient {
+		background: linear-gradient(45deg, white, wheat);
+	}
+
+	&.primary-gradient {
+		background: linear-gradient(45deg, aqua, var(--lime-primary));
 	}
 }
 
@@ -439,6 +447,11 @@ form {
 
 .sidebar-button {
 	@apply bg-gray-700 w-8 h-16 absolute top-3 rounded-r-lg flex items-center justify-center cursor-pointer;
+}
+
+.fluid-container {
+	@apply w-full h-full absolute bg-black bg-opacity-70 flex items-center justify-center;
+	z-index: 2;
 }
 
 /* ****************** */
