@@ -169,7 +169,7 @@
 	}
 </script>
 
-<svelte:window on:keydown|preventDefault={keyboardHandler} />
+<svelte:window on:keydown={keyboardHandler} />
 
 <svelte:head>
 	<title>Skull King</title>
