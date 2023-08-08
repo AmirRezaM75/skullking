@@ -169,6 +169,7 @@
 	}
 </script>
 
+<!-- We should not prevent default keydown, because user won't be able to use some useful keybindings like reload page. -->
 <svelte:window on:keydown={keyboardHandler} />
 
 <svelte:head>

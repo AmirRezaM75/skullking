@@ -60,7 +60,15 @@ func (game *Game) findPlayerIndexForPicking() int {
 		return game.getPreviousTrick().StarterPlayerIndex
 	}
 
-	log.Fatalln("Unable to find playerId within for loop.")
+	log.Println(
+		fmt.Sprintf(
+			"Unable to find playerId within for loop. [gameId: %s, round: %d, trick: %d]",
+			game.Id,
+			game.Round,
+			game.Trick,
+		),
+	)
+
 	return 1
 }
 
@@ -82,7 +90,8 @@ func (game *Game) setNextPlayerForPicking() string {
 		}
 	}
 
-	log.Fatalln("Unable to find playerId within for loop.")
+	log.Println(fmt.Sprintf("Unable to find player by index %d", index))
+
 	return ""
 }
 
@@ -230,8 +239,7 @@ func (game *Game) startPicking(hub *Hub) {
 	pickerId := game.setNextPlayerForPicking()
 
 	if pickerId == "" {
-		log.Fatalln("No player id is found for picking")
-		return
+		log.Println("No player id is found for picking")
 	}
 
 	content := responses.StartPicking{
