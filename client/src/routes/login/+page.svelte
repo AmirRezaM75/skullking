@@ -6,11 +6,9 @@
 	import type { User } from '../../types';
 	// TODO: define ./@src/ as root
 	// https://stackoverflow.com/questions/73754777/svelte-import-by-absolute-path-does-not-work
-	import ServerValidationError from '../../utils/ServerValidationError';
 
-	let username: string = '';
+	let identifier: string = '';
 	let password: string = '';
-	let errors = new ServerValidationError();
 	let message: string = '';
 	let loading = false;
 
@@ -18,17 +16,9 @@
 		loading = true;
 
 		const apiService = new ApiService();
-		const response = await apiService.login(username, password);
+		const response = await apiService.login(identifier, password);
 
 		const data = await response.json();
-
-		if (response.status === 422) {
-			Object.keys(data.errors).forEach((key) => {
-				errors.add(key, data.errors[key]);
-			});
-
-			errors = errors;
-		}
 
 		if (response.status === 400) {
 			message = data.message;
@@ -56,15 +46,6 @@
 
 		loading = false;
 	}
-
-	function clearError(event: Event) {
-		const element = event.target as HTMLInputElement;
-		const id = element.getAttribute('id');
-		if (id) {
-			errors.clear(id);
-			errors = errors;
-		}
-	}
 </script>
 
 <svelte:head>
@@ -76,20 +57,16 @@
 	<div class="w-80">
 		<h1 class="font-bold text-white text-3xl mb-8 text-center">Login</h1>
 
-		<form on:submit={login} on:keydown={clearError}>
+		<form on:submit={login}>
 			<div class="mb-3">
-				<label for="username">Username</label>
+				<label for="identifier">Username / Email</label>
 				<input
 					type="text"
-					id="username"
-					bind:value={username}
-					class:border-red-500={errors.has('username')}
+					id="identifier"
+					bind:value={identifier}
 					autofocus
 					required
 				/>
-				{#if errors.has('username')}
-					<small class="text-red-500">{errors.get('username')}</small>
-				{/if}
 			</div>
 
 			<div class="mb-3">
@@ -98,13 +75,8 @@
 					type="password"
 					id="password"
 					bind:value={password}
-					class:border-red-500={errors.has('password')}
 					required
 				/>
-				{#if errors.has('password')}
-					<small class="text-red-500">{errors.get('password')}</small>
-				{/if}
-
 				{#if message}
 					<small class="text-red-500">{message}</small>
 				{/if}
