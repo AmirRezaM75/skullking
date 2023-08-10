@@ -10,7 +10,7 @@ import (
 
 type CreateUserRequest struct {
 	Email    string `json:"email" validate:"required,email"`
-	Username string `json:"username" validate:"required,min=3,max=255"`
+	Username string `json:"username" validate:"required,min=3,max=32,alphanum"`
 	Password string `json:"password" validate:"required,min=6,max=255"`
 }
 
@@ -95,19 +95,19 @@ func (userHandler UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	payload := struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Identifier string `json:"identifier"`
+		Password   string `json:"password"`
 	}{}
 
 	if err := decoder(&payload, w, r); err != nil {
 		return
 	}
 
-	user := userHandler.service.FindByUsername(payload.Username)
+	user := userHandler.service.FindByUsernameOrEmail(payload.Identifier)
 
 	if user == nil {
 		var response = ErrorResponse{
-			Message: "You have entered an invalid username or password",
+			Message: "These credentials doesn't match our records.",
 		}
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(response)
@@ -118,7 +118,7 @@ func (userHandler UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		var response = ErrorResponse{
-			Message: "You have entered an invalid username or password",
+			Message: "These credentials doesn't match our records.",
 		}
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(response)

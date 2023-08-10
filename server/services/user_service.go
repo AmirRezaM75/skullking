@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -45,6 +46,14 @@ func (service UserService) Create(email, username, rawPassword string) (*models.
 
 func (service UserService) FindByUsername(username string) *models.User {
 	return service.userRepository.FindByUsername(username)
+}
+
+func (service UserService) FindByUsernameOrEmail(identifier string) *models.User {
+	if strings.Contains(identifier, "@") {
+		return service.userRepository.FindByEmail(identifier)
+	}
+
+	return service.userRepository.FindByUsername(identifier)
 }
 
 func (service UserService) FindById(id string) *models.User {

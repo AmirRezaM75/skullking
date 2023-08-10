@@ -8,7 +8,7 @@
 	// https://stackoverflow.com/questions/73754777/svelte-import-by-absolute-path-does-not-work
 	import ServerValidationError from '../../utils/ServerValidationError';
 
-	let username: string = '';
+	let identifier: string = '';
 	let password: string = '';
 	let errors = new ServerValidationError();
 	let message: string = '';
@@ -18,7 +18,7 @@
 		loading = true;
 
 		const apiService = new ApiService();
-		const response = await apiService.login(username, password);
+		const response = await apiService.login(identifier, password);
 
 		const data = await response.json();
 
@@ -78,11 +78,11 @@
 
 		<form on:submit={login} on:keydown={clearError}>
 			<div class="mb-3">
-				<label for="username">Username</label>
+				<label for="identifier">Username / Email</label>
 				<input
 					type="text"
-					id="username"
-					bind:value={username}
+					id="identifier"
+					bind:value={identifier}
 					class:border-red-500={errors.has('username')}
 					autofocus
 					required

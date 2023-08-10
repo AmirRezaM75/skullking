@@ -39,14 +39,14 @@ class ApiService {
 		});
 	}
 
-	login(username: string, password: string): Promise<Response> {
+	login(identifier: string, password: string): Promise<Response> {
 		return fetch(this.baseURL + '/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				username,
+				identifier,
 				password
 			})
 		});
