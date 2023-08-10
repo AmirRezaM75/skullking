@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"github.com/AmirRezaM75/skull-king/responses"
+	"log"
 	"net/http"
 )
 
@@ -125,15 +126,23 @@ func (userHandler UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response responses.Authentication
-
 	token, err := support.GenerateJWT(user.Id.Hex())
 
 	if err != nil {
-		http.Error(w, "Can't generate JWT.", http.StatusInternalServerError)
+		log.Println(
+			fmt.Sprintf("authentication_handler@login: Failed to generate JWT for user %s", user.Id.Hex()),
+			err.Error(),
+		)
+
+		var response = ErrorResponse{
+			Message: "Can't generate JWT.",
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
+	var response responses.Authentication
 	response.User.Id = user.Id.Hex()
 	response.User.Email = user.Email
 	response.User.Username = user.Username
