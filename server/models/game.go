@@ -552,6 +552,7 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 	err := game.validateUserPickedCard(cardId, playerId)
 
 	if err != nil {
+		//
 		content := responses.Error{
 			Message: err.Error(),
 			StatusCode: 422,

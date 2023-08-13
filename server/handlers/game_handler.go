@@ -101,7 +101,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message: "Game not found.",
+				Message: "The game you are searching for could not be found. It's possible that the URL you entered is incorrect or the game has already concluded.",
 				StatusCode: http.StatusNotFound,
 			},
 		}

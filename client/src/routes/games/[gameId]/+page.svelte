@@ -190,7 +190,7 @@
 		<ConnectionErrorDialog/>
 	{/if}
 	{#if game.exceptionMessage !== ""}
-		<ExceptionReporter message={game.exceptionMessage}/>
+		<ExceptionReporter message={game.exceptionMessage} code={404}/>
 	{/if}
 	{#if game.state == GameState.Pending}
 		<div class="flex-col">
