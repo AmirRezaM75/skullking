@@ -552,7 +552,10 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 	err := game.validateUserPickedCard(cardId, playerId)
 
 	if err != nil {
-		content := responses.Error{Message: err.Error()}
+		content := responses.Error{
+			Message: err.Error(),
+			StatusCode: 422,
+		}
 		m := &ServerMessage{
 			Content:    content,
 			GameId:     game.Id,
@@ -603,7 +606,10 @@ outerLoop:
 
 func (game *Game) Bid(hub *Hub, playerId string, number int) {
 	if number < 0 || number > game.Round {
-		content := responses.Error{Message: "Invalid bid number."}
+		content := responses.Error{
+			Message: "Invalid bid number.",
+			StatusCode: 422,
+		}
 		m := &ServerMessage{
 			Content:    content,
 			GameId:     game.Id,

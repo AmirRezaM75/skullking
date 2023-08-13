@@ -51,6 +51,7 @@ type Authentication struct {
 
 type Error struct {
 	Message string `json:"message"`
+	StatusCode int `json:"statusCode"`
 }
 
 type EndBidding struct {

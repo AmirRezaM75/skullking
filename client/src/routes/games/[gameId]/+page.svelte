@@ -14,6 +14,7 @@
 	import type { Countdown as CountdownType } from '../../../types';
 	import AudioIcon from '../../../components/AudioIcon.svelte';
 	import ConnectionErrorDialog from '../../../components/ConnectionErrorDialog.svelte';
+	import ExceptionReporter from '../../../components/ExceptionReporter.svelte';
 
 	export let data;
 
@@ -187,6 +188,9 @@
 <div class="board">
 	{#if disconnected}
 		<ConnectionErrorDialog/>
+	{/if}
+	{#if game.exceptionMessage !== ""}
+		<ExceptionReporter message={game.exceptionMessage}/>
 	{/if}
 	{#if game.state == GameState.Pending}
 		<div class="flex-col">

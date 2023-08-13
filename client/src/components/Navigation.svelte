@@ -7,7 +7,7 @@
 
 	function logout() {
 		authService.logout();
-		isLoggedIn = authService.isLoggedIn();
+		window.location.reload()
 	}
 </script>
 

@@ -15,6 +15,7 @@ const CommandAnnounceTrickWinner = "ANNOUNCE_TRICK_WINNER"
 const CommandAnnounceScores = "ANNOUNCE_SCORES"
 const CommandNextTrick = "NEXT_TRICK"
 const CommandEndGame = "END_GAME"
+const CommandReportError = "REPORT_ERROR"
 
 // These commands coming from players
 
