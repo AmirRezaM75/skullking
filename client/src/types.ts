@@ -95,6 +95,7 @@ export type Table = {
 
 export type ReportErrorResponse = {
 	message: string;
+	statusCode: number;
 };
 
 export type Content =

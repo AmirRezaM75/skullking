@@ -56,7 +56,7 @@ func (player *Player) Read(hub *Hub) {
 
 	for {
 		_, m, err := player.Connection.ReadMessage()
-		//TODO: Validation of command types.
+		// TODO: Validation of command types.
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)

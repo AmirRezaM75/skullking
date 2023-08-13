@@ -67,6 +67,8 @@ class GameService {
 		username: ''
 	};
 
+	exceptionMessage: string = ""
+
 	constructor(cardService: CardService, authId: string) {
 		this.players = [];
 		this.cardService = cardService;
@@ -426,7 +428,7 @@ class GameService {
 	}
 
 	reportError(content: ReportErrorResponse) {
-		alert(content.message);
+		this.exceptionMessage = content.message
 	}
 
 	addPlayer(player: PlayerResponse) {
