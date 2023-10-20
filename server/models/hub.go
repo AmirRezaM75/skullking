@@ -3,23 +3,24 @@ package models
 import (
 	"fmt"
 	"github.com/AmirRezaM75/skull-king/constants"
+	"github.com/AmirRezaM75/skull-king/pkg/syncx"
 	"time"
 )
 
 // TODO: Couldn't define this interface inside contracts because of 'import cycle not allowed' error
+
 type GameRepository interface {
-	Create(u Game) (*Game, error)
+	Create(u *Game) error
 }
 
 type Hub struct {
-	Games          map[string]*Game
+	Games          syncx.Map[string, *Game]
 	Dispatch       chan *ServerMessage
 	GameRepository GameRepository
 }
 
 func NewHub(gameRepository GameRepository) *Hub {
 	return &Hub{
-		Games:          make(map[string]*Game),
 		Dispatch:       make(chan *ServerMessage),
 		GameRepository: gameRepository,
 	}
@@ -29,21 +30,19 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case message := <-h.Dispatch:
-			if _, ok := h.Games[message.GameId]; ok {
-				var game = h.Games[message.GameId]
+			if _, ok := h.Games.Load(message.GameId); ok {
+				var game, _ = h.Games.Load(message.GameId)
 				// If there is no specific receiver broadcast it to all players
 				if message.ReceiverId == "" {
-					for _, player := range game.Players {
+					game.Players.Range(func(_ string, player *Player) bool {
 						if message.ExcludedId != player.Id && player.IsConnected {
 							player.Message <- message
 						}
-					}
+						return true
+					})
 				} else {
-					if _, ok = game.Players[message.ReceiverId]; ok {
-						var p = game.Players[message.ReceiverId]
-						if p.IsConnected {
-							p.Message <- message
-						}
+					if p, ok := game.Players.Load(message.ReceiverId); ok && p.IsConnected {
+						p.Message <- message
 					}
 				}
 			}
@@ -52,8 +51,8 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) Subscribe(player *Player) {
-	if _, ok := h.Games[player.GameId]; ok {
-		h.Games[player.GameId].Players[player.Id] = player
+	if game, ok := h.Games.Load(player.GameId); ok {
+		game.Players.Store(player.Id, player)
 	}
 }
 
@@ -62,22 +61,23 @@ func (h *Hub) Unsubscribe(player *Player) {
 	// to inform the game creator of the total number of players before starting.
 	// However, if the game has already started, we will not remove the player,
 	// and the server decide on behalf of them.
-	if _, ok := h.Games[player.GameId]; ok {
-		game := h.Games[player.GameId]
+	if game, ok := h.Games.Load(player.GameId); ok {
 		if game.State == constants.StatePending {
 			game.Left(h, player.Id)
-			delete(game.Players, player.Id)
+			game.Players.Delete(player.Id)
 		}
 	}
+
 	// TODO: If every one left the game delete the game.
 }
 
 func (h *Hub) Cleanup() {
-	for _, game := range h.Games {
+	h.Games.Range(func(_ string, game *Game) bool {
 		if game.CreatedAt <= time.Now().Add(-30*time.Minute).Unix() &&
 			game.State == constants.StatePending {
 			fmt.Printf("Delete game %s due to inactivity.\n", game.Id)
-			delete(h.Games, game.Id)
+			h.Games.Delete(game.Id)
 		}
-	}
+		return true
+	})
 }

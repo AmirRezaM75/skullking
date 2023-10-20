@@ -76,7 +76,11 @@ func (player *Player) Read(hub *Hub) {
 }
 
 func (player *Player) react(message ClientMessage, hub *Hub) {
-	var game = hub.Games[player.GameId]
+	if _, ok := hub.Games.Load(player.GameId); !ok {
+		return
+	}
+
+	game, _ := hub.Games.Load(player.GameId)
 
 	if message.Command == constants.CommandBid && game.State == constants.StateBidding {
 		number, err := strconv.Atoi(message.Content)
@@ -92,7 +96,7 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 	if message.Command == constants.CommandStart &&
 		game.State == constants.StatePending &&
 		game.CreatorId == player.Id &&
-		len(game.Players) > 1 {
+		game.Players.Len() > 1 {
 		game.NextRound(hub)
 	}
 

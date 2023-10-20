@@ -21,7 +21,7 @@ func NewGameRepository(db *mongo.Database) models.GameRepository {
 	}
 }
 
-func (ur gameRepository) Create(game models.Game) (*models.Game, error) {
+func (ur gameRepository) Create(game *models.Game) error {
 	type Player struct {
 		Id    string `bson:"id"`
 		Score int    `bson:"score"`
@@ -133,20 +133,21 @@ func (ur gameRepository) Create(game models.Game) (*models.Game, error) {
 
 	var players []Player
 
-	for _, player := range game.Players {
+	game.Players.Range(func(_ string, player *models.Player) bool {
 		p := Player{
 			Id:    player.Id,
 			Score: player.Score,
 			Index: player.Index,
 		}
 		players = append(players, p)
-	}
+		return true
+	})
 
 	gameId, err := primitive.ObjectIDFromHex(game.Id)
 
 	if err != nil {
 		fmt.Println("Can not convert hex to mongo ObjectID")
-		return nil, err
+		return err
 	}
 
 	createdAt := primitive.NewDateTimeFromTime(
@@ -164,8 +165,8 @@ func (ur gameRepository) Create(game models.Game) (*models.Game, error) {
 	_, err = ur.db.Collection(GamesTable).InsertOne(context.Background(), g)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &game, nil
+	return nil
 }

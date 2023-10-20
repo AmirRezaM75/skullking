@@ -10,10 +10,10 @@ import (
 	"github.com/AmirRezaM75/skull-king/services"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
-	"time"
 	"log"
+	"net/http"
 	"os"
+	"time"
 )
 
 type GameHandler struct {
@@ -38,13 +38,12 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	game := &models.Game{
 		Id:        primitive.NewObjectID().Hex(),
 		State:     constants.StatePending,
-		Players:   make(map[string]*models.Player, constants.MaxPlayers),
 		CreatorId: user.Id.Hex(),
 		CreatedAt: time.Now().Unix(),
 	}
 
 	gameHandler.hub.Cleanup()
-	gameHandler.hub.Games[game.Id] = game
+	gameHandler.hub.Games.Store(game.Id, game)
 
 	response, err := json.Marshal(
 		responses.CreateGame{Id: game.Id},
@@ -90,18 +89,18 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	connection, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
-		log.Println("Upgrade TCP connection failed.", err);
+		log.Println("Upgrade TCP connection failed.", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	gameId := r.URL.Query().Get("gameId")
 
-	if _, ok := gameHandler.hub.Games[gameId]; !ok {
+	if _, ok := gameHandler.hub.Games.Load(gameId); !ok {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message: "The game you are searching for could not be found. It's possible that the URL you entered is incorrect or the game has already concluded.",
+				Message:    "The game you are searching for could not be found. It's possible that the URL you entered is incorrect or the game has already concluded.",
 				StatusCode: http.StatusNotFound,
 			},
 		}
@@ -119,7 +118,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message: "Can not parse JWT.",
+				Message:    "Can not parse JWT.",
 				StatusCode: http.StatusUnauthorized,
 			},
 		}
@@ -134,7 +133,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message: "User not found.",
+				Message:    "User not found.",
 				StatusCode: http.StatusNotFound,
 			},
 		}
@@ -146,7 +145,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message: "Email has not been verified.",
+				Message:    "Email has not been verified.",
 				StatusCode: http.StatusUnauthorized,
 			},
 		}
@@ -154,25 +153,24 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	game := gameHandler.hub.Games[gameId]
+	game, _ := gameHandler.hub.Games.Load(gameId)
 
-	if _, exists := game.Players[user.Id.Hex()]; !exists &&
-		len(game.Players) == constants.MaxPlayers {
-			message := models.ServerMessage{
-				Command: constants.CommandReportError,
-				Content: responses.Error{
-					Message: "Game is already full.",
-					StatusCode: http.StatusBadRequest,
-				},
-			}
-			connection.WriteJSON(message)
-			return
+	if _, exists := game.Players.Load(user.Id.Hex()); !exists &&
+		game.Players.Len() == constants.MaxPlayers {
+		message := models.ServerMessage{
+			Command: constants.CommandReportError,
+			Content: responses.Error{
+				Message:    "Game is already full.",
+				StatusCode: http.StatusBadRequest,
+			},
+		}
+		connection.WriteJSON(message)
+		return
 	}
 
 	var player *models.Player
 
-	if _, exists := game.Players[user.Id.Hex()]; exists {
-		player = game.Players[user.Id.Hex()]
+	if player, exists := game.Players.Load(user.Id.Hex()); exists {
 		player.Connection = connection
 		player.Message = make(chan *models.ServerMessage, 10)
 		player.IsConnected = true
@@ -182,7 +180,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 			message := models.ServerMessage{
 				Command: constants.CommandReportError,
 				Content: responses.Error{
-					Message: "You can not join the game that has already started.",
+					Message:    "You can not join the game that has already started.",
 					StatusCode: http.StatusBadRequest,
 				},
 			}
