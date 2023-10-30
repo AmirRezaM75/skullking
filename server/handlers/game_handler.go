@@ -170,7 +170,8 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 	var player *models.Player
 
-	if player, exists := game.Players.Load(user.Id.Hex()); exists {
+	if _, exists := game.Players.Load(user.Id.Hex()); exists {
+		player, _ = game.Players.Load(user.Id.Hex())
 		player.Connection = connection
 		player.Message = make(chan *models.ServerMessage, 10)
 		player.IsConnected = true

@@ -351,7 +351,7 @@ func (game *Game) announceScores(hub *Hub) {
 		if player, ok := game.Players.Load(playerId); ok {
 			player.Score += score
 			s := responses.Score{
-				PlayerId: playerId,
+				PlayerId: player.Id,
 				Score:    player.Score,
 			}
 			content.Scores = append(content.Scores, s)

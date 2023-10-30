@@ -10,21 +10,11 @@ func (m *Map[K, V]) Delete(key K) {
 	m.m.Delete(key)
 }
 
-/*func (m *Map[K, V]) Get(key K) V {
+func (m *Map[K, V]) Load(key K) (value V, loaded bool) {
 	v, ok := m.m.Load(key)
 
 	if !ok {
-		panic("Access to undefined index.")
-	}
-
-	return v.(V)
-}*/
-
-func (m *Map[K, V]) Load(key K) (V, bool) {
-	v, ok := m.m.Load(key)
-
-	if !ok {
-		return v.(V), ok
+		return value, ok
 	}
 
 	return v.(V), ok
