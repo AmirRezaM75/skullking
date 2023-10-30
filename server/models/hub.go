@@ -21,6 +21,7 @@ type Hub struct {
 
 func NewHub(gameRepository GameRepository) *Hub {
 	return &Hub{
+		Games:          syncx.Map[string, *Game]{},
 		Dispatch:       make(chan *ServerMessage),
 		GameRepository: gameRepository,
 	}

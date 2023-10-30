@@ -110,7 +110,7 @@ func (game *Game) NextRound(hub *Hub) {
 	round := Round{
 		Number:     game.Round,
 		DealtCards: make(map[string][]CardId, game.Players.Len()),
-		Bids:       make(map[string]int, game.Players.Len()),
+		Bids:       syncx.Map[string, int]{},
 		Tricks:     make([]*Trick, game.Round),
 		Scores:     make(map[string]int, game.Players.Len()),
 	}
@@ -125,7 +125,7 @@ func (game *Game) NextRound(hub *Hub) {
 		}
 
 		round.DealtCards[player.Id] = dealtCardIds[index]
-		round.Bids[player.Id] = 0
+		round.Bids.Store(player.Id, 0)
 
 		index++
 	}
@@ -193,12 +193,13 @@ func (game *Game) endBidding(hub *Hub) {
 
 	var bids []responses.Bid
 
-	for playerId, number := range game.getCurrentRound().Bids {
+	game.getCurrentRound().Bids.Range(func(playerId string, bid int) bool {
 		bids = append(bids, responses.Bid{
 			PlayerId: playerId,
-			Number:   number,
+			Number:   bid,
 		})
-	}
+		return true
+	})
 
 	content := responses.EndBidding{Bids: bids}
 
@@ -466,7 +467,9 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 			p.WonTricksCount = round.getWonTricksCount(player.Id)
 
 			if player.Id == receiverId || game.State != constants.StateBidding {
-				p.Bid = round.Bids[player.Id]
+				if bid, ok := round.Bids.Load(player.Id); ok {
+					p.Bid = bid
+				}
 			}
 
 			// Receiver must not be aware of other cards
@@ -603,7 +606,7 @@ func (game *Game) Bid(hub *Hub, playerId string, number int) {
 		hub.Dispatch <- m
 		return
 	}
-	game.getCurrentRound().Bids[playerId] = number
+	game.getCurrentRound().Bids.Store(playerId, number)
 	content := responses.Bade{Number: number}
 	m := &ServerMessage{
 		Content:    content,

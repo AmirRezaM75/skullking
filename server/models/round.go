@@ -2,18 +2,19 @@ package models
 
 import (
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/pkg/syncx"
 )
 
 type Round struct {
 	Number             int
 	DealtCards         map[string][]CardId
-	Bids               map[string]int
+	Bids               syncx.Map[string, int]
 	Tricks             []*Trick
 	StarterPlayerIndex int
 	Scores             map[string]int
 }
 
-func (round Round) getDealtCardIdsByPlayerId(playerId string) []uint16 {
+func (round *Round) getDealtCardIdsByPlayerId(playerId string) []uint16 {
 	var cardIds []uint16
 
 	for _, cardId := range round.DealtCards[playerId] {
@@ -23,7 +24,7 @@ func (round Round) getDealtCardIdsByPlayerId(playerId string) []uint16 {
 	return cardIds
 }
 
-func (round Round) getPickedCardIdsByPlayerId(playerId string) []CardId {
+func (round *Round) getPickedCardIdsByPlayerId(playerId string) []CardId {
 	var cardIds []CardId
 
 	for _, trick := range round.Tricks {
@@ -41,9 +42,9 @@ func (round Round) getPickedCardIdsByPlayerId(playerId string) []CardId {
 }
 
 func (round *Round) calculateScores() {
-	var wonTricks = make(map[string]int, len(round.Bids))
+	var wonTricks = make(map[string]int, round.Bids.Len())
 
-	for playerId, _ := range round.Bids {
+	round.Bids.Range(func(playerId string, _ int) bool {
 		if _, ok := wonTricks[playerId]; !ok {
 			wonTricks[playerId] = 0
 		}
@@ -53,9 +54,11 @@ func (round *Round) calculateScores() {
 				wonTricks[trick.WinnerPlayerId] += 1
 			}
 		}
-	}
 
-	for playerId, bid := range round.Bids {
+		return true
+	})
+
+	round.Bids.Range(func(playerId string, bid int) bool {
 		if wonTricks[playerId] != bid && bid != 0 {
 			diff := support.Abs(wonTricks[playerId] - bid)
 			round.Scores[playerId] = -10 * diff
@@ -72,10 +75,12 @@ func (round *Round) calculateScores() {
 		if wonTricks[playerId] == bid && bid == 0 {
 			round.Scores[playerId] = 10 * round.Number
 		}
-	}
+
+		return true
+	})
 }
 
-func (round Round) getBonusPointByPlayerId(playerId string) int {
+func (round *Round) getBonusPointByPlayerId(playerId string) int {
 	var bonus = 0
 
 	for _, trick := range round.Tricks {
@@ -87,7 +92,7 @@ func (round Round) getBonusPointByPlayerId(playerId string) int {
 	return bonus
 }
 
-func (round Round) getRemainingCardIds(playerId string) []CardId {
+func (round *Round) getRemainingCardIds(playerId string) []CardId {
 	var remainingCardIds []CardId
 
 	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
@@ -105,7 +110,7 @@ outerLoop:
 	return remainingCardIds
 }
 
-func (round Round) getRemainingIntCardIds(playerId string) []uint16 {
+func (round *Round) getRemainingIntCardIds(playerId string) []uint16 {
 	var remainingCardIds []uint16
 
 	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
@@ -123,7 +128,7 @@ outerLoop:
 	return remainingCardIds
 }
 
-func (round Round) getWonTricksCount(playerId string) uint {
+func (round *Round) getWonTricksCount(playerId string) uint {
 	var count uint
 
 	for _, trick := range round.Tricks {

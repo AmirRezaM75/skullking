@@ -84,12 +84,13 @@ func (ur gameRepository) Create(game *models.Game) error {
 
 		var bids []Bid
 
-		for playerId, bid := range round.Bids {
+		round.Bids.Range(func(playerId string, bid int) bool {
 			bids = append(bids, Bid{
 				PlayerId: playerId,
 				Bid:      bid,
 			})
-		}
+			return true
+		})
 
 		var scores []Score
 
