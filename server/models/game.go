@@ -578,16 +578,22 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 }
 
 func (game *Game) GetAvailableAvatar() string {
-	for _, number := range support.Fill(constants.MaxPlayers) {
-		game.Players.Range(func(_ string, player *Player) bool {
-			if player.Avatar == fmt.Sprintf("%d.jpg", number) {
-				return false
-			}
-			return true
-		})
+	avatars := map[string]bool{}
 
-		return fmt.Sprintf("%d.jpg", number)
+	game.Players.Range(func(_ string, player *Player) bool {
+		avatars[player.Avatar] = true
+		return true
+	})
+
+	for _, number := range support.Fill(constants.MaxPlayers) {
+		var avatar = fmt.Sprintf("%d.jpg", number)
+
+		if exists := avatars[avatar]; !exists {
+			return avatar
+		}
 	}
+
+	fmt.Println("Couldn't find avatar")
 
 	return ""
 }
