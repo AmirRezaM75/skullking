@@ -10,6 +10,13 @@ type Deal struct {
 	State string   `json:"state"`
 }
 
+// When the game begins, we compute a unique index for each player
+// and need to inform all players about sequence.
+type Started struct {
+	State   string   `json:"state"`
+	Players []Player `json:"players"`
+}
+
 type StartBidding struct {
 	EndsAt int64  `json:"endsAt"`
 	State  string `json:"state"`
@@ -50,8 +57,8 @@ type Authentication struct {
 }
 
 type Error struct {
-	Message string `json:"message"`
-	StatusCode int `json:"statusCode"`
+	Message    string `json:"message"`
+	StatusCode int    `json:"statusCode"`
 }
 
 type EndBidding struct {

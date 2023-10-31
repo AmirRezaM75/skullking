@@ -14,7 +14,8 @@ import type {
 	Table,
 	InitResponse,
 	PlayerResponse,
-	LeftResponse
+	LeftResponse,
+	StartedResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -87,6 +88,9 @@ class GameService {
 		switch (command) {
 			case GameCommand.Init:
 				this.init(content);
+				break;
+			case GameCommand.Started:
+				this.started(content);
 				break;
 			case GameCommand.Joined:
 				this.joined(content);
@@ -429,6 +433,12 @@ class GameService {
 
 	reportError(content: ReportErrorResponse) {
 		this.exceptionMessage = content.message
+	}
+
+	started(content: StartedResponse) {
+		this.players = []
+
+		content.players.forEach(player => this.addPlayer(player))
 	}
 
 	addPlayer(player: PlayerResponse) {

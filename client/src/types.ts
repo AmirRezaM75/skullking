@@ -146,6 +146,10 @@ export type InitResponse = {
 	tableCards: TableCardResponse[];
 };
 
+export type StartedResponse = {
+	players: PlayerResponse[];
+};
+
 export type LeftResponse = {
 	playerId: string;
 };

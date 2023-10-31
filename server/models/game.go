@@ -8,6 +8,7 @@ import (
 	"github.com/AmirRezaM75/skull-king/pkg/syncx"
 	"github.com/AmirRezaM75/skull-king/responses"
 	"log"
+	"math/rand"
 	"sort"
 	"time"
 )
@@ -115,19 +116,50 @@ func (game *Game) NextRound(hub *Hub) {
 		Scores:     make(map[string]int, game.Players.Len()),
 	}
 
-	index := 0
+	if game.Round == 1 {
+		rand.Seed(time.Now().UnixNano())
 
-	for _, player := range game.getPlayers() {
-		// Initially, we assign a Unix time as an index for each player when they join.
-		// However, we require a sequential index starting from 1 to identify the next player for picking.
-		if player.Index > constants.MaxPlayers {
-			player.Index = index + 1
+		// Generate array of [0, players.length)
+		indexes := rand.Perm(game.Players.Len())
+
+		var i = 0
+
+		// Set user index randomly
+		game.Players.Range(func(_ string, player *Player) bool {
+			// Initially, we assign a Unix time as an index for each player when they join.
+			// However, we require a sequential index starting from 1 to identify the next player for picking.
+			if player.Index > constants.MaxPlayers {
+				player.Index = indexes[i] + 1
+			}
+
+			i++
+
+			return true
+		})
+
+		var players []responses.Player
+
+		for _, player := range game.getPlayers() {
+			players = append(players, responses.Player{
+				Id:       player.Id,
+				Username: player.Username,
+				Avatar:   player.Avatar,
+				Score:    player.Score,
+			})
 		}
 
-		round.DealtCards[player.Id] = dealtCardIds[index]
-		round.Bids.Store(player.Id, 0)
+		m := &ServerMessage{
+			Content: responses.Started{Players: players},
+			Command: constants.CommandStarted,
+			GameId:  game.Id,
+		}
 
-		index++
+		hub.Dispatch <- m
+	}
+
+	for _, player := range game.getPlayers() {
+		round.DealtCards[player.Id] = dealtCardIds[player.Index-1]
+		round.Bids.Store(player.Id, 0)
 	}
 
 	trick := &Trick{
