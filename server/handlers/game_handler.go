@@ -6,6 +6,7 @@ import (
 	"github.com/AmirRezaM75/skull-king/contracts"
 	"github.com/AmirRezaM75/skull-king/models"
 	"github.com/AmirRezaM75/skull-king/pkg/support"
+	"github.com/AmirRezaM75/skull-king/pkg/syncx"
 	"github.com/AmirRezaM75/skull-king/responses"
 	"github.com/AmirRezaM75/skull-king/services"
 	"github.com/gorilla/websocket"
@@ -38,6 +39,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	game := &models.Game{
 		Id:        primitive.NewObjectID().Hex(),
 		State:     constants.StatePending,
+		Players:   syncx.Map[string, *models.Player]{},
 		CreatorId: user.Id.Hex(),
 		CreatedAt: time.Now().Unix(),
 	}
