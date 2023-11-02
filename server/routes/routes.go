@@ -4,7 +4,7 @@ import (
 	"github.com/AmirRezaM75/skull-king/contracts"
 	"github.com/AmirRezaM75/skull-king/handlers"
 	"github.com/AmirRezaM75/skull-king/middlewares"
-	"github.com/AmirRezaM75/skull-king/pkg/router"
+	"github.com/amirrezam75/go-router"
 )
 
 type Route struct {

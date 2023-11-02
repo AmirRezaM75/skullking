@@ -3,6 +3,7 @@ module github.com/AmirRezaM75/skull-king
 go 1.18
 
 require (
+	github.com/amirrezam75/go-router v1.0.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.12.0

@@ -1,3 +1,5 @@
+github.com/amirrezam75/go-router v1.0.0 h1:B+r2ea3C8A2cTi7urTV/9d9HLnY2m1JlNUpkbDmMrzI=
+github.com/amirrezam75/go-router v1.0.0/go.mod h1:xoDMFawtijFIKeFOwzWg77X/HbPXA/Tc0oerI7FDilU=
 github.com/bsm/ginkgo/v2 v2.7.0 h1:ItPMPH90RbmZJt5GtkcNvIRuGEdwlBItdNVoyzaNQao=
 github.com/bsm/gomega v1.26.0 h1:LhQm+AFcgV2M0WyKroMASzAzCAJVpAxQXv4SaI9a69Y=
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
