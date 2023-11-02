@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/AmirRezaM75/skull-king/contracts"
-	"github.com/AmirRezaM75/skull-king/pkg/validator"
 	"net/http"
+	"skullking/contracts"
+	"skullking/pkg/validator"
 )
 
 type ErrorResponse struct {

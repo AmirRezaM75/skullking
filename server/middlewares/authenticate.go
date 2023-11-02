@@ -1,10 +1,10 @@
 package middlewares
 
 import (
-	"github.com/AmirRezaM75/skull-king/contracts"
-	"github.com/AmirRezaM75/skull-king/pkg/support"
-	"github.com/AmirRezaM75/skull-king/services"
 	"net/http"
+	"skullking/contracts"
+	"skullking/pkg/support"
+	"skullking/services"
 	"strings"
 )
 

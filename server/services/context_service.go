@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"github.com/AmirRezaM75/skull-king/models"
+	"skullking/models"
 )
 
 const userCtxKey = "user"

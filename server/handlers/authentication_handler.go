@@ -3,10 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/pkg/support"
-	"github.com/AmirRezaM75/skull-king/responses"
 	"log"
 	"net/http"
+	"skullking/pkg/support"
+	"skullking/responses"
 )
 
 type CreateUserRequest struct {

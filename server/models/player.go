@@ -2,9 +2,9 @@ package models
 
 import (
 	"encoding/json"
-	"github.com/AmirRezaM75/skull-king/constants"
 	"github.com/gorilla/websocket"
 	"log"
+	"skullking/constants"
 	"strconv"
 )
 

@@ -2,12 +2,12 @@ package repositories
 
 import (
 	"context"
-	"github.com/AmirRezaM75/skull-king/contracts"
-	"github.com/AmirRezaM75/skull-king/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"skullking/contracts"
+	"skullking/models"
 	"time"
 )
 

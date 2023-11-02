@@ -3,9 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"skullking/models"
 	"time"
 )
 

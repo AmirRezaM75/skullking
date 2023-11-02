@@ -2,8 +2,8 @@ package models
 
 import (
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/constants"
-	"github.com/AmirRezaM75/skull-king/pkg/syncx"
+	"skullking/constants"
+	"skullking/pkg/syncx"
 	"time"
 )
 

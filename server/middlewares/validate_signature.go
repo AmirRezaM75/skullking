@@ -1,9 +1,9 @@
 package middlewares
 
 import (
-	"github.com/AmirRezaM75/skull-king/pkg/support"
 	"net/http"
 	"os"
+	"skullking/pkg/support"
 )
 
 type ValidateSignature struct {

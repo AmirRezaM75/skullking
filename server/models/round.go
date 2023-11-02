@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/AmirRezaM75/skull-king/pkg/support"
-	"github.com/AmirRezaM75/skull-king/pkg/syncx"
+	"skullking/pkg/support"
+	"skullking/pkg/syncx"
 )
 
 type Round struct {

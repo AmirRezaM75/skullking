@@ -1,6 +1,6 @@
 package contracts
 
-import "github.com/AmirRezaM75/skull-king/models"
+import "skullking/models"
 
 type UserService interface {
 	Create(email, username, password string) (*models.User, error)

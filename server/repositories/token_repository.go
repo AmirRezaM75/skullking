@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"context"
-	"github.com/AmirRezaM75/skull-king/contracts"
 	"github.com/redis/go-redis/v9"
+	"skullking/contracts"
 	"time"
 )
 

@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/handlers"
-	"github.com/AmirRezaM75/skull-king/middlewares"
-	"github.com/AmirRezaM75/skull-king/models"
-	"github.com/AmirRezaM75/skull-king/pkg/validator"
-	"github.com/AmirRezaM75/skull-king/repositories"
-	"github.com/AmirRezaM75/skull-king/routes"
-	"github.com/AmirRezaM75/skull-king/services"
 	"github.com/amirrezam75/go-router"
 	"log"
 	"net/http"
 	"os"
+	"skullking/handlers"
+	"skullking/middlewares"
+	"skullking/models"
+	"skullking/pkg/validator"
+	"skullking/repositories"
+	"skullking/routes"
+	"skullking/services"
 )
 
 func main() {

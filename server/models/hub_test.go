@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/AmirRezaM75/skull-king/constants"
-	"github.com/AmirRezaM75/skull-king/pkg/syncx"
+	"skullking/constants"
+	"skullking/pkg/syncx"
 	"testing"
 	"time"
 )

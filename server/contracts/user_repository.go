@@ -1,7 +1,7 @@
 package contracts
 
 import (
-	"github.com/AmirRezaM75/skull-king/models"
+	"skullking/models"
 	"time"
 )
 

@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"github.com/AmirRezaM75/skull-king/contracts"
-	"github.com/AmirRezaM75/skull-king/handlers"
-	"github.com/AmirRezaM75/skull-king/middlewares"
 	"github.com/amirrezam75/go-router"
+	"skullking/contracts"
+	"skullking/handlers"
+	"skullking/middlewares"
 )
 
 type Route struct {

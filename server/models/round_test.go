@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/AmirRezaM75/skull-king/pkg/syncx"
+	"skullking/pkg/syncx"
 	"testing"
 )
 

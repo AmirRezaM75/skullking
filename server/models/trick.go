@@ -1,6 +1,6 @@
 package models
 
-import "github.com/AmirRezaM75/skull-king/responses"
+import "skullking/responses"
 
 type Trick struct {
 	Number int

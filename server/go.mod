@@ -1,4 +1,4 @@
-module github.com/AmirRezaM75/skull-king
+module skullking
 
 go 1.18
 

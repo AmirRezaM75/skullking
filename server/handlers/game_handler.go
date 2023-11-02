@@ -2,18 +2,18 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/AmirRezaM75/skull-king/constants"
-	"github.com/AmirRezaM75/skull-king/contracts"
-	"github.com/AmirRezaM75/skull-king/models"
-	"github.com/AmirRezaM75/skull-king/pkg/support"
-	"github.com/AmirRezaM75/skull-king/pkg/syncx"
-	"github.com/AmirRezaM75/skull-king/responses"
-	"github.com/AmirRezaM75/skull-king/services"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"os"
+	"skullking/constants"
+	"skullking/contracts"
+	"skullking/models"
+	"skullking/pkg/support"
+	"skullking/pkg/syncx"
+	"skullking/responses"
+	"skullking/services"
 	"time"
 )
 

@@ -3,12 +3,12 @@ package models
 import (
 	"errors"
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/constants"
-	"github.com/AmirRezaM75/skull-king/pkg/support"
-	"github.com/AmirRezaM75/skull-king/pkg/syncx"
-	"github.com/AmirRezaM75/skull-king/responses"
 	"log"
 	"math/rand"
+	"skullking/constants"
+	"skullking/pkg/support"
+	"skullking/pkg/syncx"
+	"skullking/responses"
 	"sort"
 	"time"
 )

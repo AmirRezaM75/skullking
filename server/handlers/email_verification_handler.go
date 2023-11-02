@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/AmirRezaM75/skull-king/services"
 	"net/http"
+	"skullking/services"
 )
 
 func (userHandler UserHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
