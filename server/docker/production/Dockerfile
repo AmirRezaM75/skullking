@@ -1,4 +1,4 @@
-FROM golang:1.18 as production
+FROM golang:1.18
 
 WORKDIR /app
 

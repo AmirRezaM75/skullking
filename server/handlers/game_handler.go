@@ -40,7 +40,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Id:        primitive.NewObjectID().Hex(),
 		State:     constants.StatePending,
 		Players:   syncx.Map[string, *models.Player]{},
-		CreatorId: user.Id.Hex(),
+		CreatorId: user.Id,
 		CreatedAt: time.Now().Unix(),
 	}
 
@@ -128,7 +128,6 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Why not using middleware
 	user := gameHandler.userService.FindById(claims.ID)
 
 	if user == nil {
@@ -157,7 +156,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 	game, _ := gameHandler.hub.Games.Load(gameId)
 
-	if _, exists := game.Players.Load(user.Id.Hex()); !exists &&
+	if _, exists := game.Players.Load(user.Id); !exists &&
 		game.Players.Len() == constants.MaxPlayers {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
@@ -172,8 +171,8 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 	var player *models.Player
 
-	if _, exists := game.Players.Load(user.Id.Hex()); exists {
-		player, _ = game.Players.Load(user.Id.Hex())
+	if _, exists := game.Players.Load(user.Id); exists {
+		player, _ = game.Players.Load(user.Id)
 		player.Connection = connection
 		player.Message = make(chan *models.ServerMessage, 10)
 		player.IsConnected = true
@@ -192,7 +191,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		}
 
 		player = &models.Player{
-			Id:          user.Id.Hex(),
+			Id:          user.Id,
 			Username:    user.Username,
 			GameId:      gameId,
 			Avatar:      game.GetAvailableAvatar(),

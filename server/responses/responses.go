@@ -46,16 +46,6 @@ type Card struct {
 	Type   string `json:"type"`
 }
 
-type Authentication struct {
-	User struct {
-		Id       string `json:"id"`
-		Email    string `json:"email"`
-		Username string `json:"username"`
-		Verified bool   `json:"verified"`
-	} `json:"user"`
-	Token string `json:"token"`
-}
-
 type Error struct {
 	Message    string `json:"message"`
 	StatusCode int    `json:"statusCode"`

@@ -9,9 +9,7 @@ import (
 	"skullking/handlers"
 	"skullking/middlewares"
 	"skullking/models"
-	"skullking/pkg/validator"
 	"skullking/repositories"
-	"skullking/routes"
 	"skullking/services"
 )
 
@@ -20,24 +18,15 @@ func main() {
 
 	client, cancel, disconnect := initDatabase()
 
-	redis := initRedis()
-
 	defer cancel()
 	defer disconnect()
 
 	db := client.Database(os.Getenv("MONGODB_DATABASE"))
-	var userRepository = repositories.NewUserRepository(db)
-
-	var tokenRepository = repositories.NewTokenRepository(redis)
-
-	var userService = services.NewUserService(userRepository, tokenRepository)
-
-	v := validator.NewValidator()
 
 	r := router.NewRouter()
 	r.Middleware(middlewares.CorsPolicy{})
 
-	userHandler := handlers.NewUserHandler(userService, v)
+	userService := services.NewUserService()
 
 	gameRepository := repositories.NewGameRepository(db)
 
@@ -46,12 +35,10 @@ func main() {
 
 	go hub.Run()
 
-	routes.Route{
-		Router:      r,
-		UserService: userService,
-		UserHandler: userHandler,
-		GameHandler: gameHandler,
-	}.Setup()
+	r.Post("/games", gameHandler.Create).
+		Middleware(middlewares.Authenticate{UserService: userService})
+	r.Get("/games/join", gameHandler.Join)
+	r.Get("/games/cards", gameHandler.Cards)
 
 	fmt.Println("Listening on port 3000")
 
