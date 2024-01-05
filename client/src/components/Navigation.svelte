@@ -11,7 +11,8 @@
 	}
 </script>
 
-<nav>
+<!-- z-index is neccessary in combination of animated background -->
+<nav style="z-index: 2;">
 	<div class="inner">
 		<div class="left">
 			<a href="/">Home</a>

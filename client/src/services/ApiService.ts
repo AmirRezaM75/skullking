@@ -1,6 +1,7 @@
 import AuthService from './AuthService';
 class ApiService {
-	baseURL: string = import.meta.env.VITE_BACKEND_URL;
+	userServiceBaseURL: string = import.meta.env.VITE_USER_SERVICE_URL;
+	skullkingServiceBaseURL: string = import.meta.env.VITE_USER_SERVICE_URL;
 
 	private authService;
 
@@ -13,7 +14,7 @@ class ApiService {
 
 		if (!user) throw new Error('Unauthenticated');
 
-		return fetch(this.baseURL + '/games', {
+		return fetch(this.skullkingServiceBaseURL + '/games', {
 			method: 'POST',
 			headers: {
 				Authorization: `Bearer ${user.token}`,
@@ -23,12 +24,12 @@ class ApiService {
 	}
 
 	joinGame(gameId: string, token: string): WebSocket {
-		const baseURL = this.baseURL.replace('http', 'ws');
+		const baseURL = this.skullkingServiceBaseURL.replace('http', 'ws');
 		return new WebSocket(`${baseURL}/games/join?gameId=${gameId}&token=${token}`);
 	}
 
 	forgotPassword(email: string): Promise<Response> {
-		return fetch(this.baseURL + '/forgot-password', {
+		return fetch(this.userServiceBaseURL + '/forgot-password', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -40,7 +41,7 @@ class ApiService {
 	}
 
 	login(identifier: string, password: string): Promise<Response> {
-		return fetch(this.baseURL + '/login', {
+		return fetch(this.userServiceBaseURL + '/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -53,7 +54,7 @@ class ApiService {
 	}
 
 	register(username: string, email: string, password: string): Promise<Response> {
-		return fetch(this.baseURL + '/register', {
+		return fetch(this.userServiceBaseURL + '/register', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -67,7 +68,7 @@ class ApiService {
 	}
 
 	resetPassword(email: string, token: string, password: string): Promise<Response> {
-		return fetch(this.baseURL + '/reset-password', {
+		return fetch(this.userServiceBaseURL + '/reset-password', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -81,7 +82,7 @@ class ApiService {
 	}
 
 	verifyEmail(path: string): Promise<Response> {
-		return fetch(this.baseURL + path, {
+		return fetch(this.userServiceBaseURL + path, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json'
@@ -94,7 +95,7 @@ class ApiService {
 
 		if (!user) throw new Error('Unauthenticated');
 
-		return fetch(this.baseURL + '/email/verification-notification', {
+		return fetch(this.userServiceBaseURL + '/email/verification-notification', {
 			method: 'POST',
 			headers: {
 				Authorization: `Bearer ${user.token}`,
@@ -104,7 +105,7 @@ class ApiService {
 	}
 
 	getCards(): Promise<Response> {
-		return fetch(this.baseURL + '/games/cards', {
+		return fetch(this.skullkingServiceBaseURL + '/games/cards', {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json'

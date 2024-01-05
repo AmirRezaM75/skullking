@@ -10,12 +10,12 @@ services:
     volumes:
       - .:/app
     ports:
-      - ${APP_PORT:-3000}:3000
+      - ${APP_FORWARD_PORT:-3000}:3000
   skullking-mongo:
     container_name: skullking-mongo
     image: mongo:6.0.8
     ports:
-      - ${MONGODB_PORT:-27017}:27017
+      - ${MONGODB_FORWARD_PORT:-27017}:27017
     volumes:
       - mongodb-data:/data/db
     environment:
