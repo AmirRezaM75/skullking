@@ -104,6 +104,21 @@ class ApiService {
 		});
 	}
 
+	updateAvatarId(avatarId: number): Promise<Response> {
+		const user = this.authService.user();
+
+		if (!user) throw new Error('Unauthenticated');
+
+		return fetch(this.userServiceBaseURL + '/users/avatar', {
+			method: 'PATCH',
+			headers: {
+				Authorization: `Bearer ${user.token}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({avatarId})
+		});
+	}
+
 	getCards(): Promise<Response> {
 		return fetch(this.skullkingServiceBaseURL + '/games/cards', {
 			method: 'GET',

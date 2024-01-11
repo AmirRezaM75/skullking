@@ -30,7 +30,7 @@ form {
 		@apply block mb-2 text-sm font-medium text-gray-300;
 	}
 
-	input {
+	input, select {
 		@apply bg-transparent
             text-gray-300 text-sm
             border-2 border-violet-900 hover:border-fuchsia-500 focus:border-fuchsia-500
