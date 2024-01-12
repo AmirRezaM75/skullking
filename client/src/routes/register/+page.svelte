@@ -36,7 +36,8 @@
 				username: data.user.username,
 				email: data.user.email,
 				verified: data.user.verified,
-				token: data.token
+				avatarId: data.user.avatarId,
+				token: data.token,
 			};
 			authService.save(user);
 

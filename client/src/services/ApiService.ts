@@ -1,7 +1,8 @@
 import AuthService from './AuthService';
 class ApiService {
-	userServiceBaseURL: string = import.meta.env.VITE_USER_SERVICE_URL;
-	skullkingServiceBaseURL: string = import.meta.env.VITE_USER_SERVICE_URL;
+	userServiceBaseUrl: string = import.meta.env.VITE_USER_SERVICE_URL;
+	lobbyServiceBaseUrl: string = import.meta.env.VITE_LOBBY_SERVICE_URL;
+	skullkingBaseURL: string = import.meta.env.VITE_SKULLKING_URL;
 
 	private authService;
 
@@ -14,7 +15,7 @@ class ApiService {
 
 		if (!user) throw new Error('Unauthenticated');
 
-		return fetch(this.skullkingServiceBaseURL + '/games', {
+		return fetch(this.skullkingBaseURL + '/games', {
 			method: 'POST',
 			headers: {
 				Authorization: `Bearer ${user.token}`,
@@ -24,12 +25,12 @@ class ApiService {
 	}
 
 	joinGame(gameId: string, token: string): WebSocket {
-		const baseURL = this.skullkingServiceBaseURL.replace('http', 'ws');
+		const baseURL = this.skullkingBaseURL.replace('http', 'ws');
 		return new WebSocket(`${baseURL}/games/join?gameId=${gameId}&token=${token}`);
 	}
 
 	forgotPassword(email: string): Promise<Response> {
-		return fetch(this.userServiceBaseURL + '/forgot-password', {
+		return fetch(this.userServiceBaseUrl + '/forgot-password', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -41,7 +42,7 @@ class ApiService {
 	}
 
 	login(identifier: string, password: string): Promise<Response> {
-		return fetch(this.userServiceBaseURL + '/login', {
+		return fetch(this.userServiceBaseUrl + '/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -54,7 +55,7 @@ class ApiService {
 	}
 
 	register(username: string, email: string, password: string): Promise<Response> {
-		return fetch(this.userServiceBaseURL + '/register', {
+		return fetch(this.userServiceBaseUrl + '/register', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -68,7 +69,7 @@ class ApiService {
 	}
 
 	resetPassword(email: string, token: string, password: string): Promise<Response> {
-		return fetch(this.userServiceBaseURL + '/reset-password', {
+		return fetch(this.userServiceBaseUrl + '/reset-password', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -82,7 +83,7 @@ class ApiService {
 	}
 
 	verifyEmail(path: string): Promise<Response> {
-		return fetch(this.userServiceBaseURL + path, {
+		return fetch(this.userServiceBaseUrl + path, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json'
@@ -95,7 +96,7 @@ class ApiService {
 
 		if (!user) throw new Error('Unauthenticated');
 
-		return fetch(this.userServiceBaseURL + '/email/verification-notification', {
+		return fetch(this.userServiceBaseUrl + '/email/verification-notification', {
 			method: 'POST',
 			headers: {
 				Authorization: `Bearer ${user.token}`,
@@ -109,22 +110,59 @@ class ApiService {
 
 		if (!user) throw new Error('Unauthenticated');
 
-		return fetch(this.userServiceBaseURL + '/users/avatar', {
+		return fetch(this.userServiceBaseUrl + '/users/avatar', {
 			method: 'PATCH',
 			headers: {
 				Authorization: `Bearer ${user.token}`,
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({avatarId})
+			body: JSON.stringify({ avatarId })
 		});
 	}
 
 	getCards(): Promise<Response> {
-		return fetch(this.skullkingServiceBaseURL + '/games/cards', {
+		return fetch(this.skullkingBaseURL + '/games/cards', {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json'
 			}
+		});
+	}
+
+	getLobbies(ticketId: string): EventSource {
+		return new EventSource(this.lobbyServiceBaseUrl + '/lobbies?ticketId=' + ticketId)
+	}
+
+	createLobby(): Promise<Response> {
+		const user = this.authService.user();
+
+		if (!user) throw new Error('Unauthenticated');
+
+		return fetch(this.lobbyServiceBaseUrl + '/lobbies', {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${user.token}`,
+				'Content-Type': 'application/json'
+			},
+		});
+	}
+
+	joinLobby(lobbyId: string, ticketId: string): EventSource {
+		return new EventSource(this.lobbyServiceBaseUrl + `/lobbies/${lobbyId}/join?ticketId=` + ticketId)
+	}
+	
+
+	createTicket(): Promise<Response> {
+		const user = this.authService.user();
+
+		if (!user) throw new Error('Unauthenticated');
+
+		return fetch(this.userServiceBaseUrl + '/tickets', {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${user.token}`,
+				'Content-Type': 'application/json'
+			},
 		});
 	}
 }

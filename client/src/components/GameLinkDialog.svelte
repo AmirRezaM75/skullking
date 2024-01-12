@@ -50,6 +50,6 @@
 
 <style lang="scss">
 	.dialog-box {
-		@apply absolute bottom-5 left-5 right-5 p-5 max-w-md rounded-md bg-slate-700 text-lg;
+		@apply absolute bottom-5 left-5 right-5 p-5 max-w-md rounded-md bg-slate-800 text-lg;
 	}
 </style>

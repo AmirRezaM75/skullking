@@ -6,6 +6,7 @@ export type User = {
 	username: string;
 	verified: boolean;
 	token: string;
+	avatarId: number
 };
 
 export type CreateGameResponse = {

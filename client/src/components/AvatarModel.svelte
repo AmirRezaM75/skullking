@@ -2,23 +2,30 @@
 	import { createEventDispatcher } from 'svelte';
 	import ApiService from '../services/ApiService';
 	import Modal from './Modal.svelte';
+	import AuthService from '../services/AuthService';
 
 	const apiService = new ApiService();
 
-	let avatarId = 0;
+	export let currentAvatarId: number
+
+	let avatarId = currentAvatarId;
 
 	function choose(id: number) {
 		avatarId = id;
 	}
 
+	const dispatch = createEventDispatcher<{ closeModal: boolean, avatarIdUpdated: {avatarId: number} }>();
+
 	async function update() {
 		const response = await apiService.updateAvatarId(avatarId);
 		if (response.status === 204) {
+			currentAvatarId = avatarId
+			const authService = new AuthService
+			authService.updateAvatarId(avatarId)
+			dispatch('avatarIdUpdated', {avatarId: avatarId});
 			closeModal();
 		}
-	}
-
-	const dispatch = createEventDispatcher<{ closeModal: boolean }>();
+	}	
 
 	function closeModal() {
 		dispatch('closeModal', true);

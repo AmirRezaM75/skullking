@@ -43,4 +43,4 @@ export enum CardType {
 	Escape = 'escape'
 }
 
-export const IntendedGameId = 'intended_game_id';
+export const IntendedUrl = 'intended_url';

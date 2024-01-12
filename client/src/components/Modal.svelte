@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import Close from './icons/CloseIcon.svelte';
+	import CloseIcon from './icons/CloseIcon.svelte';
 
 	export let header: string;
 
@@ -21,7 +21,7 @@
 		>
 			<div class="font-bold uppercase">{header}</div>
 			<div on:click={close} on:keydown={close}>
-				<Close />
+				<CloseIcon />
 			</div>
 		</div>
 		<div class="bg-slate-800">

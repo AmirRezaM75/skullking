@@ -1,9 +1,10 @@
 <script lang="ts">
 	import Navigation from '../../components/Navigation.svelte';
-	import { IntendedGameId } from '../../constants';
+	import { IntendedUrl } from '../../constants';
 	import ApiService from '../../services/ApiService';
 	import AuthService from '../../services/AuthService';
 	import type { User } from '../../types';
+	import { goto } from '$app/navigation';
 	// TODO: define ./@src/ as root
 	// https://stackoverflow.com/questions/73754777/svelte-import-by-absolute-path-does-not-work
 
@@ -26,21 +27,23 @@
 
 		if (response.status === 200) {
 			const authService = new AuthService();
+			console.log(data)
 			const user: User = {
 				id: data.user.id,
 				username: data.user.username,
 				email: data.user.email,
 				verified: data.user.verified,
-				token: data.token
+				avatarId: data.user.avatarId,
+				token: data.token,
 			};
 			authService.save(user);
 
 			if (user.verified) {
-				const gameId = sessionStorage.getItem(IntendedGameId);
-				sessionStorage.removeItem(IntendedGameId);
-				window.location.href = gameId ? `/games/${gameId}` : '/';
+				const intendedUrl = sessionStorage.getItem(IntendedUrl);
+				sessionStorage.removeItem(IntendedUrl);
+				goto(intendedUrl ?? '/lobbies')
 			} else {
-				window.location.href = 'verify-email';
+				goto('verify-email')
 			}
 		}
 
