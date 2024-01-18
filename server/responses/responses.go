@@ -97,6 +97,7 @@ type Init struct {
 	Round          int         `json:"round"`
 	Trick          int         `json:"trick"`
 	State          string      `json:"state"`
+	LobbyId        string      `json:"lobbyId"`
 	ExpirationTime int64       `json:"expirationTime"`
 	PickingUserId  string      `json:"pickingUserId"`
 	Players        []Player    `json:"players"`

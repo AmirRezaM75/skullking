@@ -21,6 +21,7 @@ type Game struct {
 	Rounds         [constants.MaxRounds]*Round
 	CreatorId      string
 	CreatedAt      int64
+	LobbyId        string
 }
 
 func (game *Game) findPlayerIndexForPicking() int {
@@ -484,6 +485,7 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		Round:          game.Round,
 		Trick:          game.Trick,
 		State:          game.State,
+		LobbyId:        game.LobbyId,
 		ExpirationTime: game.ExpirationTime,
 		Players:        players,
 		CreatorId:      game.CreatorId,

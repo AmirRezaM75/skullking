@@ -64,6 +64,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 		State:     constants.StatePending,
 		CreatorId: user.Id,
 		CreatedAt: time.Now().Unix(),
+		LobbyId:   lobby.Id,
 	}
 
 	rand.Seed(time.Now().UnixNano())
