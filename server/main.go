@@ -26,12 +26,17 @@ func main() {
 	r := router.NewRouter()
 	r.Middleware(middlewares.CorsPolicy{})
 
+	var ticketService = services.NewTicketService(os.Getenv("KENOPSIA_USER_BASE_URL"))
+
+	var lobbyService = services.NewLobbyService(os.Getenv("KENOPSIA_LOBBY_BASE_URL"), os.Getenv("KENOPSIA_TOKEN"))
+
 	userService := services.NewUserService()
 
 	gameRepository := repositories.NewGameRepository(db)
 
 	hub := models.NewHub(gameRepository)
-	gameHandler := handlers.NewGameHandler(hub, userService)
+
+	gameHandler := handlers.NewGameHandler(hub, lobbyService, ticketService)
 
 	go hub.Run()
 

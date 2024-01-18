@@ -51,12 +51,6 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) Subscribe(player *Player) {
-	if game, ok := h.Games.Load(player.GameId); ok {
-		game.Players.Store(player.Id, player)
-	}
-}
-
 func (h *Hub) Unsubscribe(player *Player) {
 	// If the game status is PENDING, we will remove the player from the game
 	// to inform the game creator of the total number of players before starting.

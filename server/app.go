@@ -15,7 +15,7 @@ import (
 func initDatabase() (*mongo.Client, context.CancelFunc, func()) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	var mongoURI = fmt.Sprintf("mongodb://%s:%s", os.Getenv("MONGODB_HOST"), os.Getenv("MONGODB_PORT"))
+	var mongoURI = fmt.Sprintf("mongodb://%s:%d", os.Getenv("MONGODB_HOST"), 27017)
 
 	var credentials = options.Credential{
 		AuthSource: os.Getenv("MONGODB_AUTH_SOURCE"),
