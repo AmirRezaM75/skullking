@@ -51,7 +51,6 @@
 		const response = await apiService.createGame(data.lobbyId);
 		if (response.status === 201) {
 			response.json().then((data) => {
-				console.log(data)
 				goto(`/games/${data.id}`);
 			});
 		}

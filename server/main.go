@@ -36,7 +36,11 @@ func main() {
 
 	hub := models.NewHub(gameRepository)
 
-	gameHandler := handlers.NewGameHandler(hub, lobbyService, ticketService)
+	var broker = initBroker()
+
+	var publisherService = services.NewPublisherService(broker)
+
+	gameHandler := handlers.NewGameHandler(hub, lobbyService, ticketService, publisherService)
 
 	go hub.Run()
 

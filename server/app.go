@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -11,6 +12,14 @@ import (
 	"os"
 	"time"
 )
+
+func initBroker() *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", os.Getenv("BROKER_REDIS_HOST"), os.Getenv("BROKER_REDIS_PORT")),
+		Password: os.Getenv("BROKER_REDIS_PASSWORD"),
+		DB:       0,
+	})
+}
 
 func initDatabase() (*mongo.Client, context.CancelFunc, func()) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

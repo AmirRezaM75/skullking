@@ -17,24 +17,29 @@ import (
 )
 
 type GameHandler struct {
-	hub           *models.Hub
-	lobbyService  services.LobbyService
-	ticketService services.TicketService
+	hub              *models.Hub
+	lobbyService     services.LobbyService
+	ticketService    services.TicketService
+	publisherService services.PublisherService
 }
 
 func NewGameHandler(
 	hub *models.Hub,
 	lobbyService services.LobbyService,
 	ticketService services.TicketService,
+	publisherService services.PublisherService,
 ) *GameHandler {
 	return &GameHandler{
-		hub:           hub,
-		lobbyService:  lobbyService,
-		ticketService: ticketService,
+		hub:              hub,
+		lobbyService:     lobbyService,
+		ticketService:    ticketService,
+		publisherService: publisherService,
 	}
 }
 
 func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	user := services.ContextService{}.GetUser(r.Context())
 
 	if user == nil {
@@ -91,16 +96,37 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	gameHandler.hub.Cleanup()
 	gameHandler.hub.Games.Store(game.Id, game)
 
+	message, err := responses.NewGameCreatedEvent(game.Id, game.LobbyId)
+
+	if err != nil {
+		services.LogService{}.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal GameCreatedEvent",
+			"method":      "GameHandler@Create",
+		})
+	}
+
+	err = gameHandler.publisherService.Publish(message)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	response, err := json.Marshal(
 		responses.CreateGame{Id: game.Id},
 	)
 
 	if err != nil {
-		http.Error(w, "JSON marshal failed", 500)
+		services.LogService{}.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal CreateGame response.",
+			"method":      "GameHandler@Create",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	_, _ = w.Write(response)
 }
