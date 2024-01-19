@@ -65,9 +65,9 @@ func (lobbyService LobbyService) FindById(id string) *LobbyResponse {
 		return nil
 	}
 
-	var lobby *LobbyResponse
+	var lobby LobbyResponse
 
-	err = json.NewDecoder(response.Body).Decode(lobby)
+	err = json.NewDecoder(response.Body).Decode(&lobby)
 
 	if err != nil {
 		LogService{}.Error(map[string]string{
@@ -78,5 +78,5 @@ func (lobbyService LobbyService) FindById(id string) *LobbyResponse {
 		return nil
 	}
 
-	return lobby
+	return &lobby
 }

@@ -3,7 +3,6 @@
 	import { GameState, GameCommand } from '../../../constants';
 	import User from '../../../components/User.svelte';
 	import Card from '../../../components/Card.svelte';
-	import GameLinkDialog from '../../../components/GameLinkDialog.svelte';
 	import Countdown from '../../../components/Countdown.svelte';
 	import QueueService from '../../../services/QueueService';
 	import AudioService from '../../../services/AudioService';
@@ -15,6 +14,7 @@
 	import AudioIcon from '../../../components/AudioIcon.svelte';
 	import ConnectionErrorDialog from '../../../components/ConnectionErrorDialog.svelte';
 	import ExceptionReporter from '../../../components/ExceptionReporter.svelte';
+	import Loader from '../../../components/Loader.svelte';
 
 	export let data;
 
@@ -29,7 +29,7 @@
 	const queue = new QueueService();
 
 	const apiService = new ApiService();
-	const ws = apiService.joinGame(data.gameId, data.token);
+	const ws = apiService.joinGame(data.gameId, data.ticketId);
 
 	const audioService = new AudioService();
 
@@ -53,7 +53,6 @@
 			'background',
 			'countdown',
 			'picked',
-			'start',
 			'startPicking'
 		].forEach((filename) => {
 			const audio = new Audio(`/sounds/${filename}.mp3`);
@@ -63,6 +62,7 @@
 
 	ws.onopen = function (e) {
 		toggleBackgroundAudio();
+		disconnected = false;
 	};
 
 	ws.onclose = function (e) {
@@ -141,16 +141,6 @@
 		isSidebarOpen = !isSidebarOpen;
 	}
 
-	function start() {
-		const audio = new Audio('/sounds/start.mp3');
-		audio.play();
-		ws.send(
-			JSON.stringify({
-				command: GameCommand.Start
-			})
-		);
-	}
-
 	function bid(bid: number) {
 		ws.send(
 			JSON.stringify({
@@ -187,38 +177,13 @@
 
 <div class="board">
 	{#if disconnected}
-		<ConnectionErrorDialog/>
+		<ConnectionErrorDialog />
 	{/if}
-	{#if game.exceptionMessage !== ""}
-		<ExceptionReporter message={game.exceptionMessage} code={404}/>
+	{#if game.exceptionMessage !== ''}
+		<ExceptionReporter message={game.exceptionMessage} code={404} />
 	{/if}
 	{#if game.state == GameState.Pending}
-		<div class="flex-col">
-			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
-				{#each game.players as player}
-					<div class="bg-slate-700 p-6 rounded-lg text-center">
-						<div class="mb-3">
-							<img src={player.avatar} width="100" height="100" alt="" class="rounded-full" />
-						</div>
-						<span class="text-gray-100 font-bold text-lg uppercase">{player.username}</span>
-					</div>
-				{/each}
-			</div>
-			{#if game.creator.id !== data.authId}
-				<p class="text-yellow-500 text-center">
-					Wait for {game.creator.username} to start the game.
-				</p>
-			{:else if game.players.length != 1}
-				<div class="text-center mt-6 mb-6 sm:mb-0">
-					<button type="button" on:click={start} class="btn-secondary">
-						<span>Start</span>
-					</button>
-				</div>
-			{/if}
-		</div>
-		{#if game.players.length === 1}
-			<GameLinkDialog />
-		{/if}
+		<Loader />
 	{:else}
 		<div
 			class="sidebar relative {isSidebarOpen

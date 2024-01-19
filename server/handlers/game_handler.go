@@ -46,7 +46,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 		LobbyId string `json:"lobbyId"`
 	}
 
-	err := decoder(payload, w, r)
+	err := decoder(&payload, w, r)
 
 	if err != nil {
 		return

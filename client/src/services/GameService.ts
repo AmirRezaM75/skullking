@@ -15,7 +15,6 @@ import type {
 	InitResponse,
 	PlayerResponse,
 	LeftResponse,
-	StartedResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -25,6 +24,8 @@ import type Swiper from 'swiper';
 class GameService {
 	// Authenticated user id
 	authId: string;
+
+	lobbyId: string = '';
 
 	cardService: CardService;
 
@@ -64,9 +65,9 @@ class GameService {
 		id: string;
 		username: string;
 	} = {
-		id: '',
-		username: ''
-	};
+			id: '',
+			username: ''
+		};
 
 	exceptionMessage: string = ""
 
@@ -90,7 +91,7 @@ class GameService {
 				this.init(content);
 				break;
 			case GameCommand.Started:
-				this.started(content);
+				this.started();
 				break;
 			case GameCommand.Joined:
 				this.joined(content);
@@ -188,6 +189,7 @@ class GameService {
 		this.round = content.round;
 		this.trick = content.trick;
 		this.state = content.state;
+		this.lobbyId = content.lobbyId;
 
 		if (content.tableCards) {
 			content.tableCards.forEach((tableCard) => {
@@ -435,10 +437,8 @@ class GameService {
 		this.exceptionMessage = content.message
 	}
 
-	started(content: StartedResponse) {
-		this.players = []
-
-		content.players.forEach(player => this.addPlayer(player))
+	started() {
+		//
 	}
 
 	addPlayer(player: PlayerResponse) {

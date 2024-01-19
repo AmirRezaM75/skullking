@@ -1,15 +1,16 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import AvatarModel from '../../../components/AvatarModel.svelte';
-	import GameLinkDialog from '../../../components/GameLinkDialog.svelte';
-	import LobbySidebar from '../../../components/LobbySidebar.svelte';
+	import LobbyLinkDialog from '../../../components/LobbyLinkDialog.svelte';
 	import PencilIcon from '../../../components/icons/PencilIcon.svelte';
 	import ApiService from '../../../services/ApiService';
 	import LobbyService from '../../../services/LobbyService';
+	import { goto } from '$app/navigation';
 	let isAvatarModalOpen = false;
 
 	export let data;
 
-	let currentAvatarId = data.auth.avatarId
+	let currentAvatarId = data.auth.avatarId;
 
 	const apiService = new ApiService();
 	const sse = apiService.joinLobby(data.lobbyId, data.ticketId);
@@ -43,15 +44,35 @@
 	function closeAvatarModal() {
 		isAvatarModalOpen = false;
 	}
+
+	async function start() {
+		const audio = new Audio('/sounds/start.mp3');
+		audio.play();
+		const response = await apiService.createGame(data.lobbyId);
+		if (response.status === 201) {
+			response.json().then((data) => {
+				console.log(data)
+				goto(`/games/${data.id}`);
+			});
+		}
+	}
+
+	onMount(() => {
+		['start'].forEach((filename) => {
+			const audio = new Audio(`/sounds/${filename}.mp3`);
+			audio.preload = 'auto';
+		});
+	});
 </script>
 
 <div class="min-w-full min-h-screen flex items-center justify-center bg-slate-700">
 	<!-- <LobbySidebar /> -->
 	{#if isAvatarModalOpen}
 		<AvatarModel
-		on:closeModal={closeAvatarModal}
-		on:avatarIdUpdated={(e) => currentAvatarId = e.detail.avatarId}
-		currentAvatarId={currentAvatarId} />
+			on:closeModal={closeAvatarModal}
+			on:avatarIdUpdated={(e) => (currentAvatarId = e.detail.avatarId)}
+			{currentAvatarId}
+		/>
 	{/if}
 	{#if lobbyService.lobby != null}
 		<div class="flex-col">
@@ -70,7 +91,9 @@
 						{/if}
 						<div
 							class="mb-3 rounded-full w-24 h-24 bg-top bg-no-repeat"
-							style="background-image: url({`/images/avatars/${player.avatarId+1}.jpg`}); background-size: 110px"
+							style="background-image: url({`/images/avatars/${
+								player.avatarId + 1
+							}.jpg`}); background-size: 110px"
 						/>
 						<span class="text-gray-300 font-bold text-lg uppercase">{player.username}</span>
 					</div>
@@ -82,14 +105,14 @@
 				</p>
 			{:else if lobbyService.lobby.players.length != 1}
 				<div class="text-center mt-6 mb-6 sm:mb-0">
-					<button type="button" class="btn-secondary">
+					<button type="button" class="btn-secondary" on:click={start}>
 						<span>Start</span>
 					</button>
 				</div>
 			{/if}
 		</div>
 		{#if lobbyService.lobby.players.length === 1}
-			<GameLinkDialog />
+			<LobbyLinkDialog />
 		{/if}
 	{/if}
 </div>

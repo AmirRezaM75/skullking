@@ -10,7 +10,7 @@ class ApiService {
 		this.authService = new AuthService();
 	}
 
-	createGame(): Promise<Response> {
+	createGame(lobbyId: string): Promise<Response> {
 		const user = this.authService.user();
 
 		if (!user) throw new Error('Unauthenticated');
@@ -20,13 +20,16 @@ class ApiService {
 			headers: {
 				Authorization: `Bearer ${user.token}`,
 				'Content-Type': 'application/json'
-			}
+			},
+			body: JSON.stringify({
+				lobbyId
+			}),
 		});
 	}
 
-	joinGame(gameId: string, token: string): WebSocket {
+	joinGame(gameId: string, ticketId: string): WebSocket {
 		const baseURL = this.skullkingBaseURL.replace('http', 'ws');
-		return new WebSocket(`${baseURL}/games/join?gameId=${gameId}&token=${token}`);
+		return new WebSocket(`${baseURL}/games/join?gameId=${gameId}&ticketId=${ticketId}`);
 	}
 
 	forgotPassword(email: string): Promise<Response> {

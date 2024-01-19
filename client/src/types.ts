@@ -9,11 +9,6 @@ export type User = {
 	avatarId: number
 };
 
-export type CreateGameResponse = {
-	id: string;
-	statusCode: number;
-};
-
 export type StartBiddingResponse = {
 	endsAt: number;
 	state: GameState;
@@ -140,15 +135,12 @@ export type InitResponse = {
 	round: number;
 	trick: number;
 	state: GameState;
+	lobbyId: string;
 	expirationTime: number;
 	pickingUserId: string;
 	players: PlayerResponse[];
 	creatorId: string;
 	tableCards: TableCardResponse[];
-};
-
-export type StartedResponse = {
-	players: PlayerResponse[];
 };
 
 export type LeftResponse = {

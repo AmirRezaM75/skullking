@@ -11,6 +11,9 @@ services:
       - .:/app
     ports:
       - ${APP_FORWARD_PORT:-3000}:3000
+    networks:
+      - default
+      - kenopsia-network
   skullking-mongo:
     container_name: skullking-mongo
     image: mongo:6.0.8
@@ -25,3 +28,7 @@ services:
 volumes:
   mongodb-data:
     driver: local
+
+networks:
+  kenopsia-network:
+    name: kenopsia-network

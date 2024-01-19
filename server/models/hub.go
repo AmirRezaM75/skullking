@@ -52,15 +52,10 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) Unsubscribe(player *Player) {
-	// If the game status is PENDING, we will remove the player from the game
-	// to inform the game creator of the total number of players before starting.
-	// However, if the game has already started, we will not remove the player,
+	// If the game has already started, we will not remove the player,
 	// and the server decide on behalf of them.
 	if game, ok := h.Games.Load(player.GameId); ok {
-		if game.State == constants.StatePending {
-			game.Left(h, player.Id)
-			game.Players.Delete(player.Id)
-		}
+		game.Left(h, player.Id) // TODO: Rename to disconnected
 	}
 
 	// TODO: If every one left the game delete the game.
