@@ -80,9 +80,10 @@ type CreateGame struct {
 type Player struct {
 	Id              string   `json:"id"`
 	Username        string   `json:"username"`
-	AvatarId        uint8    `json:"avatar"`
+	AvatarId        uint8    `json:"avatarId"`
 	Score           int      `json:"score"`
 	Bid             int      `json:"bid"`
+	IsConnected     bool     `json:"isConnected"`
 	HandCardIds     []uint16 `json:"handCardIds"`
 	PickableCardIds []uint16 `json:"pickableCardIds"`
 	WonTricksCount  uint     `json:"wonTricksCount"`
@@ -106,5 +107,9 @@ type Init struct {
 }
 
 type Left struct {
+	PlayerId string `json:"playerId"`
+}
+
+type Joined struct {
 	PlayerId string `json:"playerId"`
 }

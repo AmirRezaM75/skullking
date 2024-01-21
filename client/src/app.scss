@@ -30,35 +30,14 @@ form {
 		@apply block mb-2 text-sm font-medium text-gray-300;
 	}
 
-	input, select {
-		@apply bg-transparent
-            text-gray-300 text-sm
-            border-2 border-violet-900 hover:border-fuchsia-500 focus:border-fuchsia-500
-            rounded-lg
-            block
-            w-full
-            p-2.5
-            focus:outline-none
-            transition-all;
+	input,
+	select {
+		@apply bg-transparent text-gray-300 text-sm border-2 border-violet-900 hover:border-fuchsia-500 focus:border-fuchsia-500 rounded-lg block w-full p-2.5 focus:outline-none transition-all;
 	}
 }
 
 .btn {
-	@apply text-gray-900
-    font-medium
-    hover:bg-lime-secondary
-    bg-lime-primary
-    outline-none
-    rounded-lg
-    w-full
-    px-5
-    py-2.5
-    text-center
-    transition-all
-    select-none
-    inline-flex
-    items-center
-    justify-center;
+	@apply text-gray-900 font-medium hover:bg-lime-secondary bg-lime-primary outline-none rounded-lg w-full px-5 py-2.5 text-center transition-all select-none inline-flex items-center justify-center;
 
 	appearance: button;
 	backface-visibility: hidden;
@@ -91,8 +70,10 @@ form {
 .circle-loader {
 	@apply border-2 border-gray-500 w-40 h-40 rounded-full border-l-yellow-500 relative;
 	animation: loader 1.2s infinite linear;
+
 	.checkmark {
 		@apply hidden;
+
 		&:after {
 			@apply h-20 w-10 border-r-lime-primary border-t-lime-primary absolute border-r border-t left-10 top-20;
 			content: '';
@@ -135,6 +116,7 @@ form {
 		.checkmark {
 			@apply block;
 		}
+
 		@apply border-lime-primary;
 	}
 
@@ -142,6 +124,7 @@ form {
 		.cross {
 			@apply block;
 		}
+
 		@apply border-red-500;
 	}
 }
@@ -150,6 +133,7 @@ form {
 	0% {
 		transform: rotate(0deg);
 	}
+
 	100% {
 		transform: rotate(360deg);
 	}
@@ -161,16 +145,19 @@ form {
 		width: 0;
 		opacity: 1;
 	}
+
 	20% {
 		height: 0;
 		width: 2.5rem;
 		opacity: 1;
 	}
+
 	40% {
 		height: 5rem;
 		width: 2.5rem;
 		opacity: 1;
 	}
+
 	100% {
 		height: 5rem;
 		width: 2.5rem;
@@ -182,6 +169,7 @@ form {
 	0% {
 		transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(0);
 	}
+
 	100% {
 		transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(1);
 	}
@@ -190,9 +178,11 @@ form {
 .background {
 	@apply w-screen h-screen bg-slate-900 bg-center bg-cover bg-no-repeat;
 	background-image: url('/images/bg1.jpg');
+
 	.inner {
 		@apply w-full text-center lg:text-left lg:w-2/3 h-full flex justify-center items-center;
 		background: rgba(0, 0, 0, 0.5);
+
 		@screen lg {
 			background: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 100%);
 		}
@@ -232,8 +222,16 @@ form {
 			padding-left: 20px;
 			flex: 1;
 
-			.username {
-				@apply text-white font-bold text-xl;
+			.username-container {
+				@apply flex items-center;
+
+				.connection-status {
+					@apply w-2 h-2 rounded-full mr-2;
+				}
+
+				.username {
+					@apply text-white font-bold text-xl;
+				}
 			}
 
 			.action {
@@ -331,25 +329,21 @@ form {
 
 				&.red {
 					background: rgb(205, 250, 250);
-					background: linear-gradient(
-						90deg,
-						var(--color-red-100) 0%,
-						var(--color-red-300) 15%,
-						var(--color-red-500) 35%,
-						var(--color-red-700) 100%
-					);
+					background: linear-gradient(90deg,
+							var(--color-red-100) 0%,
+							var(--color-red-300) 15%,
+							var(--color-red-500) 35%,
+							var(--color-red-700) 100%);
 					box-shadow: 0 0 10px #005a82;
 				}
 
 				&.blue {
 					background: rgb(205, 250, 250);
-					background: linear-gradient(
-						90deg,
-						var(--color-blue-100) 0%,
-						var(--color-blue-300) 15%,
-						var(--color-blue-500) 35%,
-						var(--color-blue-700) 100%
-					);
+					background: linear-gradient(90deg,
+							var(--color-blue-100) 0%,
+							var(--color-blue-300) 15%,
+							var(--color-blue-500) 35%,
+							var(--color-blue-700) 100%);
 					box-shadow: 0 0 10px #005a82;
 				}
 			}
@@ -414,11 +408,13 @@ form {
 		.card.winner {
 			transform: rotate(360deg);
 		}
+
 		.card:not(.winner) {
 			filter: grayscale(1);
 			transform: scale(0.9);
 		}
 	}
+
 	.card {
 		.card-owner {
 			@apply w-full absolute bottom-0 left-0 text-center;
@@ -433,6 +429,7 @@ form {
 		@apply w-14 h-14 text-center text-white border-white bg-slate-700 border-2 cursor-pointer font-bold text-2xl rounded-lg select-none;
 		line-height: 3.15rem;
 		transition: all 0.2s;
+
 		&:hover,
 		&.active {
 			@apply text-lime-primary border-lime-primary bg-slate-800;
@@ -468,6 +465,7 @@ form {
 	from {
 		width: 100%;
 	}
+
 	to {
 		width: 0;
 	}
@@ -477,12 +475,14 @@ form {
 	from {
 		width: 100%;
 	}
+
 	to {
 		width: 0;
 	}
 }
 
 @keyframes picked {
+
 	from,
 	60%,
 	75%,
@@ -519,6 +519,7 @@ form {
 		transform: translate3d(0, 0, 0);
 	}
 }
+
 .picked-card-animation {
 	-webkit-animation-name: picked;
 	animation-name: picked;
@@ -545,6 +546,7 @@ form {
 		transform: translate3d(0, -2000px, 0) scaleY(3);
 	}
 }
+
 .pick-card-animation {
 	-webkit-animation-name: pick;
 	animation-name: pick;
@@ -557,6 +559,7 @@ form {
 		-webkit-transform: translateY(300px) scale(0.7);
 		transform: translateY(300px) scale(0.7);
 	}
+
 	to {
 		-webkit-transform: translateY(0) scale(1);
 		transform: translateY(0) scale(1);

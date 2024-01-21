@@ -13,7 +13,13 @@
 		<img src={player.avatar} alt="" />
 	</div>
 	<div class="info">
-		<div class="username">{player.username}</div>
+		<div class="username-container">
+			<div
+				class="connection-status {player.isConnected ? 'bg-green-500' : 'bg-red-500'}"
+				title={player.isConnected ? 'Online' : 'Offline'}
+			/>
+			<div class="username">{player.username}</div>
+		</div>
 		<div class="action">
 			<span title="Bid" class="mr-2">B: {player.bid}</span>
 			<span title="Won tricks count">W: {player.wonTricksCount}</span>

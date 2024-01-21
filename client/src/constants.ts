@@ -26,6 +26,7 @@ export enum GameState {
 	Dealing = 'DEALING',
 	Picking = 'PICKING',
 	Bidding = 'BIDDING',
+	EndGame = 'END_GAME', // TODO: Not set in server
 	EndBidding = 'END_BIDDING', // TODO: Not set in server
 	AnnounceTrickWinner = 'ANNOUNCE_TRICK_WINNER' // TODO: Not set in server
 }

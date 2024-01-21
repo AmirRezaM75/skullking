@@ -40,6 +40,7 @@ export type Player = {
 	picking: boolean;
 	bid: number;
 	wonTricksCount: number;
+	isConnected: boolean;
 };
 
 export type DealResponse = {
@@ -118,9 +119,10 @@ export type Countdown = {
 export type PlayerResponse = {
 	id: string;
 	username: string;
-	avatar: string;
+	avatarId: number;
 	score: number;
 	bid: number;
+	isConnected: boolean;
 	handCardIds: number[];
 	pickableCardIds: number[];
 	wonTricksCount: number;
@@ -146,3 +148,9 @@ export type InitResponse = {
 export type LeftResponse = {
 	playerId: string;
 };
+
+
+export type JoiedResponse = {
+	playerId: string;
+};
+

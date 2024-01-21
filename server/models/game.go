@@ -97,6 +97,13 @@ func (game *Game) Start(hub *Hub) {
 		return
 	}
 
+	m := &ServerMessage{
+		Command: constants.CommandStarted,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+
 	game.NextRound(hub)
 }
 
@@ -449,6 +456,16 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	hub.Dispatch <- m
 }
 
+func (game *Game) Joined(hub *Hub, playerId string) {
+	m := &ServerMessage{
+		Content: responses.Joined{PlayerId: playerId},
+		Command: constants.CommandJoined,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+}
+
 func (game *Game) Initialize(hub *Hub, receiverId string) {
 	var players []responses.Player
 
@@ -459,6 +476,7 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		p.Username = player.Username
 		p.AvatarId = player.AvatarId
 		p.Score = player.Score
+		p.IsConnected = player.IsConnected
 
 		if game.Round != 0 {
 			var round = game.getCurrentRound()

@@ -19,22 +19,8 @@ export async function load({ params }) {
 	const cardService = new CardService();
 	await cardService.import();
 
-	let ticketId = ""
-
-	const apiService = new ApiService
-
-	const response = await apiService.createTicket()
-
-	if (response.status === 201) {
-		const data = await response.json()
-		ticketId = data.id
-	} else {
-		throw redirect(302, '/');
-	}
-
 	return {
 		gameId: params.gameId,
-		ticketId: ticketId,
 		authId: user.id,
 		cardService: cardService
 	};

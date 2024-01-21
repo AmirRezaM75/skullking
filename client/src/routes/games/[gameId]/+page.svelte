@@ -29,14 +29,60 @@
 	const queue = new QueueService();
 
 	const apiService = new ApiService();
-	const ws = apiService.joinGame(data.gameId, data.ticketId);
 
 	const audioService = new AudioService();
 
 	let deckSwiper: Swiper;
 	let tableSwiper: Swiper;
 
-	onMount(() => {
+	let bidFunc: Function;
+	let pickFunc: Function;
+
+	onMount(async () => {
+		let ticketId = '';
+
+		const response = await apiService.createTicket();
+
+		if (response.status === 201) {
+			const data = await response.json();
+			ticketId = data.id;
+		}
+
+		const ws = apiService.joinGame(data.gameId, ticketId);
+
+		ws.onopen = function (e) {
+			toggleBackgroundAudio();
+			disconnected = false;
+		};
+
+		ws.onclose = function (e) {
+			disconnected = true;
+		};
+
+		ws.onmessage = async function (e) {
+			try {
+				let message = JSON.parse(e.data);
+				queue.push(message);
+				await run();
+			} catch (error) {
+				// If responses is empty or malformed we don't want to stop executing
+			}
+		};
+
+		bidFunc = (bid: number) => ws.send(
+			JSON.stringify({
+				command: GameCommand.Bid,
+				content: bid.toString()
+			})
+		);
+
+		pickFunc = (cardId: number) => ws.send(
+			JSON.stringify({
+				command: GameCommand.Pick,
+				content: cardId.toString()
+			})
+		);
+
 		deckSwiper = new Swiper('.deck-swiper', {
 			slidesPerView: 'auto'
 		});
@@ -59,15 +105,6 @@
 			audio.preload = 'auto';
 		});
 	});
-
-	ws.onopen = function (e) {
-		toggleBackgroundAudio();
-		disconnected = false;
-	};
-
-	ws.onclose = function (e) {
-		disconnected = true;
-	};
 
 	async function toggleBackgroundAudio() {
 		audioService.toggleBackgroundAudio().then(() => {
@@ -102,16 +139,6 @@
 		}
 	}
 
-	ws.onmessage = async function (e) {
-		try {
-			let message = JSON.parse(e.data);
-			queue.push(message);
-			await run();
-		} catch (error) {
-			// If responses is empty or malformed we don't want to stop executing
-		}
-	};
-
 	async function run() {
 		const message = queue.pop();
 
@@ -142,21 +169,11 @@
 	}
 
 	function bid(bid: number) {
-		ws.send(
-			JSON.stringify({
-				command: GameCommand.Bid,
-				content: bid.toString()
-			})
-		);
+		bidFunc(bid)
 	}
 
 	function pick(cardId: number) {
-		ws.send(
-			JSON.stringify({
-				command: GameCommand.Pick,
-				content: cardId.toString()
-			})
-		);
+		pickFunc(cardId)
 	}
 </script>
 
@@ -213,60 +230,64 @@
 				/>
 			</div>
 
-			<div class="notifier">
-				<p>{game.notifierMessage}</p>
-				{#if game.showCountdown}
-					<Countdown
-						number={game.timer}
-						color={game.countdownColor}
-						on:newCountdown={addCountdown}
-					/>
-				{/if}
-			</div>
+			{#if game.state === GameState.EndGame}
+				<div class="w-full bg-red" />
+			{:else}
+				<div class="notifier">
+					<p>{game.notifierMessage}</p>
+					{#if game.showCountdown}
+						<Countdown
+							number={game.timer}
+							color={game.countdownColor}
+							on:newCountdown={addCountdown}
+						/>
+					{/if}
+				</div>
 
-			<div class="bids-container">
-				{#each game.bids as bidNumber, index}
-					<div
-						class="bid
+				<div class="bids-container">
+					{#each game.bids as bidNumber, index}
+						<div
+							class="bid
 						{game.bid === bidNumber ? 'active' : ''}
 						{game.state === GameState.EndBidding ? 'fade-in-down-animation animation-duration-500 active' : ''}"
-						on:click={() => bid(bidNumber)}
-						on:keydown={() => bid(bidNumber)}
-					>
-						{bidNumber}
-					</div>
-				{/each}
-			</div>
+							on:click={() => bid(bidNumber)}
+							on:keydown={() => bid(bidNumber)}
+						>
+							{bidNumber}
+						</div>
+					{/each}
+				</div>
 
-			<div class="table-container {game.table.hasWinner ? 'has-winner' : ''}">
-				<div class="table-swiper w-full">
-					<div class="swiper-wrapper">
-						{#each game.table.cards as card}
-							<Card
-								showCardOwner={true}
-								{card}
-								delay={0}
-								class="picked-card-animation swiper-slide {card.isWinner ? 'winner' : ''}"
-							/>
-						{/each}
+				<div class="table-container {game.table.hasWinner ? 'has-winner' : ''}">
+					<div class="table-swiper w-full">
+						<div class="swiper-wrapper">
+							{#each game.table.cards as card}
+								<Card
+									showCardOwner={true}
+									{card}
+									delay={0}
+									class="picked-card-animation swiper-slide {card.isWinner ? 'winner' : ''}"
+								/>
+							{/each}
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="cards-container">
-				<div class="deck-swiper w-full">
-					<div class="swiper-wrapper">
-						{#each game.cards as card, index}
-							<Card
-								{card}
-								delay={index}
-								class="dealing-card-animation swiper-slide"
-								on:click={() => pick(card.id)}
-							/>
-						{/each}
+				<div class="cards-container">
+					<div class="deck-swiper w-full">
+						<div class="swiper-wrapper">
+							{#each game.cards as card, index}
+								<Card
+									{card}
+									delay={index}
+									class="dealing-card-animation swiper-slide"
+									on:click={() => pick(card.id)}
+								/>
+							{/each}
+						</div>
 					</div>
 				</div>
-			</div>
+			{/if}
 		</div>
 	{/if}
 </div>

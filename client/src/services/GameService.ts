@@ -15,6 +15,7 @@ import type {
 	InitResponse,
 	PlayerResponse,
 	LeftResponse,
+	JoiedResponse,
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -250,12 +251,18 @@ class GameService {
 		}
 	}
 
-	joined(content: PlayerResponse) {
-		this.addPlayer(content);
+	joined(content: JoiedResponse) {
+		const player = this.findPlayerById(content.playerId)
+		if (player) {
+			player.isConnected = true
+		}
 	}
 
 	left(content: LeftResponse) {
-		this.deletePlayerById(content.playerId);
+		const player = this.findPlayerById(content.playerId)
+		if (player) {
+			player.isConnected = false
+		}
 	}
 
 	// To determine when next round is started, use deal()
@@ -267,6 +274,7 @@ class GameService {
 	}
 
 	endGame() {
+		this.state = GameState.Pending;
 		this.cards = [];
 		this.table.cards = [];
 		const winner = this.players.reduce((previous, current) => {
@@ -451,23 +459,17 @@ class GameService {
 		if (exists) return;
 
 		const p: Player = {
-			avatar: '/images/avatars/' + player.avatar,
+			avatar: '/images/avatars/' + player.avatarId + '.jpg',
 			id: player.id,
 			username: player.username,
 			picking: false,
 			bid: player.bid,
 			score: player.score,
-			wonTricksCount: player.wonTricksCount
+			wonTricksCount: player.wonTricksCount,
+			isConnected: player.isConnected
 		};
 
 		this.players.push(p);
-	}
-
-	deletePlayerById(id: string) {
-		const index = this.players.findIndex((player) => player.id === id);
-		if (index !== -1) {
-			this.players.splice(index, 1);
-		}
 	}
 
 	findPlayerById(playerId: string): Player | null {

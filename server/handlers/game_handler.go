@@ -85,7 +85,6 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 			Username:    player.Username,
 			GameId:      game.Id,
 			AvatarId:    player.AvatarId,
-			Message:     make(chan *models.ServerMessage, 10),
 			Index:       indexes[i] + 1,
 			IsConnected: false,
 		})
@@ -212,6 +211,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	game, _ := gameHandler.hub.Games.Load(gameId)
 
 	if player, exists := game.Players.Load(userId); exists {
+		player.Message = make(chan *models.ServerMessage, 10)
 		player.Connection = connection
 		player.IsConnected = true
 
@@ -221,15 +221,10 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 		if game.IsEveryoneConnected() == true &&
 			game.State == constants.StatePending {
-			m := &models.ServerMessage{
-				Command: constants.CommandStarted,
-				GameId:  game.Id,
-			}
-
-			gameHandler.hub.Dispatch <- m
-
 			game.Start(gameHandler.hub)
 		}
+
+		game.Joined(gameHandler.hub, player.Id)
 
 		player.Read(gameHandler.hub)
 	} else {

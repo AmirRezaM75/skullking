@@ -4,6 +4,7 @@ package constants
 
 const CommandInit = "INIT"
 const CommandLeft = "LEFT"
+const CommandJoined = "JOINED"
 const CommandStartBidding = "START_BIDDING"
 const CommandEndBidding = "END_BIDDING"
 const CommandBade = "BADE"

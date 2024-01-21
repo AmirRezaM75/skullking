@@ -55,7 +55,7 @@ func (h *Hub) Unsubscribe(player *Player) {
 	// If the game has already started, we will not remove the player,
 	// and the server decide on behalf of them.
 	if game, ok := h.Games.Load(player.GameId); ok {
-		game.Left(h, player.Id) // TODO: Rename to disconnected
+		game.Left(h, player.Id)
 	}
 
 	// TODO: If every one left the game delete the game.
