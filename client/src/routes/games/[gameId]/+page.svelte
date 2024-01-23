@@ -69,19 +69,21 @@
 			}
 		};
 
-		bidFunc = (bid: number) => ws.send(
-			JSON.stringify({
-				command: GameCommand.Bid,
-				content: bid.toString()
-			})
-		);
+		bidFunc = (bid: number) =>
+			ws.send(
+				JSON.stringify({
+					command: GameCommand.Bid,
+					content: bid.toString()
+				})
+			);
 
-		pickFunc = (cardId: number) => ws.send(
-			JSON.stringify({
-				command: GameCommand.Pick,
-				content: cardId.toString()
-			})
-		);
+		pickFunc = (cardId: number) =>
+			ws.send(
+				JSON.stringify({
+					command: GameCommand.Pick,
+					content: cardId.toString()
+				})
+			);
 
 		deckSwiper = new Swiper('.deck-swiper', {
 			slidesPerView: 'auto'
@@ -169,11 +171,11 @@
 	}
 
 	function bid(bid: number) {
-		bidFunc(bid)
+		bidFunc(bid);
 	}
 
 	function pick(cardId: number) {
-		pickFunc(cardId)
+		pickFunc(cardId);
 	}
 </script>
 
@@ -231,7 +233,10 @@
 			</div>
 
 			{#if game.state === GameState.EndGame}
-				<div class="w-full bg-red" />
+				<div class="w-full h-full flex flex-col items-center justify-center">
+					<a href="/lobbies/{game.lobbyId}" class="btn btn-secondary max-w-fit">Play Again</a>
+					<a href="/lobbies" class="block text-white mt-4 uppercase text-sm">Lobbies</a>
+				</div>
 			{:else}
 				<div class="notifier">
 					<p>{game.notifierMessage}</p>

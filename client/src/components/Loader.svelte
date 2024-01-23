@@ -21,7 +21,7 @@
 <style lang="scss">
 	// Credit https://codepen.io/aaroniker/pen/omvYNZ
 	.loader {
-		--path: rgb(99, 102, 241); // indigo-500;
+		--path: #fff;
 		--dot: var(--lime-primary);
 		--duration: 3s;
 		width: 44px;
@@ -59,12 +59,12 @@
 				animation: pathTriangle var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
 			}
 			rect {
-				stroke-dasharray: (256 / 4 * 3) (256 / 4) (256 / 4 * 3) (256 / 4);
+				stroke-dasharray: calc(256 / 4 * 3) calc(256 / 4) calc(256 / 4 * 3) calc(256 / 4);
 				stroke-dashoffset: 0;
 				animation: pathRect 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
 			}
 			circle {
-				stroke-dasharray: (200 / 4 * 3) (200 / 4) (200 / 4 * 3) (200 / 4);
+				stroke-dasharray: calc(200 / 4 * 3) calc(200 / 4) calc(200 / 4 * 3) calc(200 / 4);
 				stroke-dashoffset: 75;
 				animation: pathCircle var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
 			}
