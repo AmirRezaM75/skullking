@@ -1,4 +1,4 @@
-import type { ListLobbiesResponse, SomeoneJoinedLobbbyResponse, SomeoneLeftLobbyResponse } from "../lobby-types";
+import type { ListLobbiesResponse, SomeoneJoinedLobbyResponse, SomeoneLeftLobbyResponse } from "../lobby-types";
 import { EventType } from "../lobby-types";
 import LobbyModel from "../objects/Lobby";
 
@@ -20,7 +20,7 @@ class LobbiesService {
         return this
     }
 
-    joined(content: SomeoneJoinedLobbbyResponse) {
+    joined(content: SomeoneJoinedLobbyResponse) {
         const lobby = content.lobby
         const index = this.lobbies.findIndex(l => l.id === lobby.id)
 

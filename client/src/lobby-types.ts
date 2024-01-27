@@ -24,7 +24,7 @@ export enum EventType {
 
 export type ListLobbiesResponse = Lobby[]
 
-export type SomeoneJoinedLobbbyResponse = {
+export type SomeoneJoinedLobbyResponse = {
     lobby: Lobby
     userId: string
 }

@@ -1,6 +1,5 @@
 import { goto } from "$app/navigation";
-import type LobbySidebar from "../components/LobbySidebar.svelte";
-import type { GameCreatedResponse, ListLobbiesResponse, Player, ShowLobbyResponse, SomeoneJoinedLobbbyResponse, SomeoneLeftLobbyResponse, UserUpdatedResponse } from "../lobby-types";
+import type { GameCreatedResponse, SomeoneJoinedLobbyResponse as SomeoneJoinedLobbyResponse, SomeoneLeftLobbyResponse, UserUpdatedResponse } from "../lobby-types";
 import { EventType } from "../lobby-types";
 import LobbyModel from "../objects/Lobby";
 
@@ -22,13 +21,13 @@ class LobbyService {
                 this.gameCreated(content);
                 break;
             case EventType.ReportError:
-                this.reportError(content);
+                this.reportError();
                 break;
         }
         return this
     }
 
-    joined(content: SomeoneJoinedLobbbyResponse) {
+    joined(content: SomeoneJoinedLobbyResponse) {
         const lobby = content.lobby
 
         const model = new LobbyModel(
