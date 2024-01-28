@@ -3,13 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/amirrezam75/go-router"
+	m "github.com/amirrezam75/go-router/middlewares"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
+	"net/http"
 	"os"
+	"skullking/handlers"
+	"skullking/middlewares"
+	"skullking/services"
 	"time"
 )
 
@@ -55,4 +61,46 @@ func loadEnvironments() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+}
+
+func setupRoutes(
+	gameHandler *handlers.GameHandler,
+	userService services.UserService,
+) *router.Router {
+	var rateLimiterLogger = func(identifier, url string) {
+		services.LogService{}.Info(map[string]string{
+			"message":    "Too many requests.",
+			"identifier": identifier,
+			"url":        url,
+		})
+	}
+
+	var rateLimiterConfig = m.RateLimiterConfig{
+		Duration: time.Minute,
+		Limit:    10,
+		Extractor: func(r *http.Request) string {
+			var user = services.ContextService{}.GetUser(r.Context())
+
+			if user == nil {
+				return r.RemoteAddr
+			}
+
+			return user.Id
+		},
+	}
+
+	var rateLimiterMiddleware = m.NewRateLimiterMiddleware(rateLimiterConfig, rateLimiterLogger)
+	var authMiddleware = middlewares.Authenticate{UserService: userService}
+
+	r := router.NewRouter()
+	r.Middleware(middlewares.CorsPolicy{})
+
+	r.Post("/games", gameHandler.Create).
+		Middleware(authMiddleware).
+		Middleware(rateLimiterMiddleware)
+
+	r.Get("/games/join", gameHandler.Join)
+	r.Get("/games/cards", gameHandler.Cards)
+
+	return r
 }
