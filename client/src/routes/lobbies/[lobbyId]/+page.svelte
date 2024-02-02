@@ -6,6 +6,7 @@
 	import ApiService from '../../../services/ApiService';
 	import LobbyService from '../../../services/LobbyService';
 	import { goto } from '$app/navigation';
+	import ConnectionErrorDialog from '../../../components/ConnectionErrorDialog.svelte';
 	let isAvatarModalOpen = false;
 
 	export let data;
@@ -24,11 +25,16 @@
 			isOpen = true;
 		}
 	};
+
+	let disconnected = false
+
 	sse.onerror = function (e) {
-		console.log('error', e);
+		// In case of timeout and opening duplicate tabs
+		sse.close()
+		disconnected = true
 	};
 
-	let lobbyService = new LobbyService();
+	let lobbyService = new LobbyService(data.auth.id);
 
 	sse.onmessage = (message) => {
 		const m = JSON.parse(message.data);
@@ -66,6 +72,11 @@
 
 <div class="min-w-full min-h-screen flex items-center justify-center bg-slate-700">
 	<!-- <LobbySidebar /> -->
+
+	{#if disconnected}
+		<ConnectionErrorDialog/>
+	{/if}
+
 	{#if isAvatarModalOpen}
 		<AvatarModel
 			on:closeModal={closeAvatarModal}

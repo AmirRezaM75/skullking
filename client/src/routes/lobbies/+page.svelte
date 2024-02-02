@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import AnimatedBackground from '../../components/AnimatedBackground.svelte';
+	import ConnectionErrorDialog from '../../components/ConnectionErrorDialog.svelte';
 	import Navigation from '../../components/Navigation.svelte';
 	import ApiService from '../../services/ApiService';
 	import LobbiesService from '../../services/LobbiesService';
@@ -13,7 +14,10 @@
 
 	let lobbiesService = new LobbiesService();
 
+	let disconnected = false;
+
 	var isOpen = false;
+
 	sse.onopen = (...args) => {
 		if (isOpen) {
 			sse.close();
@@ -22,9 +26,13 @@
 			isOpen = true;
 		}
 	};
+
 	sse.onerror = function (e) {
-		console.log('error', e);
+		// In case of timeout and opening duplicate tabs
+		sse.close()
+		disconnected = true
 	};
+	
 	sse.onmessage = (message) => {
 		const m = JSON.parse(message.data);
 		lobbiesService = lobbiesService.handle(m.type, JSON.parse(m.content));
@@ -34,7 +42,7 @@
 		const response = await apiService.createLobby();
 		if (response.status === 201) {
 			response.json().then((data) => {
-				goto(`lobbies/${data.id}`)
+				goto(`/lobbies/${data.id}`)
 			});
 		}
 	}
@@ -45,9 +53,12 @@
 </svelte:head>
 
 <section class="min-h-screen flex justify-center bg-slate-900">
+	{#if disconnected}
+		<ConnectionErrorDialog/>
+	{/if}
 	<Navigation />
 	<AnimatedBackground />
-	<div class="w-full max-w-2xl px-4 2xl:px-0 mt-24" style="z-index: 2;">
+	<div class="w-full max-w-2xl px-4 2xl:px-0 mt-24 pb-4" style="z-index: 2;">
 		<div class="bg-slate-800 shadow-lg rounded-lg">
 			<div class="px-4 py-3">
 				<div class="flex flex-wrap items-center">

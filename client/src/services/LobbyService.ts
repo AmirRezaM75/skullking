@@ -6,6 +6,12 @@ import LobbyModel from "../objects/Lobby";
 class LobbyService {
     lobby: LobbyModel | null = null
 
+    authId: string
+
+    constructor(authId: string) {
+        this.authId = authId
+    }
+
     handle(type: EventType, content: any): this {
         switch (type) {
             case EventType.Joined:
@@ -49,6 +55,10 @@ class LobbyService {
         if (playerIndex !== -1) {
 			this.lobby.players.splice(playerIndex, 1);
 		}
+
+        if (this.authId === content.playerId) {
+            goto("/lobbies")
+        }
     }
 
     userUpdated(content: UserUpdatedResponse) {
