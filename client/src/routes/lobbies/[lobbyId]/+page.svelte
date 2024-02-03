@@ -109,9 +109,9 @@
 					</div>
 				{/each}
 			</div>
-			{#if lobbyService.lobby.getCreator()?.id !== data.auth.id}
+			{#if lobbyService.lobby.managerId !== data.auth.id}
 				<p class="text-yellow-500 text-center">
-					Wait for {lobbyService.lobby.getCreator()?.username} to start the game.
+					Wait for {lobbyService.lobby.getManager()?.username} to start the game.
 				</p>
 			{:else if lobbyService.lobby.players.length != 1}
 				<div class="text-center mt-6 mb-6 sm:mb-0">

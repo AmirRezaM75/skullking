@@ -1,7 +1,14 @@
 import type { Player } from "../lobby-types";
 
 class Lobby {
-    constructor(public id: string, public name: string, public players: Player[], public creatorId: string, public createdAt: number) {
+    constructor(
+        public id: string,
+        public name: string,
+        public players: Player[],
+        public creatorId: string,
+        public managerId: string,
+        public createdAt: number,
+    ) {
 
     }
 
@@ -18,9 +25,9 @@ class Lobby {
         return new Intl.DateTimeFormat('en-US', options).format(date);
     }
 
-    getCreator(): Player|null {
+    getManager(): Player|null {
         for (let i = 0; i < this.players.length; i++) {
-            if (this.players[i].id == this.creatorId) {
+            if (this.players[i].id == this.managerId) {
                 return this.players[i]
             }
         }

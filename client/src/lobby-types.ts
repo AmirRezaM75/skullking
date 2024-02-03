@@ -3,6 +3,7 @@ export type Lobby = {
     name: string
     players: Player[]
     creatorId: string
+    managerId: string
     createdAt: number
 }
 
@@ -20,6 +21,7 @@ export enum EventType {
     UserUpdated = 'user_updated',
     ReportError = 'report_error',
     GameCreated = 'game_created',
+    ManagerChanged = 'manager_changed',
 }
 
 export type ListLobbiesResponse = Lobby[]
@@ -41,4 +43,8 @@ export type UserUpdatedResponse = {
 
 export type GameCreatedResponse = {
     gameId: string
+}
+
+export type ManagerChangedResponse = {
+    userId: string
 }
