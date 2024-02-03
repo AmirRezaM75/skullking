@@ -7,39 +7,13 @@
 	import LobbyService from '../../../services/LobbyService';
 	import { goto } from '$app/navigation';
 	import ConnectionErrorDialog from '../../../components/ConnectionErrorDialog.svelte';
-	let isAvatarModalOpen = false;
 
 	export let data;
 
+	// Avatar
 	let currentAvatarId = data.auth.avatarId;
 
-	const apiService = new ApiService();
-	const sse = apiService.joinLobby(data.lobbyId, data.ticketId);
-
-	var isOpen = false;
-	sse.onopen = () => {
-		if (isOpen) {
-			sse.close();
-		} else {
-			console.log('Connection to server opened.');
-			isOpen = true;
-		}
-	};
-
-	let disconnected = false;
-
-	sse.onerror = function () {
-		// In case of timeout and opening duplicate tabs
-		sse.close();
-		disconnected = true;
-	};
-
-	let lobbyService = new LobbyService(data.auth.id);
-
-	sse.onmessage = (message) => {
-		const m = JSON.parse(message.data);
-		lobbyService = lobbyService.handle(m.type, JSON.parse(m.content));
-	};
+	let isAvatarModalOpen = false;
 
 	function openAvatarModal(playerId: string) {
 		if (data.auth.id === playerId) {
@@ -50,6 +24,15 @@
 	function closeAvatarModal() {
 		isAvatarModalOpen = false;
 	}
+
+	// SSE
+	var isOpen = false;
+
+	let disconnected = false;
+
+	const apiService = new ApiService();
+
+	let lobbyService = new LobbyService(data.auth.id);
 
 	async function start() {
 		const audio = new Audio('/sounds/start.mp3');
@@ -62,13 +45,46 @@
 		}
 	}
 
-	onMount(() => {
-		['start'].forEach((filename) => {
-			const audio = new Audio(`/sounds/${filename}.mp3`);
-			audio.preload = 'auto';
-		});
+	onMount(async () => {
+		let ticketId = '';
+
+		const response = await apiService.createTicket();
+
+		if (response.status === 201) {
+			const data = await response.json();
+			ticketId = data.id;
+		}
+
+		const sse = apiService.joinLobby(data.lobbyId, ticketId);
+
+		sse.onopen = () => {
+			if (isOpen) {
+				sse.close();
+			} else {
+				console.log('Connection to server opened.');
+				isOpen = true;
+			}
+		};
+
+		sse.onerror = function () {
+			// In case of timeout and opening duplicate tabs
+			sse.close();
+			disconnected = true;
+		};
+
+		sse.onmessage = (message) => {
+			const m = JSON.parse(message.data);
+			lobbyService = lobbyService.handle(m.type, JSON.parse(m.content));
+		};
 	});
 </script>
+
+<svelte:head>
+	<title>Kenopsia - Lobby</title>
+	{#each [...Array(30).keys()] as number}
+		<link rel="preload" href="/images/avatars/{number + 1}.jpg" as="image" />
+	{/each}
+</svelte:head>
 
 <div class="min-w-full min-h-screen flex items-center justify-center bg-slate-700">
 	<!-- <LobbySidebar /> -->

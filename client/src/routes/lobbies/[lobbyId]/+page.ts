@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 import AuthService from '../../../services/AuthService';
-import ApiService from '../../../services/ApiService';
 import { IntendedUrl } from '../../../constants';
 
 /** @type {import('./$types').PageLoad} */
@@ -15,23 +14,14 @@ export async function load({ params }) {
 		throw redirect(302, '/verify-email');
 	}
 
-	let ticketId = '';
-
-	const apiService = new ApiService();
-
-	const response = await apiService.createTicket();
-
-	if (response.status === 201) {
-		const data = await response.json();
-		ticketId = data.id;
-	} else {
-		throw redirect(302, '/');
-	}
+	['start'].forEach((filename) => {
+		const audio = new Audio(`/sounds/${filename}.mp3`);
+		audio.preload = 'auto';
+	});
 
 	return {
 		lobbyId: params.lobbyId,
-		auth: user,
-		ticketId: ticketId
+		auth: user
 	};
 }
 
