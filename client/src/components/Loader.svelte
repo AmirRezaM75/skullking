@@ -154,8 +154,8 @@
 	}
 
 	.loader-container {
-        @apply bg-slate-800;
-        width: 100%;
+		@apply bg-slate-800;
+		width: 100%;
 		-webkit-font-smoothing: antialiased;
 		box-sizing: border-box;
 		min-height: 100vh;

@@ -18,7 +18,7 @@
 
 	var isOpen = false;
 
-	sse.onopen = (...args) => {
+	sse.onopen = () => {
 		if (isOpen) {
 			sse.close();
 		} else {
@@ -27,12 +27,12 @@
 		}
 	};
 
-	sse.onerror = function (e) {
+	sse.onerror = function () {
 		// In case of timeout and opening duplicate tabs
-		sse.close()
-		disconnected = true
+		sse.close();
+		disconnected = true;
 	};
-	
+
 	sse.onmessage = (message) => {
 		const m = JSON.parse(message.data);
 		lobbiesService = lobbiesService.handle(m.type, JSON.parse(m.content));
@@ -42,7 +42,7 @@
 		const response = await apiService.createLobby();
 		if (response.status === 201) {
 			response.json().then((data) => {
-				goto(`/lobbies/${data.id}`)
+				goto(`/lobbies/${data.id}`);
 			});
 		}
 	}
@@ -54,7 +54,7 @@
 
 <section class="min-h-screen flex justify-center bg-slate-900">
 	{#if disconnected}
-		<ConnectionErrorDialog/>
+		<ConnectionErrorDialog />
 	{/if}
 	<Navigation />
 	<AnimatedBackground />

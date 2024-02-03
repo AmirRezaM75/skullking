@@ -4,10 +4,10 @@ import ApiService from './ApiService';
 
 interface Response {
 	items: {
-		id: number,
-		number: number,
-		type: string,
-	}[]
+		id: number;
+		number: number;
+		type: string;
+	}[];
 }
 
 class CardService {
@@ -30,7 +30,7 @@ class CardService {
 						imageURL: this.getImageURL(c.type),
 						isWinner: false,
 						disabled: false,
-						ownerUsername: '',
+						ownerUsername: ''
 					});
 				});
 			});

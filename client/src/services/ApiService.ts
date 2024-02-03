@@ -23,7 +23,7 @@ class ApiService {
 			},
 			body: JSON.stringify({
 				lobbyId
-			}),
+			})
 		});
 	}
 
@@ -133,7 +133,7 @@ class ApiService {
 	}
 
 	getLobbies(ticketId: string): EventSource {
-		return new EventSource(this.lobbyServiceBaseUrl + '/lobbies?ticketId=' + ticketId)
+		return new EventSource(this.lobbyServiceBaseUrl + '/lobbies?ticketId=' + ticketId);
 	}
 
 	createLobby(): Promise<Response> {
@@ -146,14 +146,15 @@ class ApiService {
 			headers: {
 				Authorization: `Bearer ${user.token}`,
 				'Content-Type': 'application/json'
-			},
+			}
 		});
 	}
 
 	joinLobby(lobbyId: string, ticketId: string): EventSource {
-		return new EventSource(this.lobbyServiceBaseUrl + `/lobbies/${lobbyId}/join?ticketId=` + ticketId)
+		return new EventSource(
+			this.lobbyServiceBaseUrl + `/lobbies/${lobbyId}/join?ticketId=` + ticketId
+		);
 	}
-	
 
 	createTicket(): Promise<Response> {
 		const user = this.authService.user();
@@ -165,7 +166,7 @@ class ApiService {
 			headers: {
 				Authorization: `Bearer ${user.token}`,
 				'Content-Type': 'application/json'
-			},
+			}
 		});
 	}
 }

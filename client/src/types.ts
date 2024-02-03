@@ -6,7 +6,7 @@ export type User = {
 	username: string;
 	verified: boolean;
 	token: string;
-	avatarId: number
+	avatarId: number;
 };
 
 export type StartBiddingResponse = {
@@ -149,8 +149,6 @@ export type LeftResponse = {
 	playerId: string;
 };
 
-
 export type JoiedResponse = {
 	playerId: string;
 };
-

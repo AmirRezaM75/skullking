@@ -17,7 +17,7 @@
 		width="35px"
 		height="35px"
 		class="absolute bottom-10 right-10 cursor-pointer"
-        on:click={open}
+		on:click={open}
 	>
 		<path
 			fill="#ddd"

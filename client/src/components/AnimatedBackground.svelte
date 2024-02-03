@@ -1,18 +1,18 @@
 <ul class="canvas">
-    <li/>
-    <li/>
-    <li/>
-    <li/>
-    <li/>
-    <li/>
-    <li/>
-    <li/>
-    <li/>
-    <li/>
+	<li />
+	<li />
+	<li />
+	<li />
+	<li />
+	<li />
+	<li />
+	<li />
+	<li />
+	<li />
 </ul>
 
 <style lang="scss">
-    // Credit: https://codepen.io/mohaiman/pen/MQqMyo
+	// Credit: https://codepen.io/mohaiman/pen/MQqMyo
 	.canvas {
 		position: absolute;
 		top: 0;

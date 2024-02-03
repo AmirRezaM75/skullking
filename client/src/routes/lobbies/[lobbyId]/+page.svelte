@@ -17,7 +17,7 @@
 	const sse = apiService.joinLobby(data.lobbyId, data.ticketId);
 
 	var isOpen = false;
-	sse.onopen = (...args) => {
+	sse.onopen = () => {
 		if (isOpen) {
 			sse.close();
 		} else {
@@ -26,12 +26,12 @@
 		}
 	};
 
-	let disconnected = false
+	let disconnected = false;
 
-	sse.onerror = function (e) {
+	sse.onerror = function () {
 		// In case of timeout and opening duplicate tabs
-		sse.close()
-		disconnected = true
+		sse.close();
+		disconnected = true;
 	};
 
 	let lobbyService = new LobbyService(data.auth.id);
@@ -74,7 +74,7 @@
 	<!-- <LobbySidebar /> -->
 
 	{#if disconnected}
-		<ConnectionErrorDialog/>
+		<ConnectionErrorDialog />
 	{/if}
 
 	{#if isAvatarModalOpen}

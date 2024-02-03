@@ -15,15 +15,15 @@ export async function load({ params }) {
 		throw redirect(302, '/verify-email');
 	}
 
-	let ticketId = ""
+	let ticketId = '';
 
-	const apiService = new ApiService
+	const apiService = new ApiService();
 
-	const response = await apiService.createTicket()
+	const response = await apiService.createTicket();
 
 	if (response.status === 201) {
-		const data = await response.json()
-		ticketId = data.id
+		const data = await response.json();
+		ticketId = data.id;
 	} else {
 		throw redirect(302, '/');
 	}
@@ -31,8 +31,8 @@ export async function load({ params }) {
 	return {
 		lobbyId: params.lobbyId,
 		auth: user,
-		ticketId: ticketId,
-	}
+		ticketId: ticketId
+	};
 }
 
 export const ssr = false;

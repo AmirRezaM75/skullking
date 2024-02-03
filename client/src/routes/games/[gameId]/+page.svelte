@@ -35,8 +35,8 @@
 	let deckSwiper: Swiper;
 	let tableSwiper: Swiper;
 
-	let bidFunc: Function;
-	let pickFunc: Function;
+	let bidFunc: (bid: number) => void;
+	let pickFunc: (bid: number) => void;
 
 	onMount(async () => {
 		let ticketId = '';
@@ -50,12 +50,12 @@
 
 		const ws = apiService.joinGame(data.gameId, ticketId);
 
-		ws.onopen = function (e) {
+		ws.onopen = function () {
 			toggleBackgroundAudio();
 			disconnected = false;
 		};
 
-		ws.onclose = function (e) {
+		ws.onclose = function () {
 			disconnected = true;
 		};
 

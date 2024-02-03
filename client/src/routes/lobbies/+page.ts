@@ -4,7 +4,7 @@ import ApiService from '../../services/ApiService';
 import { IntendedUrl } from '../../constants';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ params }) {
+export async function load() {
 	const auth = new AuthService();
 	const user = auth.user();
 
@@ -17,21 +17,20 @@ export async function load({ params }) {
 
 	const apiService = new ApiService();
 
-	let ticketId = ""
+	let ticketId = '';
 
-	const response = await apiService.createTicket()
+	const response = await apiService.createTicket();
 
 	if (response.status === 201) {
-		const data = await response.json()
-		ticketId = data.id
+		const data = await response.json();
+		ticketId = data.id;
 	} else {
 		throw redirect(302, '/');
 	}
 
 	return {
 		ticketId: ticketId
-	}
-	
+	};
 }
 
 export const ssr = false;

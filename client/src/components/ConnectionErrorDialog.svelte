@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ExceptionReporter from "./ExceptionReporter.svelte";
+	import ExceptionReporter from './ExceptionReporter.svelte';
 
 	function reload() {
 		window.location.reload();

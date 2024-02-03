@@ -15,7 +15,7 @@ import type {
 	InitResponse,
 	PlayerResponse,
 	LeftResponse,
-	JoiedResponse,
+	JoiedResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -26,7 +26,7 @@ class GameService {
 	// Authenticated user id
 	authId: string;
 
-	lobbyId: string = '';
+	lobbyId = '';
 
 	cardService: CardService;
 
@@ -66,11 +66,11 @@ class GameService {
 		id: string;
 		username: string;
 	} = {
-			id: '',
-			username: ''
-		};
+		id: '',
+		username: ''
+	};
 
-	exceptionMessage: string = ""
+	exceptionMessage = '';
 
 	constructor(cardService: CardService, authId: string) {
 		this.players = [];
@@ -252,16 +252,16 @@ class GameService {
 	}
 
 	joined(content: JoiedResponse) {
-		const player = this.findPlayerById(content.playerId)
+		const player = this.findPlayerById(content.playerId);
 		if (player) {
-			player.isConnected = true
+			player.isConnected = true;
 		}
 	}
 
 	left(content: LeftResponse) {
-		const player = this.findPlayerById(content.playerId)
+		const player = this.findPlayerById(content.playerId);
 		if (player) {
-			player.isConnected = false
+			player.isConnected = false;
 		}
 	}
 
@@ -442,7 +442,7 @@ class GameService {
 	}
 
 	reportError(content: ReportErrorResponse) {
-		this.exceptionMessage = content.message
+		this.exceptionMessage = content.message;
 	}
 
 	started() {

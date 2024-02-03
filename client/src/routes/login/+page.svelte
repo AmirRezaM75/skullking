@@ -8,9 +8,9 @@
 	// TODO: define ./@src/ as root
 	// https://stackoverflow.com/questions/73754777/svelte-import-by-absolute-path-does-not-work
 
-	let identifier: string = '';
-	let password: string = '';
-	let message: string = '';
+	let identifier = '';
+	let password = '';
+	let message = '';
 	let loading = false;
 
 	async function login() {
@@ -27,23 +27,23 @@
 
 		if (response.status === 200) {
 			const authService = new AuthService();
-			console.log(data)
+			console.log(data);
 			const user: User = {
 				id: data.user.id,
 				username: data.user.username,
 				email: data.user.email,
 				verified: data.user.verified,
 				avatarId: data.user.avatarId,
-				token: data.token,
+				token: data.token
 			};
 			authService.save(user);
 
 			if (user.verified) {
 				const intendedUrl = sessionStorage.getItem(IntendedUrl);
 				sessionStorage.removeItem(IntendedUrl);
-				goto(intendedUrl ?? '/lobbies')
+				goto(intendedUrl ?? '/lobbies');
 			} else {
-				goto('verify-email')
+				goto('verify-email');
 			}
 		}
 
@@ -63,23 +63,12 @@
 		<form on:submit={login}>
 			<div class="mb-3">
 				<label for="identifier">Username / Email</label>
-				<input
-					type="text"
-					id="identifier"
-					bind:value={identifier}
-					autofocus
-					required
-				/>
+				<input type="text" id="identifier" bind:value={identifier} autofocus required />
 			</div>
 
 			<div class="mb-3">
 				<label for="password">Password</label>
-				<input
-					type="password"
-					id="password"
-					bind:value={password}
-					required
-				/>
+				<input type="password" id="password" bind:value={password} required />
 				{#if message}
 					<small class="text-red-500">{message}</small>
 				{/if}

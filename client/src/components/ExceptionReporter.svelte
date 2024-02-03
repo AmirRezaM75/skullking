@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let message: string;
-	export let label: string = 'Error';
-	export let code: number = 500;
+	export let label = 'Error';
+	export let code = 500;
 </script>
 
 <div class="exception-container">

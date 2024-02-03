@@ -6,7 +6,7 @@
 
 	const apiService = new ApiService();
 
-	export let currentAvatarId: number
+	export let currentAvatarId: number;
 
 	let avatarId = currentAvatarId;
 
@@ -14,18 +14,21 @@
 		avatarId = id;
 	}
 
-	const dispatch = createEventDispatcher<{ closeModal: boolean, avatarIdUpdated: {avatarId: number} }>();
+	const dispatch = createEventDispatcher<{
+		closeModal: boolean;
+		avatarIdUpdated: { avatarId: number };
+	}>();
 
 	async function update() {
 		const response = await apiService.updateAvatarId(avatarId);
 		if (response.status === 204) {
-			currentAvatarId = avatarId
-			const authService = new AuthService
-			authService.updateAvatarId(avatarId)
-			dispatch('avatarIdUpdated', {avatarId: avatarId});
+			currentAvatarId = avatarId;
+			const authService = new AuthService();
+			authService.updateAvatarId(avatarId);
+			dispatch('avatarIdUpdated', { avatarId: avatarId });
 			closeModal();
 		}
-	}	
+	}
 
 	function closeModal() {
 		dispatch('closeModal', true);

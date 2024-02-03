@@ -329,21 +329,25 @@ form {
 
 				&.red {
 					background: rgb(205, 250, 250);
-					background: linear-gradient(90deg,
-							var(--color-red-100) 0%,
-							var(--color-red-300) 15%,
-							var(--color-red-500) 35%,
-							var(--color-red-700) 100%);
+					background: linear-gradient(
+						90deg,
+						var(--color-red-100) 0%,
+						var(--color-red-300) 15%,
+						var(--color-red-500) 35%,
+						var(--color-red-700) 100%
+					);
 					box-shadow: 0 0 10px #005a82;
 				}
 
 				&.blue {
 					background: rgb(205, 250, 250);
-					background: linear-gradient(90deg,
-							var(--color-blue-100) 0%,
-							var(--color-blue-300) 15%,
-							var(--color-blue-500) 35%,
-							var(--color-blue-700) 100%);
+					background: linear-gradient(
+						90deg,
+						var(--color-blue-100) 0%,
+						var(--color-blue-300) 15%,
+						var(--color-blue-500) 35%,
+						var(--color-blue-700) 100%
+					);
 					box-shadow: 0 0 10px #005a82;
 				}
 			}
@@ -477,7 +481,6 @@ form {
 }
 
 @keyframes picked {
-
 	from,
 	60%,
 	75%,

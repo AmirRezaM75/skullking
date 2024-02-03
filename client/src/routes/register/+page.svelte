@@ -7,9 +7,9 @@
 	// https://stackoverflow.com/questions/73754777/svelte-import-by-absolute-path-does-not-work
 	import ServerValidationError from '../../utils/ServerValidationError';
 
-	let username: string = '';
-	let email: string = '';
-	let password: string = '';
+	let username = '';
+	let email = '';
+	let password = '';
 	let errors = new ServerValidationError();
 	let loading = false;
 
@@ -37,7 +37,7 @@
 				email: data.user.email,
 				verified: data.user.verified,
 				avatarId: data.user.avatarId,
-				token: data.token,
+				token: data.token
 			};
 			authService.save(user);
 

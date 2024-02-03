@@ -7,7 +7,7 @@
 
 	function logout() {
 		authService.logout();
-		window.location.reload()
+		window.location.reload();
 	}
 </script>
 
