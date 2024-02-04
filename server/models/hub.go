@@ -7,23 +7,40 @@ import (
 	"time"
 )
 
-// TODO: Couldn't define this interface inside contracts because of 'import cycle not allowed' error
+// Couldn't define this interface inside contracts because of 'import cycle not allowed' error
 
 type GameRepository interface {
 	Create(u *Game) error
 }
 
-type Hub struct {
-	Games          syncx.Map[string, *Game]
-	Dispatch       chan *ServerMessage
-	GameRepository GameRepository
+type PublisherService interface {
+	Publish(message string) error
 }
 
-func NewHub(gameRepository GameRepository) *Hub {
+type LogService interface {
+	Error(map[string]string)
+	Info(map[string]string)
+}
+
+type Hub struct {
+	Games            syncx.Map[string, *Game]
+	Dispatch         chan *ServerMessage
+	GameRepository   GameRepository
+	PublisherService PublisherService
+	LogService       LogService
+}
+
+func NewHub(
+	gameRepository GameRepository,
+	publisherService PublisherService,
+	logService LogService,
+) *Hub {
 	return &Hub{
-		Games:          syncx.Map[string, *Game]{},
-		Dispatch:       make(chan *ServerMessage),
-		GameRepository: gameRepository,
+		Games:            syncx.Map[string, *Game]{},
+		Dispatch:         make(chan *ServerMessage),
+		GameRepository:   gameRepository,
+		PublisherService: publisherService,
+		LogService:       logService,
 	}
 }
 

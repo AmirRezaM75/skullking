@@ -17,23 +17,20 @@ import (
 )
 
 type GameHandler struct {
-	hub              *models.Hub
-	lobbyService     services.LobbyService
-	ticketService    services.TicketService
-	publisherService services.PublisherService
+	hub           *models.Hub
+	lobbyService  services.LobbyService
+	ticketService services.TicketService
 }
 
 func NewGameHandler(
 	hub *models.Hub,
 	lobbyService services.LobbyService,
 	ticketService services.TicketService,
-	publisherService services.PublisherService,
 ) *GameHandler {
 	return &GameHandler{
-		hub:              hub,
-		lobbyService:     lobbyService,
-		ticketService:    ticketService,
-		publisherService: publisherService,
+		hub:           hub,
+		lobbyService:  lobbyService,
+		ticketService: ticketService,
 	}
 }
 
@@ -95,7 +92,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	gameHandler.hub.Cleanup()
 	gameHandler.hub.Games.Store(game.Id, game)
 
-	message, err := responses.NewGameCreatedEvent(game.Id, game.LobbyId)
+	message, err := responses.GameCreatedEvent(game.Id, game.LobbyId)
 
 	if err != nil {
 		services.LogService{}.Error(map[string]string{
@@ -105,7 +102,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	err = gameHandler.publisherService.Publish(message)
+	err = gameHandler.hub.PublisherService.Publish(message)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

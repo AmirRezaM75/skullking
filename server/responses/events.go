@@ -7,7 +7,7 @@ type PublisherEvent struct {
 	Content string `json:"content"`
 }
 
-func NewGameCreatedEvent(gameId, lobbyId string) (string, error) {
+func GameCreatedEvent(gameId, lobbyId string) (string, error) {
 	type GameCreatedContent struct {
 		GameId  string `json:"gameId"`
 		LobbyId string `json:"lobbyId"`
@@ -18,6 +18,24 @@ func NewGameCreatedEvent(gameId, lobbyId string) (string, error) {
 		LobbyId: lobbyId,
 	}
 
+	return parseEvent("GameCreated", content)
+}
+
+func GameEndedEvent(gameId, lobbyId string) (string, error) {
+	type GameEndedContent struct {
+		GameId  string `json:"gameId"`
+		LobbyId string `json:"lobbyId"`
+	}
+
+	var content = GameEndedContent{
+		GameId:  gameId,
+		LobbyId: lobbyId,
+	}
+
+	return parseEvent("GameEnded", content)
+}
+
+func parseEvent(eventType string, content any) (string, error) {
 	message, err := json.Marshal(content)
 
 	if err != nil {
@@ -25,7 +43,7 @@ func NewGameCreatedEvent(gameId, lobbyId string) (string, error) {
 	}
 
 	event := PublisherEvent{
-		Type:    "GameCreated",
+		Type:    eventType,
 		Content: string(message),
 	}
 

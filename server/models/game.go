@@ -88,6 +88,18 @@ func (game *Game) endGame(hub *Hub) {
 		fmt.Println("Can't persist game in database", err.Error())
 	}
 
+	message, err := responses.GameEndedEvent(game.Id, game.LobbyId)
+
+	if err != nil {
+		hub.LogService.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal GameEndedEvent",
+			"method":      "GameHandler@Create",
+		})
+	}
+
+	err = hub.PublisherService.Publish(message)
+
 	hub.Games.Delete(game.Id)
 }
 
