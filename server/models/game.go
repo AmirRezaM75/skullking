@@ -85,7 +85,11 @@ func (game *Game) endGame(hub *Hub) {
 	err := hub.GameRepository.Create(game)
 
 	if err != nil {
-		fmt.Println("Can't persist game in database", err.Error())
+		hub.LogService.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not persist game in database",
+			"method":      "game@endGame",
+		})
 	}
 
 	message, err := responses.GameEndedEvent(game.Id, game.LobbyId)
@@ -238,7 +242,10 @@ func (game *Game) startPicking(hub *Hub) {
 	pickerId := game.setNextPlayerForPicking()
 
 	if pickerId == "" {
-		log.Println("No player id is found for picking")
+		hub.LogService.Error(map[string]string{
+			"method":      "game@StartPicking",
+			"description": "No player id is found for picking.",
+		})
 	}
 
 	content := responses.StartPicking{
@@ -695,7 +702,7 @@ func (game *Game) findPlayerIndexById(playerId string) int {
 	} else {
 		log.Println(
 			fmt.Sprintf(
-				"Unable to find player id %s. [gameId: %s, round: %d, trick: %d]",
+				"WARN: Unable to find player id %s. [gameId: %s, round: %d, trick: %d]",
 				playerId,
 				game.Id,
 				game.Round,
@@ -721,7 +728,7 @@ func (game *Game) findPlayerIdByIndex(index int) string {
 	if id == "" {
 		log.Println(
 			fmt.Sprintf(
-				"Unable to find player index %d within for loop. [gameId: %s, round: %d, trick: %d]",
+				"ERROR: Unable to find player index %d within for loop. [gameId: %s, round: %d, trick: %d]",
 				index,
 				game.Id,
 				game.Round,

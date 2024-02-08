@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"skullking/constants"
 	"skullking/pkg/syncx"
 	"time"
@@ -82,7 +81,10 @@ func (h *Hub) Cleanup() {
 	h.Games.Range(func(_ string, game *Game) bool {
 		if game.CreatedAt <= time.Now().Add(-30*time.Minute).Unix() &&
 			game.State == constants.StatePending {
-			fmt.Printf("Delete game %s due to inactivity.\n", game.Id)
+			h.LogService.Info(map[string]string{
+				"message": "Delete game due to inactivity",
+				"gameId":  game.Id,
+			})
 			h.Games.Delete(game.Id)
 		}
 		return true

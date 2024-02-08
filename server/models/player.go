@@ -67,7 +67,11 @@ func (player *Player) Read(hub *Hub) {
 		err = json.Unmarshal(m, &message)
 
 		if err != nil {
-			log.Printf("unmarshal error: %v", err)
+			hub.LogService.Error(map[string]string{
+				"message":     err.Error(),
+				"method":      "player@read",
+				"description": "Could not unmarshal message.",
+			})
 			continue
 		}
 

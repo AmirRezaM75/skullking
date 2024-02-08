@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -157,7 +156,11 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	connection, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
-		log.Println("Upgrade TCP connection failed.", err)
+		services.LogService{}.Error(map[string]string{
+			"message":     err.Error(),
+			"method":      "GameHandler@Join",
+			"description": "Upgrade TCP connection failed.",
+		})
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
