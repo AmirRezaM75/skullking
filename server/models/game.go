@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"skullking/constants"
 	"skullking/pkg/syncx"
 	"skullking/responses"
@@ -576,12 +577,12 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 	err := game.validateUserPickedCard(cardId, playerId)
 
 	if err != nil {
-		content := responses.Error{
-			Message:    err.Error(),
-			StatusCode: 422,
-		}
 		m := &ServerMessage{
-			Content:    content,
+			Command: constants.CommandReportError,
+			Content: responses.Error{
+				Message:    err.Error(),
+				StatusCode: http.StatusUnprocessableEntity,
+			},
 			GameId:     game.Id,
 			ReceiverId: playerId,
 		}
@@ -616,12 +617,12 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 
 func (game *Game) Bid(hub *Hub, playerId string, number int) {
 	if number < 0 || number > game.Round {
-		content := responses.Error{
-			Message:    "Invalid bid number.",
-			StatusCode: 422,
-		}
 		m := &ServerMessage{
-			Content:    content,
+			Command: constants.CommandReportError,
+			Content: responses.Error{
+				Message:    "Invalid bid number.",
+				StatusCode: http.StatusUnprocessableEntity,
+			},
 			GameId:     game.Id,
 			ReceiverId: playerId,
 		}

@@ -54,3 +54,8 @@ export type LobbyNameUpdatedResponse = {
 	id: string;
 	name: string;
 };
+
+export type ReportErrorResponse = {
+	message: string;
+	status: number;
+};

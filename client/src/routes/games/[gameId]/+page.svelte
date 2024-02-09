@@ -199,7 +199,7 @@
 		<ConnectionErrorDialog />
 	{/if}
 	{#if game.exceptionMessage !== ''}
-		<ExceptionReporter message={game.exceptionMessage} code={404} />
+		<ExceptionReporter message={game.exceptionMessage} errorCode={404} />
 	{/if}
 	{#if game.state == GameState.Pending}
 		<Loader />

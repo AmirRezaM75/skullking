@@ -5,10 +5,10 @@
 	import PencilIcon from '../../../components/icons/PencilIcon.svelte';
 	import ApiService from '../../../services/ApiService';
 	import LobbyService from '../../../services/LobbyService';
-	import { goto } from '$app/navigation';
 	import ConnectionErrorDialog from '../../../components/ConnectionErrorDialog.svelte';
 	import LobbySettingModal from '../../../components/LobbySettingModal.svelte';
 	import SettingIcon from '../../../components/icons/SettingIcon.svelte';
+	import ExceptionReporter from '../../../components/ExceptionReporter.svelte';
 
 	export let data;
 
@@ -127,7 +127,10 @@
 		/>
 	{/if}
 
-	{#if disconnected}
+	<!-- In lobby service errors result in connection termination -->
+	{#if lobbyService.errorMessage}
+		<ExceptionReporter message={lobbyService.errorMessage} errorCode={lobbyService.errorCode} />
+	{:else if disconnected}
 		<ConnectionErrorDialog />
 	{/if}
 

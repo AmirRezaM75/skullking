@@ -3,6 +3,7 @@ import type {
 	GameCreatedResponse,
 	LobbyNameUpdatedResponse,
 	ManagerChangedResponse,
+	ReportErrorResponse,
 	SomeoneJoinedLobbyResponse as SomeoneJoinedLobbyResponse,
 	SomeoneLeftLobbyResponse,
 	UserUpdatedResponse
@@ -14,6 +15,10 @@ class LobbyService {
 	lobby: LobbyModel | null = null;
 
 	authId: string;
+
+	errorMessage = '';
+
+	errorCode = 0;
 
 	constructor(authId: string) {
 		this.authId = authId;
@@ -34,7 +39,7 @@ class LobbyService {
 				this.gameCreated(content);
 				break;
 			case EventType.ReportError:
-				this.reportError();
+				this.reportError(content);
 				break;
 			case EventType.LobbyNameUpdated:
 				this.updateName(content);
@@ -87,8 +92,9 @@ class LobbyService {
 		window.location.href = `/games/${content.gameId}`;
 	}
 
-	reportError() {
-		// TODO:
+	reportError(content: ReportErrorResponse) {
+		this.errorMessage = content.message;
+		this.errorCode = content.status;
 	}
 
 	updateManager(content: ManagerChangedResponse) {

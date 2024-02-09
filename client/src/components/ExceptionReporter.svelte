@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let message: string;
 	export let label = 'Error';
-	export let code = 500;
+	export let errorCode = 0;
 </script>
 
 <div class="exception-container">
@@ -10,7 +10,7 @@
 		<p class="text-gray-100">{message}</p>
 		<p>
 			<slot />
-			{#if code === 404}
+			{#if errorCode !== 0}
 				<a href="/" class="btn light-gradient mt-4">
 					<img
 						width="18"
