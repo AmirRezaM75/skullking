@@ -83,7 +83,8 @@ class LobbyService {
 	}
 
 	gameCreated(content: GameCreatedResponse) {
-		goto(`/games/${content.gameId}`);
+		// In order to close SSE connection we can't use goto() method.
+		window.location.href = `/games/${content.gameId}`
 	}
 
 	reportError() {

@@ -64,7 +64,8 @@
 
 		if (response.status === 201) {
 			response.json().then((data) => {
-				goto(`/games/${data.id}`);
+				// In order to close SSE connection we can't use goto() method.
+				window.location.href = `/games/${data.id}`
 			});
 		}
 	}

@@ -274,7 +274,7 @@ class GameService {
 	}
 
 	endGame() {
-		this.state = GameState.Pending;
+		this.state = GameState.EndGame;
 		this.cards = [];
 		this.table.cards = [];
 		const winner = this.players.reduce((previous, current) => {
