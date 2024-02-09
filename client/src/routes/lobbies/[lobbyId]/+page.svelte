@@ -1,14 +1,28 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import AvatarModel from '../../../components/AvatarModel.svelte';
+	import AvatarModal from '../../../components/AvatarModal.svelte';
 	import LobbyLinkDialog from '../../../components/LobbyLinkDialog.svelte';
 	import PencilIcon from '../../../components/icons/PencilIcon.svelte';
 	import ApiService from '../../../services/ApiService';
 	import LobbyService from '../../../services/LobbyService';
 	import { goto } from '$app/navigation';
 	import ConnectionErrorDialog from '../../../components/ConnectionErrorDialog.svelte';
+	import LobbySettingModal from '../../../components/LobbySettingModal.svelte';
+	import SettingIcon from '../../../components/icons/SettingIcon.svelte';
 
 	export let data;
+
+	// Setting Modal
+
+	let isSettingModalOpen = false;
+
+	function openSettingModal() {
+		isSettingModalOpen = true;
+	}
+
+	function closeSettingModal() {
+		isSettingModalOpen = false;
+	}
 
 	// Avatar
 	let currentAvatarId = data.auth.avatarId;
@@ -34,10 +48,20 @@
 
 	let lobbyService = new LobbyService(data.auth.id);
 
+	let loading = false
+
 	async function start() {
+		if (loading) return
+
+		loading = true
+
 		const audio = new Audio('/sounds/start.mp3');
 		audio.play();
+
 		const response = await apiService.createGame(data.lobbyId);
+
+		loading = false
+
 		if (response.status === 201) {
 			response.json().then((data) => {
 				goto(`/games/${data.id}`);
@@ -87,14 +111,27 @@
 </svelte:head>
 
 <div class="min-w-full min-h-screen flex items-center justify-center bg-slate-700">
-	<!-- <LobbySidebar /> -->
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<div on:click={openSettingModal} class="w-10 h-10 absolute bottom-10 right-10 cursor-pointer">
+		<SettingIcon />
+	</div>
+
+	{#if lobbyService.lobby && isSettingModalOpen}
+		<LobbySettingModal
+			on:closeModal={closeSettingModal}
+			lobbyId={lobbyService.lobby.id}
+			name={lobbyService.lobby.name}
+			link={window.location.href}
+			editable={lobbyService.isManager()}
+		/>
+	{/if}
 
 	{#if disconnected}
 		<ConnectionErrorDialog />
 	{/if}
 
 	{#if isAvatarModalOpen}
-		<AvatarModel
+		<AvatarModal
 			on:closeModal={closeAvatarModal}
 			on:avatarIdUpdated={(e) => (currentAvatarId = e.detail.avatarId)}
 			{currentAvatarId}
@@ -104,9 +141,9 @@
 		<div class="flex-col">
 			<div class="flex items-center justify-center gap-4 flex-wrap px-2 py-4 max-w-2xl">
 				{#each lobbyService.lobby.players as player}
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<div
 						on:click={() => openAvatarModal(player.id)}
-						on:keypress={() => openAvatarModal(player.id)}
 						class="relative bg-slate-900 p-6 rounded-lg text-center border border-slate-900
 					{player.id === data.auth.id ? 'cursor-pointer hover:border-lime-primary' : ''}"
 					>
@@ -117,15 +154,14 @@
 						{/if}
 						<div
 							class="mb-3 rounded-full w-24 h-24 bg-top bg-no-repeat"
-							style="background-image: url({`/images/avatars/${
-								player.avatarId + 1
-							}.jpg`}); background-size: 110px"
+							style="background-image: url({`/images/avatars/${player.avatarId + 1}.jpg`});
+							background-size: 110px"
 						/>
 						<span class="text-gray-300 font-bold text-lg uppercase">{player.username}</span>
 					</div>
 				{/each}
 			</div>
-			{#if lobbyService.lobby.managerId !== data.auth.id}
+			{#if !lobbyService.isManager()}
 				<p class="text-yellow-500 text-center">
 					Wait for {lobbyService.lobby.getManager()?.username} to start the game.
 				</p>

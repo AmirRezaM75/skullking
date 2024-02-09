@@ -42,9 +42,9 @@
 		style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));"
 	>
 		{#each { length: 30 } as _, i}
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<img
 				on:click={() => choose(i)}
-				on:keypress={() => choose(i)}
 				src="/images/avatars/{i + 1}.jpg"
 				alt=""
 				class="border-4 hover:opacity-100 cursor-pointer {avatarId == i

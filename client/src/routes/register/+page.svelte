@@ -14,10 +14,17 @@
 	let loading = false;
 
 	async function register() {
+		if (loading) {
+			return;
+		}
+
 		loading = true;
 
 		const apiService = new ApiService();
+
 		const response = await apiService.register(username, email, password);
+
+		loading = false;
 
 		const data = await response.json();
 
@@ -43,8 +50,6 @@
 
 			window.location.href = '/verify-email';
 		}
-
-		loading = false;
 	}
 
 	function clearError(event: Event) {
@@ -109,12 +114,7 @@
 				{/if}
 			</div>
 
-			<button type="submit" class="btn">
-				{#if loading}
-					<span class="circle-loader mr-2" />
-				{/if}
-				Join the crew
-			</button>
+			<button type="submit" class="btn {loading ? 'loading' : ''}"> Join the crew </button>
 
 			<a href="/login" class="text-blue-400 hover:text-blue-300 inline-block mt-3"
 				>Already have an account?</a

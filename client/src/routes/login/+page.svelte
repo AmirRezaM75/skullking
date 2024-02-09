@@ -14,6 +14,10 @@
 	let loading = false;
 
 	async function login() {
+		if (loading) {
+			return;
+		}
+
 		loading = true;
 
 		const apiService = new ApiService();
@@ -74,12 +78,7 @@
 				{/if}
 			</div>
 
-			<button type="submit" class="btn">
-				{#if loading}
-					<span class="circle-loader mr-2" />
-				{/if}
-				Login
-			</button>
+			<button type="submit" class="btn {loading ? 'loading' : ''}"> Login </button>
 
 			<a href="/register" class="text-blue-400 hover:text-blue-300 block mt-3">Not registered?</a>
 

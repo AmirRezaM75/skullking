@@ -13,14 +13,16 @@
 		loading = true;
 
 		const apiService = new ApiService();
+
 		const response = await apiService.forgotPassword(email);
+
+		loading = false;
 
 		if (response.status == 202) {
 			sent = true;
 		} else {
 			response.json().then((data) => (message = data.message));
 		}
-		loading = false;
 	}
 </script>
 
@@ -47,10 +49,7 @@
 						<small class="text-red-500">{message}</small>
 					{/if}
 
-					<button type="submit" class="btn mt-4">
-						{#if loading}
-							<span class="circle-loader mr-2" />
-						{/if}
+					<button type="submit" class="btn mt-4 {loading ? 'loading' : ''}">
 						<span>Submit</span>
 					</button>
 				</form>

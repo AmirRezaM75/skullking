@@ -18,6 +18,8 @@
 
 		const r = await apiService.sendEmailVerificationNotification();
 
+		loading = false;
+
 		if (r.status == 202) {
 			response = {
 				success: true,
@@ -29,8 +31,6 @@
 				message: 'Something goes wrong!'
 			};
 		}
-
-		loading = false;
 	}
 	export let data;
 </script>
@@ -52,10 +52,7 @@
 			{/if}
 
 			{#if !response || !response.success}
-				<button type="button" class="btn mt-4" on:click={resend}>
-					{#if loading}
-						<span class="circle-loader mr-2" />
-					{/if}
+				<button type="button" class="btn mt-4 {loading ? 'loading' : ''}" on:click={resend}>
 					<span>Resend</span>
 				</button>
 			{/if}

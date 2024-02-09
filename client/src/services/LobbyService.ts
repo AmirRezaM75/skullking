@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import type {
 	GameCreatedResponse,
+	LobbyNameUpdatedResponse,
 	ManagerChangedResponse,
 	SomeoneJoinedLobbyResponse as SomeoneJoinedLobbyResponse,
 	SomeoneLeftLobbyResponse,
@@ -35,8 +36,8 @@ class LobbyService {
 			case EventType.ReportError:
 				this.reportError();
 				break;
-			case EventType.ManagerChanged:
-				this.updateManager(content);
+			case EventType.LobbyNameUpdated:
+				this.updateName(content);
 				break;
 		}
 		return this;
@@ -93,6 +94,20 @@ class LobbyService {
 		if (this.lobby) {
 			this.lobby.managerId = content.userId;
 		}
+	}
+
+	updateName(content: LobbyNameUpdatedResponse) {
+		if (this.lobby) {
+			this.lobby.name = content.name;
+		}
+	}
+
+	isManager(): boolean {
+		if (this.lobby) {
+			return this.lobby.managerId === this.authId;
+		}
+
+		return false;
 	}
 }
 

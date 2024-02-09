@@ -46,8 +46,14 @@ form {
 	box-sizing: border-box;
 	touch-action: manipulation;
 
-	.circle-loader {
-		@apply w-4 h-4 inline-block border-black border-l-white;
+	&.loading {
+		@apply bg-gray-400 cursor-wait pointer-events-none;
+
+		&::before {
+			content: '';
+			@apply w-4 h-4 mr-2 inline-block border-black border-l-yellow-400 border-2 rounded-full relative;
+			animation: loader 1.2s infinite linear;
+		}
 	}
 
 	&.danger-gradient {
@@ -192,10 +198,6 @@ form {
 .btn-secondary {
 	@apply inline-flex justify-center items-center text-white font-bold text-xl text-center uppercase py-4 px-12 tracking-widest border-4 border-white rounded-3xl transition-all duration-300;
 	background: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
-
-	.circle-loader {
-		@apply w-5 h-5 inline-block border-white border-l-fuchsia-500;
-	}
 }
 
 .title-primary {

@@ -150,6 +150,21 @@ class ApiService {
 		});
 	}
 
+	updateLobby(lobbyId: string, payload: object): Promise<Response> {
+		const user = this.authService.user();
+
+		if (!user) throw new Error('Unauthenticated');
+
+		return fetch(this.lobbyServiceBaseUrl + '/lobbies/' + lobbyId, {
+			method: 'PATCH',
+			headers: {
+				Authorization: `Bearer ${user.token}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(payload)
+		});
+	}
+
 	joinLobby(lobbyId: string, ticketId: string): EventSource {
 		return new EventSource(
 			this.lobbyServiceBaseUrl + `/lobbies/${lobbyId}/join?ticketId=` + ticketId

@@ -1,5 +1,6 @@
 import type {
 	ListLobbiesResponse,
+	LobbyNameUpdatedResponse,
 	SomeoneJoinedLobbyResponse,
 	SomeoneLeftLobbyResponse
 } from '../lobby-types';
@@ -19,6 +20,9 @@ class LobbiesService {
 				break;
 			case EventType.List:
 				this.list(content);
+				break;
+			case EventType.LobbyNameUpdated:
+				this.updateName(content);
 				break;
 		}
 		return this;
@@ -77,6 +81,14 @@ class LobbiesService {
 				)
 			);
 		});
+	}
+
+	updateName(content: LobbyNameUpdatedResponse) {
+		const lobby = this.lobbies.find((l) => l.id === content.id);
+
+		if (lobby) {
+			lobby.name = content.name;
+		}
 	}
 }
 

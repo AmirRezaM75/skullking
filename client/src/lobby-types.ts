@@ -21,7 +21,8 @@ export enum EventType {
 	UserUpdated = 'user_updated',
 	ReportError = 'report_error',
 	GameCreated = 'game_created',
-	ManagerChanged = 'manager_changed'
+	ManagerChanged = 'manager_changed',
+	LobbyNameUpdated = 'lobby_name_updated'
 }
 
 export type ListLobbiesResponse = Lobby[];
@@ -47,4 +48,9 @@ export type GameCreatedResponse = {
 
 export type ManagerChangedResponse = {
 	userId: string;
+};
+
+export type LobbyNameUpdatedResponse = {
+	id: string;
+	name: string;
 };
