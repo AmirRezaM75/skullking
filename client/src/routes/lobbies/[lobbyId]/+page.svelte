@@ -48,24 +48,24 @@
 
 	let lobbyService = new LobbyService(data.auth.id);
 
-	let loading = false
+	let loading = false;
 
 	async function start() {
-		if (loading) return
+		if (loading) return;
 
-		loading = true
+		loading = true;
 
 		const audio = new Audio('/sounds/start.mp3');
 		audio.play();
 
 		const response = await apiService.createGame(data.lobbyId);
 
-		loading = false
+		loading = false;
 
 		if (response.status === 201) {
 			response.json().then((data) => {
 				// In order to close SSE connection we can't use goto() method.
-				window.location.href = `/games/${data.id}`
+				window.location.href = `/games/${data.id}`;
 			});
 		}
 	}

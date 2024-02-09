@@ -38,16 +38,16 @@
 		lobbiesService = lobbiesService.handle(m.type, JSON.parse(m.content));
 	};
 
-	let loading = false
+	let loading = false;
 
 	async function create() {
-		if (loading) return
+		if (loading) return;
 
-		loading = true
+		loading = true;
 
 		const response = await apiService.createLobby();
 
-		loading = false
+		loading = false;
 
 		if (response.status === 201) {
 			response.json().then((data) => {
