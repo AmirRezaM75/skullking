@@ -4,6 +4,9 @@
 </script>
 
 <div class="user">
+	{#if player.roundStarter}
+		<div class="roundStarterIndicator"></div>
+	{/if}
 	<div class="image">
 		{#if player.picking}
 			<div class="loader">
@@ -13,7 +16,6 @@
 		<img src={player.avatar} alt="" />
 	</div>
 	<div class="info">
-		<!-- background: radial-gradient(circle, rgb(31 73 255) 0%, rgba(255,255,255,0) 100%); -->
 		<div class="username-container">
 			<div
 				class="connection-status {player.isConnected ? 'bg-green-500' : 'bg-red-500'}"
@@ -28,3 +30,11 @@
 	</div>
 	<div class="score">{player.score}</div>
 </div>
+
+<style lang="scss">
+	.roundStarterIndicator {
+		@apply w-full h-full absolute;
+		left: -1.25rem;
+		background: linear-gradient(271deg, rgba(255,255,255,0) 0%, rgb(75 255 255 / 40%) 95%, rgb(75 255 255 / 40%) 100%);
+	}
+</style>

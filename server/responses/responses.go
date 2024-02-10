@@ -14,6 +14,8 @@ type StartBidding struct {
 	EndsAt int64  `json:"endsAt"`
 	State  string `json:"state"`
 	Round  int    `json:"round"`
+	// To indicate who will start picking after bidding is completed.
+	StarterPlayerId string `json:"starterPlayerId"`
 }
 
 type StartPicking struct {

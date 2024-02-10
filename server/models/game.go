@@ -186,10 +186,15 @@ func (game *Game) startBidding(hub *Hub) {
 
 	game.State = constants.StateBidding
 
+	index := game.findPlayerIndexForPicking()
+
+	playerId := game.findPlayerIdByIndex(index)
+
 	content := responses.StartBidding{
-		EndsAt: time.Now().Add(duration).Unix(),
-		State:  game.State,
-		Round:  game.Round,
+		EndsAt:          time.Now().Add(duration).Unix(),
+		State:           game.State,
+		Round:           game.Round,
+		StarterPlayerId: playerId,
 	}
 
 	m := &ServerMessage{
@@ -519,6 +524,7 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		players = append(players, p)
 	}
 
+	// TODO: Add starter player
 	content := responses.Init{
 		Round:          game.Round,
 		Trick:          game.Trick,

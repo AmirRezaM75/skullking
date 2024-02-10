@@ -331,6 +331,11 @@ class GameService {
 		this.notifierMessage = 'Bidding Time';
 		this.countdownColor = 'blue';
 		this.showCountdown = true;
+
+		const player = this.players.find(p => p.id === content.starterPlayerId)
+		if (player) {
+			player.roundStarter = true
+		}
 	}
 
 	endBidding(content: EndBiddingResponse) {
@@ -343,6 +348,10 @@ class GameService {
 				player.bid = bid.number;
 			}
 		});
+
+		this.players.forEach((player) => {
+			player.roundStarter = false;
+		})
 	}
 
 	bade(content: BadeResponse) {

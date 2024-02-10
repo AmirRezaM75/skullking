@@ -12,6 +12,7 @@ export type User = {
 export type StartBiddingResponse = {
 	endsAt: number;
 	state: GameState;
+	starterPlayerId: string;
 };
 
 export type EndBiddingResponse = {
@@ -41,6 +42,7 @@ export type Player = {
 	bid: number;
 	wonTricksCount: number;
 	isConnected: boolean;
+	roundStarter: boolean;
 };
 
 export type DealResponse = {

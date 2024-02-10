@@ -211,10 +211,11 @@ form {
 }
 
 .users-container {
-	@apply w-full h-full px-5 overflow-y-auto;
+	@apply w-full px-5 overflow-y-auto;
+	height: 90%;
 
 	.user {
-		@apply flex items-center py-4 px-3 border-b border-b-gray-700;
+		@apply flex items-center py-4 px-3 border-b border-b-gray-700 relative;
 		height: fit-content;
 
 		.score {
