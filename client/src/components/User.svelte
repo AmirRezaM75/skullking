@@ -5,7 +5,7 @@
 
 <div class="user">
 	{#if player.roundStarter}
-		<div class="roundStarterIndicator"></div>
+		<div class="roundStarterIndicator" />
 	{/if}
 	<div class="image">
 		{#if player.picking}
@@ -35,6 +35,11 @@
 	.roundStarterIndicator {
 		@apply w-full h-full absolute;
 		left: -1.25rem;
-		background: linear-gradient(271deg, rgba(255,255,255,0) 0%, rgb(75 255 255 / 40%) 95%, rgb(75 255 255 / 40%) 100%);
+		background: linear-gradient(
+			271deg,
+			rgba(255, 255, 255, 0) 0%,
+			rgb(75 255 255 / 40%) 95%,
+			rgb(75 255 255 / 40%) 100%
+		);
 	}
 </style>

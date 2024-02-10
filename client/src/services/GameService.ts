@@ -15,7 +15,7 @@ import type {
 	InitResponse,
 	PlayerResponse,
 	LeftResponse,
-	JoiedResponse
+	JoinedResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -252,7 +252,7 @@ class GameService {
 		}
 	}
 
-	joined(content: JoiedResponse) {
+	joined(content: JoinedResponse) {
 		const player = this.findPlayerById(content.playerId);
 		if (player) {
 			player.isConnected = true;
@@ -332,9 +332,9 @@ class GameService {
 		this.countdownColor = 'blue';
 		this.showCountdown = true;
 
-		const player = this.players.find(p => p.id === content.starterPlayerId)
+		const player = this.players.find((p) => p.id === content.starterPlayerId);
 		if (player) {
-			player.roundStarter = true
+			player.roundStarter = true;
 		}
 	}
 
@@ -351,7 +351,7 @@ class GameService {
 
 		this.players.forEach((player) => {
 			player.roundStarter = false;
-		})
+		});
 	}
 
 	bade(content: BadeResponse) {

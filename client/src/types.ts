@@ -151,6 +151,6 @@ export type LeftResponse = {
 	playerId: string;
 };
 
-export type JoiedResponse = {
+export type JoinedResponse = {
 	playerId: string;
 };

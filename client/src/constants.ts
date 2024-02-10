@@ -1,6 +1,5 @@
 export enum GameCommand {
 	// Client side commands
-	Start = 'START',
 	Bid = 'BID',
 	Pick = 'PICK',
 	// Server side commands

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
+	import { createEventDispatcher } from 'svelte';
 
 	export let message: string;
 	export let label = 'Error';
@@ -19,7 +19,7 @@
 		<p class="text-gray-100">{message}</p>
 		<p>
 			<slot />
-			{#if [404, 403].includes(errorCode) }
+			{#if [404, 403].includes(errorCode)}
 				<a href="/" class="btn light mt-4">
 					<img
 						width="18"

@@ -36,7 +36,7 @@
 	let tableSwiper: Swiper;
 
 	let bidFunc: (bid: number) => void;
-	let pickFunc: (bid: number) => void;
+	let pickFunc: (cardId: number) => void;
 
 	onMount(async () => {
 		let ticketId = '';
@@ -172,20 +172,20 @@
 
 	function bid(bid: number) {
 		if (bid > game.round) {
-			return
+			return;
 		}
 		bidFunc(bid);
 	}
 
 	function pick(cardId: number) {
 		if (game.findPickingPlayerId() !== data.authId) {
-			return
+			return;
 		}
 
-		const card = game.cards.find(c => c.id === cardId)
+		const card = game.cards.find((c) => c.id === cardId);
 
 		if (!card || card.disabled) {
-			return
+			return;
 		}
 
 		pickFunc(cardId);
@@ -212,7 +212,7 @@
 		<ExceptionReporter
 			message={game.errorMessage}
 			errorCode={game.errorCode}
-			on:close={() => game.errorMessage = ''} 
+			on:close={() => (game.errorMessage = '')}
 		/>
 	{:else if disconnected}
 		<ConnectionErrorDialog />
@@ -238,17 +238,18 @@
 					<User {player} />
 				{/each}
 			</div>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<div
 				class="absolute bottom-4 left-4 cursor-pointer"
 				title="{isBackgroundAudioPlaying ? 'Mute' : 'Unmute'} background music"
 				on:click={toggleBackgroundAudio}
-				on:keydown={keyboardHandler}
 			>
 				<AudioIcon color={isBackgroundAudioPlaying ? 'white' : 'gray'} />
 			</div>
 		</div>
 		<div class="flex-1 h-screen overflow-hidden relative">
-			<div on:click={toggleSidebar} on:keydown={keyboardHandler} class="sidebar-button">
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<div on:click={toggleSidebar} class="sidebar-button">
 				<img
 					width="20"
 					src="/images/arrow-{isSidebarOpen ? 'left' : 'right'}.png"
@@ -275,12 +276,12 @@
 
 				<div class="bids-container">
 					{#each game.bids as bidNumber, index}
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<div
 							class="bid
 						{game.bid === bidNumber ? 'active' : ''}
 						{game.state === GameState.EndBidding ? 'fade-in-down-animation animation-duration-500 active' : ''}"
 							on:click={() => bid(bidNumber)}
-							on:keydown={() => bid(bidNumber)}
 						>
 							{bidNumber}
 						</div>

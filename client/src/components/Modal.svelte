@@ -20,7 +20,8 @@
 			class="w-full rounded-t-lg bg-slate-700 p-4 text-gray-300 border-b border-gray-700 flex justify-between items-center"
 		>
 			<div class="font-bold uppercase">{header}</div>
-			<div on:click={close} on:keydown={close}>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<div on:click={close}>
 				<CloseIcon />
 			</div>
 		</div>
