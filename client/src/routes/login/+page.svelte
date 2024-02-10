@@ -31,7 +31,6 @@
 
 		if (response.status === 200) {
 			const authService = new AuthService();
-			console.log(data);
 			const user: User = {
 				id: data.user.id,
 				username: data.user.username,

@@ -471,7 +471,7 @@ class GameService {
 		if (exists) return;
 
 		const p: Player = {
-			avatar: '/images/avatars/' + player.avatarId + '.jpg',
+			avatar: '/images/avatars/' + (player.avatarId + 1) + '.jpg',
 			id: player.id,
 			username: player.username,
 			picking: false,
