@@ -2,28 +2,40 @@ version: "3.8"
 
 services:
   skullking-app:
-    container_name: skullking-app
-    image: skullking-app
+    container_name: skullking-app-production
+    image: skullking-app-production
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/loki/api/v1/push"
     build:
       context: .
       dockerfile: ./docker/production/Dockerfile
-    volumes:
-      - .:/app
     ports:
-      - ${APP_PORT:-3000}:3000
-  mongodb:
-    container_name: sk-mongo
+      - ${APP_FORWARD_PORT:-3000}:3000
+    command:
+      - ./SkullKing
+    networks:
+      - default
+      - kenopsia-network
+  skullking-mongo:
+    container_name: skullking-mongo-production
     # MongoDB 5.0+ requires a CPU with AVX support and my server doesn't
     # https://jira.mongodb.org/browse/SERVER-54407
     image: mongo:4.4
     restart: always
     ports:
-      - ${MONGODB_PORT:-27017}:27017
+      - ${MONGODB_FORWARD_PORT:-27017}:27017
     volumes:
       - mongodb-data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+
 volumes:
   mongodb-data:
     driver: local
+
+networks:
+  kenopsia-network:
+    name: kenopsia-network

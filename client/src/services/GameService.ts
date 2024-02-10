@@ -222,7 +222,8 @@ class GameService {
 		if (content.state === GameState.Bidding) {
 			this.startBidding({
 				endsAt: content.expirationTime,
-				state: content.state
+				state: content.state,
+				starterPlayerId: "",
 			});
 
 			const player = content.players.find((player) => player.id === this.authId);
@@ -477,7 +478,8 @@ class GameService {
 			bid: player.bid,
 			score: player.score,
 			wonTricksCount: player.wonTricksCount,
-			isConnected: player.isConnected
+			isConnected: player.isConnected,
+			roundStarter: false
 		};
 
 		this.players.push(p);
