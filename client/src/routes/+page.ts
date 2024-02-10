@@ -5,12 +5,8 @@ export function load() {
 	const user = auth.user();
 
 	const data = {
-		action: 'login'
+		isUserVerified: user && user.verified
 	};
-
-	if (user && user.verified) {
-		data.action = 'play';
-	}
 
 	return data;
 }

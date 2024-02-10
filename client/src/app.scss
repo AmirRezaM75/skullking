@@ -30,35 +30,14 @@ form {
 		@apply block mb-2 text-sm font-medium text-gray-300;
 	}
 
-	input {
-		@apply bg-transparent
-            text-gray-300 text-sm
-            border-2 border-violet-900 hover:border-fuchsia-500 focus:border-fuchsia-500
-            rounded-lg
-            block
-            w-full
-            p-2.5
-            focus:outline-none
-            transition-all;
+	input,
+	select {
+		@apply bg-transparent text-gray-300 text-sm border-2 border-violet-900 hover:border-fuchsia-500 focus:border-fuchsia-500 rounded-lg block w-full p-2.5 focus:outline-none transition-all;
 	}
 }
 
 .btn {
-	@apply text-gray-900
-    font-medium
-    hover:bg-lime-secondary
-    bg-lime-primary
-    outline-none
-    rounded-lg
-    w-full
-    px-5
-    py-2.5
-    text-center
-    transition-all
-    select-none
-    inline-flex
-    items-center
-    justify-center;
+	@apply text-gray-900 font-medium hover:bg-lime-secondary bg-lime-primary outline-none rounded-lg w-full px-5 py-2.5 text-center transition-all select-none inline-flex items-center justify-center;
 
 	appearance: button;
 	backface-visibility: hidden;
@@ -67,8 +46,14 @@ form {
 	box-sizing: border-box;
 	touch-action: manipulation;
 
-	.circle-loader {
-		@apply w-4 h-4 inline-block border-black border-l-white;
+	&.loading {
+		@apply bg-gray-400 cursor-wait pointer-events-none;
+
+		&::before {
+			content: '';
+			@apply w-4 h-4 mr-2 inline-block border-black border-l-yellow-400 border-2 rounded-full relative;
+			animation: loader 1.2s infinite linear;
+		}
 	}
 
 	&.danger-gradient {
@@ -77,6 +62,10 @@ form {
 
 	&.light-gradient {
 		background: linear-gradient(45deg, white, wheat);
+	}
+
+	&.light {
+		background: #e9e9e9;
 	}
 
 	&.primary-gradient {
@@ -91,8 +80,10 @@ form {
 .circle-loader {
 	@apply border-2 border-gray-500 w-40 h-40 rounded-full border-l-yellow-500 relative;
 	animation: loader 1.2s infinite linear;
+
 	.checkmark {
 		@apply hidden;
+
 		&:after {
 			@apply h-20 w-10 border-r-lime-primary border-t-lime-primary absolute border-r border-t left-10 top-20;
 			content: '';
@@ -135,6 +126,7 @@ form {
 		.checkmark {
 			@apply block;
 		}
+
 		@apply border-lime-primary;
 	}
 
@@ -142,6 +134,7 @@ form {
 		.cross {
 			@apply block;
 		}
+
 		@apply border-red-500;
 	}
 }
@@ -150,6 +143,7 @@ form {
 	0% {
 		transform: rotate(0deg);
 	}
+
 	100% {
 		transform: rotate(360deg);
 	}
@@ -161,16 +155,19 @@ form {
 		width: 0;
 		opacity: 1;
 	}
+
 	20% {
 		height: 0;
 		width: 2.5rem;
 		opacity: 1;
 	}
+
 	40% {
 		height: 5rem;
 		width: 2.5rem;
 		opacity: 1;
 	}
+
 	100% {
 		height: 5rem;
 		width: 2.5rem;
@@ -182,6 +179,7 @@ form {
 	0% {
 		transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(0);
 	}
+
 	100% {
 		transform: translate(-50%, -50%) rotate(var(--cross-rotation)) scale(1);
 	}
@@ -190,9 +188,11 @@ form {
 .background {
 	@apply w-screen h-screen bg-slate-900 bg-center bg-cover bg-no-repeat;
 	background-image: url('/images/bg1.jpg');
+
 	.inner {
 		@apply w-full text-center lg:text-left lg:w-2/3 h-full flex justify-center items-center;
 		background: rgba(0, 0, 0, 0.5);
+
 		@screen lg {
 			background: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 100%);
 		}
@@ -202,10 +202,6 @@ form {
 .btn-secondary {
 	@apply inline-flex justify-center items-center text-white font-bold text-xl text-center uppercase py-4 px-12 tracking-widest border-4 border-white rounded-3xl transition-all duration-300;
 	background: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
-
-	.circle-loader {
-		@apply w-5 h-5 inline-block border-white border-l-fuchsia-500;
-	}
 }
 
 .title-primary {
@@ -215,10 +211,11 @@ form {
 }
 
 .users-container {
-	@apply w-full h-full px-5;
+	@apply w-full px-5 overflow-y-auto;
+	height: 90%;
 
 	.user {
-		@apply flex items-center py-4 px-3 border-b border-b-gray-700;
+		@apply flex items-center py-4 px-3 border-b border-b-gray-700 relative;
 		height: fit-content;
 
 		.score {
@@ -232,8 +229,16 @@ form {
 			padding-left: 20px;
 			flex: 1;
 
-			.username {
-				@apply text-white font-bold text-xl;
+			.username-container {
+				@apply flex items-center;
+
+				.connection-status {
+					@apply w-2 h-2 rounded-full mr-2;
+				}
+
+				.username {
+					@apply text-white font-bold text-xl;
+				}
 			}
 
 			.action {
@@ -414,11 +419,13 @@ form {
 		.card.winner {
 			transform: rotate(360deg);
 		}
+
 		.card:not(.winner) {
 			filter: grayscale(1);
 			transform: scale(0.9);
 		}
 	}
+
 	.card {
 		.card-owner {
 			@apply w-full absolute bottom-0 left-0 text-center;
@@ -433,6 +440,7 @@ form {
 		@apply w-14 h-14 text-center text-white border-white bg-slate-700 border-2 cursor-pointer font-bold text-2xl rounded-lg select-none;
 		line-height: 3.15rem;
 		transition: all 0.2s;
+
 		&:hover,
 		&.active {
 			@apply text-lime-primary border-lime-primary bg-slate-800;
@@ -449,11 +457,6 @@ form {
 	@apply bg-gray-700 w-8 h-16 absolute top-3 rounded-r-lg flex items-center justify-center cursor-pointer;
 }
 
-.fluid-container {
-	@apply w-full h-full absolute bg-black bg-opacity-70 flex items-center justify-center;
-	z-index: 2;
-}
-
 /* ****************** */
 /* *** Animations *** */
 /* ****************** */
@@ -468,6 +471,7 @@ form {
 	from {
 		width: 100%;
 	}
+
 	to {
 		width: 0;
 	}
@@ -477,6 +481,7 @@ form {
 	from {
 		width: 100%;
 	}
+
 	to {
 		width: 0;
 	}
@@ -519,6 +524,7 @@ form {
 		transform: translate3d(0, 0, 0);
 	}
 }
+
 .picked-card-animation {
 	-webkit-animation-name: picked;
 	animation-name: picked;
@@ -545,6 +551,7 @@ form {
 		transform: translate3d(0, -2000px, 0) scaleY(3);
 	}
 }
+
 .pick-card-animation {
 	-webkit-animation-name: pick;
 	animation-name: pick;
@@ -557,6 +564,7 @@ form {
 		-webkit-transform: translateY(300px) scale(0.7);
 		transform: translateY(300px) scale(0.7);
 	}
+
 	to {
 		-webkit-transform: translateY(0) scale(1);
 		transform: translateY(0) scale(1);

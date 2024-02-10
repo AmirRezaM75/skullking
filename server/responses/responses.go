@@ -14,6 +14,8 @@ type StartBidding struct {
 	EndsAt int64  `json:"endsAt"`
 	State  string `json:"state"`
 	Round  int    `json:"round"`
+	// To indicate who will start picking after bidding is completed.
+	StarterPlayerId string `json:"starterPlayerId"`
 }
 
 type StartPicking struct {
@@ -39,19 +41,9 @@ type Card struct {
 	Type   string `json:"type"`
 }
 
-type Authentication struct {
-	User struct {
-		Id       string `json:"id"`
-		Email    string `json:"email"`
-		Username string `json:"username"`
-		Verified bool   `json:"verified"`
-	} `json:"user"`
-	Token string `json:"token"`
-}
-
 type Error struct {
-	Message string `json:"message"`
-	StatusCode int `json:"statusCode"`
+	Message    string `json:"message"`
+	StatusCode int    `json:"statusCode"`
 }
 
 type EndBidding struct {
@@ -90,9 +82,10 @@ type CreateGame struct {
 type Player struct {
 	Id              string   `json:"id"`
 	Username        string   `json:"username"`
-	Avatar          string   `json:"avatar"`
+	AvatarId        uint8    `json:"avatarId"`
 	Score           int      `json:"score"`
 	Bid             int      `json:"bid"`
+	IsConnected     bool     `json:"isConnected"`
 	HandCardIds     []uint16 `json:"handCardIds"`
 	PickableCardIds []uint16 `json:"pickableCardIds"`
 	WonTricksCount  uint     `json:"wonTricksCount"`
@@ -107,6 +100,7 @@ type Init struct {
 	Round          int         `json:"round"`
 	Trick          int         `json:"trick"`
 	State          string      `json:"state"`
+	LobbyId        string      `json:"lobbyId"`
 	ExpirationTime int64       `json:"expirationTime"`
 	PickingUserId  string      `json:"pickingUserId"`
 	Players        []Player    `json:"players"`
@@ -115,5 +109,9 @@ type Init struct {
 }
 
 type Left struct {
+	PlayerId string `json:"playerId"`
+}
+
+type Joined struct {
 	PlayerId string `json:"playerId"`
 }

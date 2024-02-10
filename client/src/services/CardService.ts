@@ -1,6 +1,15 @@
 import type { Card } from './../types';
 import { CardType } from './../constants';
 import ApiService from './ApiService';
+
+interface Response {
+	items: {
+		id: number;
+		number: number;
+		type: string;
+	}[];
+}
+
 class CardService {
 	cards: Card[] = [];
 
@@ -9,18 +18,19 @@ class CardService {
 		await apiService
 			.getCards()
 			.then((response) => response.json())
-			.then((data) => {
+			.then((data: Response) => {
 				data.items.forEach((c) => {
 					this.cards.push({
 						id: c.id,
-						type: c.type,
+						type: c.type as CardType,
 						number: c.number,
 						borderColor: this.getBorderColor(c.type),
 						backgroundColor: this.getBackgroundColor(c.type),
 						textColor: this.getTextColor(c.type),
 						imageURL: this.getImageURL(c.type),
 						isWinner: false,
-						disabled: false
+						disabled: false,
+						ownerUsername: ''
 					});
 				});
 			});

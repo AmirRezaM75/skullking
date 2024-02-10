@@ -3,10 +3,11 @@ package models
 import (
 	"errors"
 	"fmt"
-	"github.com/AmirRezaM75/skull-king/constants"
-	"github.com/AmirRezaM75/skull-king/pkg/support"
-	"github.com/AmirRezaM75/skull-king/responses"
 	"log"
+	"net/http"
+	"skullking/constants"
+	"skullking/pkg/syncx"
+	"skullking/responses"
 	"sort"
 	"time"
 )
@@ -17,10 +18,11 @@ type Game struct {
 	Trick          int
 	State          string
 	ExpirationTime int64
-	Players        map[string]*Player
+	Players        syncx.Map[string, *Player]
 	Rounds         [constants.MaxRounds]*Round
 	CreatorId      string
 	CreatedAt      int64
+	LobbyId        string
 }
 
 func (game *Game) findPlayerIndexForPicking() int {
@@ -28,8 +30,8 @@ func (game *Game) findPlayerIndexForPicking() int {
 
 	if pickedCardsCount != 0 {
 		index := game.getCurrentTrick().StarterPlayerIndex + pickedCardsCount
-		if index > len(game.Players) {
-			index -= len(game.Players)
+		if index > game.Players.Len() {
+			index -= game.Players.Len()
 		}
 		return index
 	}
@@ -40,7 +42,7 @@ func (game *Game) findPlayerIndexForPicking() int {
 
 	if game.Round > 1 && game.Trick == 1 {
 		index := game.getPreviousRound().StarterPlayerIndex + 1
-		if index > len(game.Players) {
+		if index > game.Players.Len() {
 			index = 1
 		}
 		return index
@@ -49,27 +51,12 @@ func (game *Game) findPlayerIndexForPicking() int {
 	playerId := game.getPreviousTrick().WinnerPlayerId
 
 	if playerId != "" {
-		for _, player := range game.Players {
-			if player.Id == playerId {
-				return player.Index
-			}
-		}
+		return game.findPlayerIndexById(playerId)
 	} else {
 		// TODO: Kraken - The next trick is led by the player who would have won the trick.
 		// TODO: Whale - The person who played the White Whale is the next to lead.
 		return game.getPreviousTrick().StarterPlayerIndex
 	}
-
-	log.Println(
-		fmt.Sprintf(
-			"Unable to find playerId within for loop. [gameId: %s, round: %d, trick: %d]",
-			game.Id,
-			game.Round,
-			game.Trick,
-		),
-	)
-
-	return 1
 }
 
 func (game *Game) setNextPlayerForPicking() string {
@@ -83,16 +70,9 @@ func (game *Game) setNextPlayerForPicking() string {
 		game.getCurrentTrick().StarterPlayerIndex = index
 	}
 
-	for _, player := range game.Players {
-		if player.Index == index {
-			game.getCurrentTrick().PickingUserId = player.Id
-			return player.Id
-		}
-	}
-
-	log.Println(fmt.Sprintf("Unable to find player by index %d", index))
-
-	return ""
+	playerId := game.findPlayerIdByIndex(index)
+	game.getCurrentTrick().PickingUserId = playerId
+	return playerId
 }
 
 func (game *Game) endGame(hub *Hub) {
@@ -103,13 +83,45 @@ func (game *Game) endGame(hub *Hub) {
 
 	hub.Dispatch <- m
 
-	_, err := hub.GameRepository.Create(*game)
+	err := hub.GameRepository.Create(game)
 
 	if err != nil {
-		fmt.Println("Can't persist game in database", err.Error())
+		hub.LogService.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not persist game in database",
+			"method":      "game@endGame",
+		})
 	}
 
-	delete(hub.Games, game.Id)
+	message, err := responses.GameEndedEvent(game.Id, game.LobbyId)
+
+	if err != nil {
+		hub.LogService.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal GameEndedEvent",
+			"method":      "GameHandler@Create",
+		})
+	}
+
+	err = hub.PublisherService.Publish(message)
+
+	hub.Games.Delete(game.Id)
+}
+
+// Start is just a wrapper around NextRound, to make it more readable
+func (game *Game) Start(hub *Hub) {
+	if game.Round != 0 {
+		return
+	}
+
+	m := &ServerMessage{
+		Command: constants.CommandStarted,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+
+	game.NextRound(hub)
 }
 
 func (game *Game) NextRound(hub *Hub) {
@@ -126,29 +138,19 @@ func (game *Game) NextRound(hub *Hub) {
 
 	deck.Shuffle()
 
-	dealtCardIds := deck.Deal(len(game.Players), game.Round)
+	dealtCardIds := deck.Deal(game.Players.Len(), game.Round)
 
 	round := Round{
 		Number:     game.Round,
-		DealtCards: make(map[string][]CardId, len(game.Players)),
-		Bids:       make(map[string]int, len(game.Players)),
+		DealtCards: make(map[string][]CardId, game.Players.Len()),
+		Bids:       syncx.Map[string, int]{},
 		Tricks:     make([]*Trick, game.Round),
-		Scores:     make(map[string]int, len(game.Players)),
+		Scores:     make(map[string]int, game.Players.Len()),
 	}
 
-	index := 0
-
 	for _, player := range game.getPlayers() {
-		// Initially, we assign a Unix time as an index for each player when they join.
-		// However, we require a sequential index starting from 1 to identify the next player for picking.
-		if player.Index > constants.MaxPlayers {
-			player.Index = index + 1
-		}
-
-		round.DealtCards[player.Id] = dealtCardIds[index]
-		round.Bids[player.Id] = 0
-
-		index++
+		round.DealtCards[player.Id] = dealtCardIds[player.Index-1]
+		round.Bids.Store(player.Id, 0)
 	}
 
 	trick := &Trick{
@@ -157,7 +159,7 @@ func (game *Game) NextRound(hub *Hub) {
 	round.Tricks[game.Trick-1] = trick
 	game.Rounds[game.Round-1] = &round
 
-	for _, player := range game.Players {
+	game.Players.Range(func(_ string, player *Player) bool {
 		content := responses.Deal{
 			Round: game.Round,
 			Trick: game.Trick,
@@ -173,7 +175,8 @@ func (game *Game) NextRound(hub *Hub) {
 		}
 
 		hub.Dispatch <- m
-	}
+		return true
+	})
 
 	game.startBidding(hub)
 }
@@ -183,10 +186,15 @@ func (game *Game) startBidding(hub *Hub) {
 
 	game.State = constants.StateBidding
 
+	index := game.findPlayerIndexForPicking()
+
+	playerId := game.findPlayerIdByIndex(index)
+
 	content := responses.StartBidding{
-		EndsAt: time.Now().Add(duration).Unix(),
-		State:  game.State,
-		Round:  game.Round,
+		EndsAt:          time.Now().Add(duration).Unix(),
+		State:           game.State,
+		Round:           game.Round,
+		StarterPlayerId: playerId,
 	}
 
 	m := &ServerMessage{
@@ -213,12 +221,13 @@ func (game *Game) endBidding(hub *Hub) {
 
 	var bids []responses.Bid
 
-	for playerId, number := range game.getCurrentRound().Bids {
+	game.getCurrentRound().Bids.Range(func(playerId string, bid int) bool {
 		bids = append(bids, responses.Bid{
 			PlayerId: playerId,
-			Number:   number,
+			Number:   bid,
 		})
-	}
+		return true
+	})
 
 	content := responses.EndBidding{Bids: bids}
 
@@ -239,7 +248,10 @@ func (game *Game) startPicking(hub *Hub) {
 	pickerId := game.setNextPlayerForPicking()
 
 	if pickerId == "" {
-		log.Println("No player id is found for picking")
+		hub.LogService.Error(map[string]string{
+			"method":      "game@StartPicking",
+			"description": "No player id is found for picking.",
+		})
 	}
 
 	content := responses.StartPicking{
@@ -249,7 +261,7 @@ func (game *Game) startPicking(hub *Hub) {
 		State:    game.State,
 	}
 
-	for _, player := range game.Players {
+	game.Players.Range(func(_ string, player *Player) bool {
 		if pickerId == player.Id {
 			content.CardIds = game.getPickableIntCardIds(pickerId)
 		}
@@ -262,7 +274,9 @@ func (game *Game) startPicking(hub *Hub) {
 		}
 
 		hub.Dispatch <- m
-	}
+
+		return true
+	})
 
 	game.ExpirationTime = content.EndsAt
 
@@ -335,7 +349,7 @@ func (game *Game) endPicking(hub *Hub) {
 
 func (game *Game) isTrickOver() bool {
 	var trick = game.getCurrentTrick()
-	return len(trick.PickedCards) == len(game.Players)
+	return len(trick.PickedCards) == game.Players.Len()
 }
 
 func (game *Game) announceTrickWinner(hub *Hub) {
@@ -365,12 +379,14 @@ func (game *Game) announceScores(hub *Hub) {
 	content := responses.AnnounceScore{}
 
 	for playerId, score := range round.Scores {
-		game.Players[playerId].Score += score
-		s := responses.Score{
-			PlayerId: playerId,
-			Score:    game.Players[playerId].Score,
+		if player, ok := game.Players.Load(playerId); ok {
+			player.Score += score
+			s := responses.Score{
+				PlayerId: player.Id,
+				Score:    player.Score,
+			}
+			content.Scores = append(content.Scores, s)
 		}
-		content.Scores = append(content.Scores, s)
 	}
 
 	m := &ServerMessage{
@@ -465,6 +481,16 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	hub.Dispatch <- m
 }
 
+func (game *Game) Joined(hub *Hub, playerId string) {
+	m := &ServerMessage{
+		Content: responses.Joined{PlayerId: playerId},
+		Command: constants.CommandJoined,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+}
+
 func (game *Game) Initialize(hub *Hub, receiverId string) {
 	var players []responses.Player
 
@@ -473,8 +499,9 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 
 		p.Id = player.Id
 		p.Username = player.Username
-		p.Avatar = player.Avatar
+		p.AvatarId = player.AvatarId
 		p.Score = player.Score
+		p.IsConnected = player.IsConnected
 
 		if game.Round != 0 {
 			var round = game.getCurrentRound()
@@ -482,7 +509,9 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 			p.WonTricksCount = round.getWonTricksCount(player.Id)
 
 			if player.Id == receiverId || game.State != constants.StateBidding {
-				p.Bid = round.Bids[player.Id]
+				if bid, ok := round.Bids.Load(player.Id); ok {
+					p.Bid = bid
+				}
 			}
 
 			// Receiver must not be aware of other cards
@@ -495,10 +524,12 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		players = append(players, p)
 	}
 
+	// TODO: Add starter player
 	content := responses.Init{
 		Round:          game.Round,
 		Trick:          game.Trick,
 		State:          game.State,
+		LobbyId:        game.LobbyId,
 		ExpirationTime: game.ExpirationTime,
 		Players:        players,
 		CreatorId:      game.CreatorId,
@@ -552,13 +583,12 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 	err := game.validateUserPickedCard(cardId, playerId)
 
 	if err != nil {
-		//
-		content := responses.Error{
-			Message: err.Error(),
-			StatusCode: 422,
-		}
 		m := &ServerMessage{
-			Content:    content,
+			Command: constants.CommandReportError,
+			Content: responses.Error{
+				Message:    err.Error(),
+				StatusCode: http.StatusUnprocessableEntity,
+			},
 			GameId:     game.Id,
 			ReceiverId: playerId,
 		}
@@ -591,35 +621,21 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 	game.endPicking(hub)
 }
 
-func (game *Game) GetAvailableAvatar() string {
-outerLoop:
-	for _, number := range support.Fill(constants.MaxPlayers) {
-		for _, player := range game.Players {
-			if player.Avatar == fmt.Sprintf("%d.jpg", number) {
-				continue outerLoop
-			}
-		}
-		return fmt.Sprintf("%d.jpg", number)
-	}
-
-	return ""
-}
-
 func (game *Game) Bid(hub *Hub, playerId string, number int) {
 	if number < 0 || number > game.Round {
-		content := responses.Error{
-			Message: "Invalid bid number.",
-			StatusCode: 422,
-		}
 		m := &ServerMessage{
-			Content:    content,
+			Command: constants.CommandReportError,
+			Content: responses.Error{
+				Message:    "Invalid bid number.",
+				StatusCode: http.StatusUnprocessableEntity,
+			},
 			GameId:     game.Id,
 			ReceiverId: playerId,
 		}
 		hub.Dispatch <- m
 		return
 	}
-	game.getCurrentRound().Bids[playerId] = number
+	game.getCurrentRound().Bids.Store(playerId, number)
 	content := responses.Bade{Number: number}
 	m := &ServerMessage{
 		Content:    content,
@@ -627,22 +643,6 @@ func (game *Game) Bid(hub *Hub, playerId string, number int) {
 		GameId:     game.Id,
 		ReceiverId: playerId,
 	}
-	hub.Dispatch <- m
-	// TODO: If he is the last one bidding, call endBidding()
-}
-
-func (game *Game) Join(hub *Hub, player *Player) {
-	m := &ServerMessage{
-		Command: constants.CommandJoined,
-		Content: responses.Player{
-			Id:       player.Id,
-			Username: player.Username,
-			Avatar:   player.Avatar,
-		},
-		GameId:     player.GameId,
-		ExcludedId: player.Id,
-	}
-
 	hub.Dispatch <- m
 }
 
@@ -681,21 +681,83 @@ func (game *Game) getPreviousTrick() *Trick {
 }
 
 func (game *Game) getPlayers() []*Player {
-	var players = make([]*Player, 0, len(game.Players))
+	var players = make([]*Player, 0, game.Players.Len())
 
-	var playerIds = make([]string, 0, len(game.Players))
+	var playerIds = make([]string, 0, game.Players.Len())
 
-	for playerId := range game.Players {
+	game.Players.Range(func(playerId string, _ *Player) bool {
 		playerIds = append(playerIds, playerId)
-	}
+		return true
+	})
 
 	sort.SliceStable(playerIds, func(i, j int) bool {
-		return game.Players[playerIds[i]].Index < game.Players[playerIds[j]].Index
+		return game.findPlayerIndexById(playerIds[i]) < game.findPlayerIndexById(playerIds[j])
 	})
 
 	for _, playerId := range playerIds {
-		players = append(players, game.Players[playerId])
+		if player, ok := game.Players.Load(playerId); ok {
+			players = append(players, player)
+		}
 	}
 
 	return players
+}
+
+func (game *Game) findPlayerIndexById(playerId string) int {
+	if player, ok := game.Players.Load(playerId); ok {
+		return player.Index
+	} else {
+		log.Println(
+			fmt.Sprintf(
+				"WARN: Unable to find player id %s. [gameId: %s, round: %d, trick: %d]",
+				playerId,
+				game.Id,
+				game.Round,
+				game.Trick,
+			),
+		)
+
+		return 1
+	}
+}
+
+func (game *Game) findPlayerIdByIndex(index int) string {
+	var id = ""
+
+	game.Players.Range(func(_ string, player *Player) bool {
+		if player.Index == index {
+			id = player.Id
+			return false
+		}
+		return true
+	})
+
+	if id == "" {
+		log.Println(
+			fmt.Sprintf(
+				"ERROR: Unable to find player index %d within for loop. [gameId: %s, round: %d, trick: %d]",
+				index,
+				game.Id,
+				game.Round,
+				game.Trick,
+			),
+		)
+	}
+
+	return id
+}
+
+func (game *Game) IsEveryoneConnected() bool {
+	var output = true
+
+	game.Players.Range(func(_ string, player *Player) bool {
+		if player.IsConnected == false {
+			output = false
+			return false
+		}
+
+		return true
+	})
+
+	return output
 }

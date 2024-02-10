@@ -1,6 +1,7 @@
 package models
 
 import (
+	"skullking/pkg/syncx"
 	"testing"
 )
 
@@ -11,11 +12,12 @@ func TestCalculateScore(t *testing.T) {
 		StarterPlayerIndex: 0,
 	}
 
+	bids := syncx.Map[string, int]{}
+	bids.Store("Bilbo", 1)
+	bids.Store("Arwen", 0)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Bilbo": 1,
-			"Arwen": 0,
-		},
+		Bids:   bids,
 		Number: 1,
 		Tricks: []*Trick{trick},
 		Scores: make(map[string]int, 2),
@@ -45,11 +47,12 @@ func TestCalculateScore2(t *testing.T) {
 		StarterPlayerIndex: 0,
 	}
 
+	bids := syncx.Map[string, int]{}
+	bids.Store("Bilbo", 2)
+	bids.Store("Arwen", 0)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Bilbo": 2,
-			"Arwen": 0,
-		},
+		Bids:   bids,
 		Number: 2,
 		Tricks: []*Trick{trick1, trick2},
 		Scores: make(map[string]int, 2),
@@ -67,11 +70,12 @@ func TestCalculateScore2(t *testing.T) {
 }
 
 func TestCalculateScore3(t *testing.T) {
+	bids := syncx.Map[string, int]{}
+	bids.Store("Bilbo", 0)
+	bids.Store("Arwen", 1)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Bilbo": 0,
-			"Arwen": 1,
-		},
+		Bids:   bids,
 		Number: 2,
 		Tricks: []*Trick{
 			{
@@ -95,10 +99,11 @@ func TestCalculateScore3(t *testing.T) {
 }
 
 func TestCalculateScore4(t *testing.T) {
+	bids := syncx.Map[string, int]{}
+	bids.Store("Bilbo", 0)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Bilbo": 0,
-		},
+		Bids:   bids,
 		Number: 9,
 		Tricks: []*Trick{
 			{
@@ -118,10 +123,11 @@ func TestCalculateScore4(t *testing.T) {
 }
 
 func TestCalculateScore5(t *testing.T) {
+	bids := syncx.Map[string, int]{}
+	bids.Store("Bilbo", 0)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Bilbo": 0,
-		},
+		Bids:   bids,
 		Number: 7,
 		Tricks: []*Trick{},
 		Scores: make(map[string]int, 1),
@@ -135,11 +141,12 @@ func TestCalculateScore5(t *testing.T) {
 }
 
 func TestCalculateScoreWith14CardsBonusPoint(t *testing.T) {
+	bids := syncx.Map[string, int]{}
+	bids.Store("Frodo", 3)
+	bids.Store("Gandalf", 1)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Frodo":   3,
-			"Gandalf": 1,
-		},
+		Bids:   bids,
 		Number: 3,
 		Tricks: []*Trick{
 			{
@@ -175,11 +182,12 @@ func TestCalculateScoreWith14CardsBonusPoint(t *testing.T) {
 }
 
 func TestCalculateScoreWithSkullKingBonusPoint(t *testing.T) {
+	bids := syncx.Map[string, int]{}
+	bids.Store("Frodo", 3)
+	bids.Store("Gandalf", 1)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Frodo":   3,
-			"Gandalf": 1,
-		},
+		Bids:   bids,
 		Number: 3,
 		Tricks: []*Trick{
 			{
@@ -216,11 +224,12 @@ func TestCalculateScoreWithSkullKingBonusPoint(t *testing.T) {
 }
 
 func TestNoBonusPointWhenYouBidWrong(t *testing.T) {
+	bids := syncx.Map[string, int]{}
+	bids.Store("Frodo", 3)
+	bids.Store("Gandalf", 1)
+
 	var round = Round{
-		Bids: map[string]int{
-			"Frodo":   3,
-			"Gandalf": 1,
-		},
+		Bids:   bids,
 		Number: 3,
 		Tricks: []*Trick{
 			{

@@ -14,7 +14,8 @@ import type {
 	Table,
 	InitResponse,
 	PlayerResponse,
-	LeftResponse
+	LeftResponse,
+	JoinedResponse
 } from './../types';
 import { GameCommand, GameState } from './../constants';
 import type CardService from './CardService';
@@ -24,6 +25,8 @@ import type Swiper from 'swiper';
 class GameService {
 	// Authenticated user id
 	authId: string;
+
+	lobbyId = '';
 
 	cardService: CardService;
 
@@ -67,7 +70,8 @@ class GameService {
 		username: ''
 	};
 
-	exceptionMessage: string = ""
+	errorMessage = '';
+	errorCode = 0;
 
 	constructor(cardService: CardService, authId: string) {
 		this.players = [];
@@ -87,6 +91,9 @@ class GameService {
 		switch (command) {
 			case GameCommand.Init:
 				this.init(content);
+				break;
+			case GameCommand.Started:
+				this.started();
 				break;
 			case GameCommand.Joined:
 				this.joined(content);
@@ -184,6 +191,7 @@ class GameService {
 		this.round = content.round;
 		this.trick = content.trick;
 		this.state = content.state;
+		this.lobbyId = content.lobbyId;
 
 		if (content.tableCards) {
 			content.tableCards.forEach((tableCard) => {
@@ -214,7 +222,8 @@ class GameService {
 		if (content.state === GameState.Bidding) {
 			this.startBidding({
 				endsAt: content.expirationTime,
-				state: content.state
+				state: content.state,
+				starterPlayerId: "",
 			});
 
 			const player = content.players.find((player) => player.id === this.authId);
@@ -244,12 +253,18 @@ class GameService {
 		}
 	}
 
-	joined(content: PlayerResponse) {
-		this.addPlayer(content);
+	joined(content: JoinedResponse) {
+		const player = this.findPlayerById(content.playerId);
+		if (player) {
+			player.isConnected = true;
+		}
 	}
 
 	left(content: LeftResponse) {
-		this.deletePlayerById(content.playerId);
+		const player = this.findPlayerById(content.playerId);
+		if (player) {
+			player.isConnected = false;
+		}
 	}
 
 	// To determine when next round is started, use deal()
@@ -261,6 +276,7 @@ class GameService {
 	}
 
 	endGame() {
+		this.state = GameState.EndGame;
 		this.cards = [];
 		this.table.cards = [];
 		const winner = this.players.reduce((previous, current) => {
@@ -316,6 +332,11 @@ class GameService {
 		this.notifierMessage = 'Bidding Time';
 		this.countdownColor = 'blue';
 		this.showCountdown = true;
+
+		const player = this.players.find((p) => p.id === content.starterPlayerId);
+		if (player) {
+			player.roundStarter = true;
+		}
 	}
 
 	endBidding(content: EndBiddingResponse) {
@@ -327,6 +348,10 @@ class GameService {
 			if (player) {
 				player.bid = bid.number;
 			}
+		});
+
+		this.players.forEach((player) => {
+			player.roundStarter = false;
 		});
 	}
 
@@ -428,7 +453,12 @@ class GameService {
 	}
 
 	reportError(content: ReportErrorResponse) {
-		this.exceptionMessage = content.message
+		this.errorMessage = content.message;
+		this.errorCode = content.statusCode;
+	}
+
+	started() {
+		//
 	}
 
 	addPlayer(player: PlayerResponse) {
@@ -441,23 +471,18 @@ class GameService {
 		if (exists) return;
 
 		const p: Player = {
-			avatar: '/images/avatars/' + player.avatar,
+			avatar: '/images/avatars/' + player.avatarId + '.jpg',
 			id: player.id,
 			username: player.username,
 			picking: false,
 			bid: player.bid,
 			score: player.score,
-			wonTricksCount: player.wonTricksCount
+			wonTricksCount: player.wonTricksCount,
+			isConnected: player.isConnected,
+			roundStarter: false
 		};
 
 		this.players.push(p);
-	}
-
-	deletePlayerById(id: string) {
-		const index = this.players.findIndex((player) => player.id === id);
-		if (index !== -1) {
-			this.players.splice(index, 1);
-		}
 	}
 
 	findPlayerById(playerId: string): Player | null {
@@ -474,12 +499,9 @@ class GameService {
 			return '';
 		}
 
-		for (let i = 0; i < this.players.length; i++) {
-			if (this.players[i].picking) {
-				return this.players[i].id;
-			}
-		}
-		return '';
+		const player = this.players.find((p) => p.picking);
+
+		return player ? player.id : '';
 	}
 }
 

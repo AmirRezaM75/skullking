@@ -1,20 +1,5 @@
 <script lang="ts">
 	import Navigation from '../components/Navigation.svelte';
-	import ApiService from '../services/ApiService';
-	let loading = false;
-	async function createGame() {
-		if (loading == true) {
-			return;
-		}
-
-		loading = true;
-		const apiService = new ApiService();
-		const response = await apiService.createGame();
-		response.json().then((data) => {
-			loading = false;
-			window.location.href = `games/${data.id}`;
-		});
-	}
 
 	export let data;
 </script>
@@ -36,18 +21,8 @@
 			<p class="text-3xl text-white">Welcome to</p>
 			<h1 class="title-primary">Skull King</h1>
 			<div class="mt-10">
-				{#if data.action == 'play'}
-					<button
-						type="button"
-						on:click={createGame}
-						class="btn-secondary"
-						class:cursor-wait={loading}
-					>
-						{#if loading}
-							<span class="circle-loader mr-2" />
-						{/if}
-						<span>Play</span>
-					</button>
+				{#if data.isUserVerified}
+					<a class="btn-secondary" href="/lobbies">Play</a>
 				{:else}
 					<a href="/login" class="btn-secondary">Login</a>
 				{/if}

@@ -43,6 +43,13 @@ class AuthService {
 		user.verified = true;
 		this.save(user);
 	}
+
+	updateAvatarId(avatarId: number) {
+		const user = this.user();
+		if (!user) return;
+		user.avatarId = avatarId;
+		this.save(user);
+	}
 }
 
 export default AuthService;

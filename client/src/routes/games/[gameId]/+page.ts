@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import AuthService from '../../../services/AuthService';
 import CardService from '../../../services/CardService';
-import { IntendedGameId } from '../../../constants';
+import { IntendedUrl } from '../../../constants';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params }) {
@@ -9,7 +9,7 @@ export async function load({ params }) {
 	const user = auth.user();
 
 	if (!user) {
-		sessionStorage.setItem(IntendedGameId, params.gameId);
+		sessionStorage.setItem(IntendedUrl, window.location.href);
 		throw redirect(302, '/login');
 	} else if (!user.verified) {
 		throw redirect(302, '/verify-email');
@@ -20,7 +20,6 @@ export async function load({ params }) {
 
 	return {
 		gameId: params.gameId,
-		token: user.token,
 		authId: user.id,
 		cardService: cardService
 	};
