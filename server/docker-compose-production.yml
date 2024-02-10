@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   skullking-app:
-    container_name: skullking-app-production
+    container_name: skullking-app
     image: skullking-app-production
     logging:
       driver: loki
@@ -11,6 +11,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/production/Dockerfile
+    restart: always
     ports:
       - ${APP_FORWARD_PORT:-3000}:3000
     command:
@@ -19,7 +20,7 @@ services:
       - default
       - kenopsia-network
   skullking-mongo:
-    container_name: skullking-mongo-production
+    container_name: skullking-mongo
     # MongoDB 5.0+ requires a CPU with AVX support and my server doesn't
     # https://jira.mongodb.org/browse/SERVER-54407
     image: mongo:4.4
