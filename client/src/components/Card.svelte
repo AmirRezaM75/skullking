@@ -4,7 +4,7 @@
 
 	export let card: Card;
 	export let delay: number;
-	export let showCardOwner: boolean = false;
+	export let showCardOwner = false;
 	export { clazz as class };
 </script>
 

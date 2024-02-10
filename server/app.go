@@ -3,20 +3,34 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/amirrezam75/go-router"
+	m "github.com/amirrezam75/go-router/middlewares"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
+	"net/http"
 	"os"
+	"skullking/handlers"
+	"skullking/middlewares"
+	"skullking/services"
 	"time"
 )
+
+func initBroker() *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", os.Getenv("BROKER_REDIS_HOST"), os.Getenv("BROKER_REDIS_PORT")),
+		Password: os.Getenv("BROKER_REDIS_PASSWORD"),
+		DB:       0,
+	})
+}
 
 func initDatabase() (*mongo.Client, context.CancelFunc, func()) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	var mongoURI = fmt.Sprintf("mongodb://%s:%s", os.Getenv("MONGODB_HOST"), os.Getenv("MONGODB_PORT"))
+	var mongoURI = fmt.Sprintf("mongodb://%s:%d", os.Getenv("MONGODB_HOST"), 27017)
 
 	var credentials = options.Credential{
 		AuthSource: os.Getenv("MONGODB_AUTH_SOURCE"),
@@ -49,10 +63,44 @@ func loadEnvironments() {
 	}
 }
 
-func initRedis() *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
-		Password: os.Getenv("REDIS_PASSWORD"),
-		DB:       0,
-	})
+func setupRoutes(
+	gameHandler *handlers.GameHandler,
+	userService services.UserService,
+) *router.Router {
+	var rateLimiterLogger = func(identifier, url string) {
+		services.LogService{}.Info(map[string]string{
+			"message":    "Too many requests.",
+			"identifier": identifier,
+			"url":        url,
+		})
+	}
+
+	var rateLimiterConfig = m.RateLimiterConfig{
+		Duration: time.Minute,
+		Limit:    10,
+		Extractor: func(r *http.Request) string {
+			var user = services.ContextService{}.GetUser(r.Context())
+
+			if user == nil {
+				return r.RemoteAddr
+			}
+
+			return user.Id
+		},
+	}
+
+	var rateLimiterMiddleware = m.NewRateLimiterMiddleware(rateLimiterConfig, rateLimiterLogger)
+	var authMiddleware = middlewares.Authenticate{UserService: userService}
+
+	r := router.NewRouter()
+	r.Middleware(middlewares.CorsPolicy{})
+
+	r.Post("/games", gameHandler.Create).
+		Middleware(authMiddleware).
+		Middleware(rateLimiterMiddleware)
+
+	r.Get("/games/join", gameHandler.Join)
+	r.Get("/games/cards", gameHandler.Cards)
+
+	return r
 }

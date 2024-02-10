@@ -4,9 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
+	"net/http"
 	"skullking/constants"
-	"skullking/pkg/support"
 	"skullking/pkg/syncx"
 	"skullking/responses"
 	"sort"
@@ -23,6 +22,7 @@ type Game struct {
 	Rounds         [constants.MaxRounds]*Round
 	CreatorId      string
 	CreatedAt      int64
+	LobbyId        string
 }
 
 func (game *Game) findPlayerIndexForPicking() int {
@@ -86,10 +86,42 @@ func (game *Game) endGame(hub *Hub) {
 	err := hub.GameRepository.Create(game)
 
 	if err != nil {
-		fmt.Println("Can't persist game in database", err.Error())
+		hub.LogService.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not persist game in database",
+			"method":      "game@endGame",
+		})
 	}
 
+	message, err := responses.GameEndedEvent(game.Id, game.LobbyId)
+
+	if err != nil {
+		hub.LogService.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal GameEndedEvent",
+			"method":      "GameHandler@Create",
+		})
+	}
+
+	err = hub.PublisherService.Publish(message)
+
 	hub.Games.Delete(game.Id)
+}
+
+// Start is just a wrapper around NextRound, to make it more readable
+func (game *Game) Start(hub *Hub) {
+	if game.Round != 0 {
+		return
+	}
+
+	m := &ServerMessage{
+		Command: constants.CommandStarted,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+
+	game.NextRound(hub)
 }
 
 func (game *Game) NextRound(hub *Hub) {
@@ -114,47 +146,6 @@ func (game *Game) NextRound(hub *Hub) {
 		Bids:       syncx.Map[string, int]{},
 		Tricks:     make([]*Trick, game.Round),
 		Scores:     make(map[string]int, game.Players.Len()),
-	}
-
-	if game.Round == 1 {
-		rand.Seed(time.Now().UnixNano())
-
-		// Generate array of [0, players.length)
-		indexes := rand.Perm(game.Players.Len())
-
-		var i = 0
-
-		// Set user index randomly
-		game.Players.Range(func(_ string, player *Player) bool {
-			// Initially, we assign a Unix time as an index for each player when they join.
-			// However, we require a sequential index starting from 1 to identify the next player for picking.
-			if player.Index > constants.MaxPlayers {
-				player.Index = indexes[i] + 1
-			}
-
-			i++
-
-			return true
-		})
-
-		var players []responses.Player
-
-		for _, player := range game.getPlayers() {
-			players = append(players, responses.Player{
-				Id:       player.Id,
-				Username: player.Username,
-				Avatar:   player.Avatar,
-				Score:    player.Score,
-			})
-		}
-
-		m := &ServerMessage{
-			Content: responses.Started{Players: players},
-			Command: constants.CommandStarted,
-			GameId:  game.Id,
-		}
-
-		hub.Dispatch <- m
 	}
 
 	for _, player := range game.getPlayers() {
@@ -195,10 +186,15 @@ func (game *Game) startBidding(hub *Hub) {
 
 	game.State = constants.StateBidding
 
+	index := game.findPlayerIndexForPicking()
+
+	playerId := game.findPlayerIdByIndex(index)
+
 	content := responses.StartBidding{
-		EndsAt: time.Now().Add(duration).Unix(),
-		State:  game.State,
-		Round:  game.Round,
+		EndsAt:          time.Now().Add(duration).Unix(),
+		State:           game.State,
+		Round:           game.Round,
+		StarterPlayerId: playerId,
 	}
 
 	m := &ServerMessage{
@@ -252,7 +248,10 @@ func (game *Game) startPicking(hub *Hub) {
 	pickerId := game.setNextPlayerForPicking()
 
 	if pickerId == "" {
-		log.Println("No player id is found for picking")
+		hub.LogService.Error(map[string]string{
+			"method":      "game@StartPicking",
+			"description": "No player id is found for picking.",
+		})
 	}
 
 	content := responses.StartPicking{
@@ -482,6 +481,16 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 	hub.Dispatch <- m
 }
 
+func (game *Game) Joined(hub *Hub, playerId string) {
+	m := &ServerMessage{
+		Content: responses.Joined{PlayerId: playerId},
+		Command: constants.CommandJoined,
+		GameId:  game.Id,
+	}
+
+	hub.Dispatch <- m
+}
+
 func (game *Game) Initialize(hub *Hub, receiverId string) {
 	var players []responses.Player
 
@@ -490,8 +499,9 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 
 		p.Id = player.Id
 		p.Username = player.Username
-		p.Avatar = player.Avatar
+		p.AvatarId = player.AvatarId
 		p.Score = player.Score
+		p.IsConnected = player.IsConnected
 
 		if game.Round != 0 {
 			var round = game.getCurrentRound()
@@ -514,10 +524,12 @@ func (game *Game) Initialize(hub *Hub, receiverId string) {
 		players = append(players, p)
 	}
 
+	// TODO: Add starter player
 	content := responses.Init{
 		Round:          game.Round,
 		Trick:          game.Trick,
 		State:          game.State,
+		LobbyId:        game.LobbyId,
 		ExpirationTime: game.ExpirationTime,
 		Players:        players,
 		CreatorId:      game.CreatorId,
@@ -571,12 +583,12 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 	err := game.validateUserPickedCard(cardId, playerId)
 
 	if err != nil {
-		content := responses.Error{
-			Message:    err.Error(),
-			StatusCode: 422,
-		}
 		m := &ServerMessage{
-			Content:    content,
+			Command: constants.CommandReportError,
+			Content: responses.Error{
+				Message:    err.Error(),
+				StatusCode: http.StatusUnprocessableEntity,
+			},
 			GameId:     game.Id,
 			ReceiverId: playerId,
 		}
@@ -609,35 +621,14 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 	game.endPicking(hub)
 }
 
-func (game *Game) GetAvailableAvatar() string {
-	avatars := map[string]bool{}
-
-	game.Players.Range(func(_ string, player *Player) bool {
-		avatars[player.Avatar] = true
-		return true
-	})
-
-	for _, number := range support.Fill(constants.MaxPlayers) {
-		var avatar = fmt.Sprintf("%d.jpg", number)
-
-		if exists := avatars[avatar]; !exists {
-			return avatar
-		}
-	}
-
-	fmt.Println("Couldn't find avatar")
-
-	return ""
-}
-
 func (game *Game) Bid(hub *Hub, playerId string, number int) {
 	if number < 0 || number > game.Round {
-		content := responses.Error{
-			Message:    "Invalid bid number.",
-			StatusCode: 422,
-		}
 		m := &ServerMessage{
-			Content:    content,
+			Command: constants.CommandReportError,
+			Content: responses.Error{
+				Message:    "Invalid bid number.",
+				StatusCode: http.StatusUnprocessableEntity,
+			},
 			GameId:     game.Id,
 			ReceiverId: playerId,
 		}
@@ -652,21 +643,6 @@ func (game *Game) Bid(hub *Hub, playerId string, number int) {
 		GameId:     game.Id,
 		ReceiverId: playerId,
 	}
-	hub.Dispatch <- m
-}
-
-func (game *Game) Join(hub *Hub, player *Player) {
-	m := &ServerMessage{
-		Command: constants.CommandJoined,
-		Content: responses.Player{
-			Id:       player.Id,
-			Username: player.Username,
-			Avatar:   player.Avatar,
-		},
-		GameId:     player.GameId,
-		ExcludedId: player.Id,
-	}
-
 	hub.Dispatch <- m
 }
 
@@ -733,7 +709,7 @@ func (game *Game) findPlayerIndexById(playerId string) int {
 	} else {
 		log.Println(
 			fmt.Sprintf(
-				"Unable to find player id %s. [gameId: %s, round: %d, trick: %d]",
+				"WARN: Unable to find player id %s. [gameId: %s, round: %d, trick: %d]",
 				playerId,
 				game.Id,
 				game.Round,
@@ -759,7 +735,7 @@ func (game *Game) findPlayerIdByIndex(index int) string {
 	if id == "" {
 		log.Println(
 			fmt.Sprintf(
-				"Unable to find player index %d within for loop. [gameId: %s, round: %d, trick: %d]",
+				"ERROR: Unable to find player index %d within for loop. [gameId: %s, round: %d, trick: %d]",
 				index,
 				game.Id,
 				game.Round,
@@ -769,4 +745,19 @@ func (game *Game) findPlayerIdByIndex(index int) string {
 	}
 
 	return id
+}
+
+func (game *Game) IsEveryoneConnected() bool {
+	var output = true
+
+	game.Players.Range(func(_ string, player *Player) bool {
+		if player.IsConnected == false {
+			output = false
+			return false
+		}
+
+		return true
+	})
+
+	return output
 }

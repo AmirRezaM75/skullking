@@ -26,6 +26,7 @@ export enum GameState {
 	Dealing = 'DEALING',
 	Picking = 'PICKING',
 	Bidding = 'BIDDING',
+	EndGame = 'END_GAME', // TODO: Not set in server
 	EndBidding = 'END_BIDDING', // TODO: Not set in server
 	AnnounceTrickWinner = 'ANNOUNCE_TRICK_WINNER' // TODO: Not set in server
 }
@@ -43,4 +44,4 @@ export enum CardType {
 	Escape = 'escape'
 }
 
-export const IntendedGameId = 'intended_game_id';
+export const IntendedUrl = 'intended_url';

@@ -12,7 +12,7 @@ type Player struct {
 	Id         string
 	Username   string
 	GameId     string
-	Avatar     string
+	AvatarId   uint8
 	Score      int
 	Index      int
 	Connection *websocket.Conn
@@ -56,7 +56,7 @@ func (player *Player) Read(hub *Hub) {
 
 	for {
 		_, m, err := player.Connection.ReadMessage()
-		// TODO: Validation of command types.
+
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
@@ -67,7 +67,11 @@ func (player *Player) Read(hub *Hub) {
 		err = json.Unmarshal(m, &message)
 
 		if err != nil {
-			log.Printf("unmarshal error: %v", err)
+			hub.LogService.Error(map[string]string{
+				"message":     err.Error(),
+				"method":      "player@read",
+				"description": "Could not unmarshal message.",
+			})
 			continue
 		}
 
@@ -82,7 +86,8 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 
 	game, _ := hub.Games.Load(player.GameId)
 
-	if message.Command == constants.CommandBid && game.State == constants.StateBidding {
+	if message.Command == constants.CommandBid &&
+		game.State == constants.StateBidding {
 		number, err := strconv.Atoi(message.Content)
 
 		if err != nil {
@@ -91,13 +96,6 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 
 		game.Bid(hub, player.Id, number)
 		return
-	}
-
-	if message.Command == constants.CommandStart &&
-		game.State == constants.StatePending &&
-		game.CreatorId == player.Id &&
-		game.Players.Len() > 1 {
-		game.NextRound(hub)
 	}
 
 	if message.Command == constants.CommandPick {

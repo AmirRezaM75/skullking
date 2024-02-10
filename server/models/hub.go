@@ -1,29 +1,45 @@
 package models
 
 import (
-	"fmt"
 	"skullking/constants"
 	"skullking/pkg/syncx"
 	"time"
 )
 
-// TODO: Couldn't define this interface inside contracts because of 'import cycle not allowed' error
+// Couldn't define this interface inside contracts because of 'import cycle not allowed' error
 
 type GameRepository interface {
 	Create(u *Game) error
 }
 
-type Hub struct {
-	Games          syncx.Map[string, *Game]
-	Dispatch       chan *ServerMessage
-	GameRepository GameRepository
+type PublisherService interface {
+	Publish(message string) error
 }
 
-func NewHub(gameRepository GameRepository) *Hub {
+type LogService interface {
+	Error(map[string]string)
+	Info(map[string]string)
+}
+
+type Hub struct {
+	Games            syncx.Map[string, *Game]
+	Dispatch         chan *ServerMessage
+	GameRepository   GameRepository
+	PublisherService PublisherService
+	LogService       LogService
+}
+
+func NewHub(
+	gameRepository GameRepository,
+	publisherService PublisherService,
+	logService LogService,
+) *Hub {
 	return &Hub{
-		Games:          syncx.Map[string, *Game]{},
-		Dispatch:       make(chan *ServerMessage),
-		GameRepository: gameRepository,
+		Games:            syncx.Map[string, *Game]{},
+		Dispatch:         make(chan *ServerMessage),
+		GameRepository:   gameRepository,
+		PublisherService: publisherService,
+		LogService:       logService,
 	}
 }
 
@@ -51,22 +67,11 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) Subscribe(player *Player) {
-	if game, ok := h.Games.Load(player.GameId); ok {
-		game.Players.Store(player.Id, player)
-	}
-}
-
 func (h *Hub) Unsubscribe(player *Player) {
-	// If the game status is PENDING, we will remove the player from the game
-	// to inform the game creator of the total number of players before starting.
-	// However, if the game has already started, we will not remove the player,
+	// If the game has already started, we will not remove the player,
 	// and the server decide on behalf of them.
 	if game, ok := h.Games.Load(player.GameId); ok {
-		if game.State == constants.StatePending {
-			game.Left(h, player.Id)
-			game.Players.Delete(player.Id)
-		}
+		game.Left(h, player.Id)
 	}
 
 	// TODO: If every one left the game delete the game.
@@ -76,7 +81,10 @@ func (h *Hub) Cleanup() {
 	h.Games.Range(func(_ string, game *Game) bool {
 		if game.CreatedAt <= time.Now().Add(-30*time.Minute).Unix() &&
 			game.State == constants.StatePending {
-			fmt.Printf("Delete game %s due to inactivity.\n", game.Id)
+			h.LogService.Info(map[string]string{
+				"message": "Delete game due to inactivity",
+				"gameId":  game.Id,
+			})
 			h.Games.Delete(game.Id)
 		}
 		return true

@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"skullking/constants"
-	"skullking/contracts"
 	"skullking/models"
-	"skullking/pkg/support"
 	"skullking/pkg/syncx"
 	"skullking/responses"
 	"skullking/services"
@@ -18,46 +16,113 @@ import (
 )
 
 type GameHandler struct {
-	hub         *models.Hub
-	userService contracts.UserService
+	hub           *models.Hub
+	lobbyService  services.LobbyService
+	ticketService services.TicketService
 }
 
-func NewGameHandler(hub *models.Hub, userService contracts.UserService) *GameHandler {
+func NewGameHandler(
+	hub *models.Hub,
+	lobbyService services.LobbyService,
+	ticketService services.TicketService,
+) *GameHandler {
 	return &GameHandler{
-		hub:         hub,
-		userService: userService,
+		hub:           hub,
+		lobbyService:  lobbyService,
+		ticketService: ticketService,
 	}
 }
 
 func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	user := services.ContextService{}.GetUser(r.Context())
 
 	if user == nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var payload struct {
+		LobbyId string `json:"lobbyId"`
+	}
+
+	err := decoder(&payload, w, r)
+
+	if err != nil {
+		return
+	}
+
+	var lobby = gameHandler.lobbyService.FindById(payload.LobbyId)
+
+	if lobby == nil {
+		errorResponse(w, "Lobby not found!", http.StatusNotFound)
 		return
 	}
 
 	game := &models.Game{
 		Id:        primitive.NewObjectID().Hex(),
 		State:     constants.StatePending,
-		Players:   syncx.Map[string, *models.Player]{},
-		CreatorId: user.Id.Hex(),
+		CreatorId: user.Id,
 		CreatedAt: time.Now().Unix(),
+		LobbyId:   lobby.Id,
 	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	// Generate array of [0, players.length)
+	indexes := rand.Perm(len(lobby.Players))
+
+	var players syncx.Map[string, *models.Player]
+
+	for i, player := range lobby.Players {
+		players.Store(player.Id, &models.Player{
+			Id:          player.Id,
+			Username:    player.Username,
+			GameId:      game.Id,
+			AvatarId:    player.AvatarId,
+			Index:       indexes[i] + 1,
+			IsConnected: false,
+		})
+	}
+
+	game.Players = players
 
 	gameHandler.hub.Cleanup()
 	gameHandler.hub.Games.Store(game.Id, game)
+
+	message, err := responses.GameCreatedEvent(game.Id, game.LobbyId)
+
+	if err != nil {
+		services.LogService{}.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal GameCreatedEvent",
+			"method":      "GameHandler@Create",
+		})
+	}
+
+	err = gameHandler.hub.PublisherService.Publish(message)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	response, err := json.Marshal(
 		responses.CreateGame{Id: game.Id},
 	)
 
 	if err != nil {
-		http.Error(w, "JSON marshal failed", 500)
+		services.LogService{}.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal CreateGame response.",
+			"method":      "GameHandler@Create",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusCreated)
 	_, _ = w.Write(response)
 }
 
@@ -91,7 +156,11 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	connection, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
-		log.Println("Upgrade TCP connection failed.", err)
+		services.LogService{}.Error(map[string]string{
+			"message":     err.Error(),
+			"method":      "GameHandler@Join",
+			"description": "Upgrade TCP connection failed.",
+		})
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -110,44 +179,28 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: The request can be intercepted
 	// @link https://devcenter.heroku.com/articles/websocket-security
-	token := r.URL.Query().Get("token")
+	ticketId := r.URL.Query().Get("ticketId")
 
-	claims, err := support.ParseJWT(token)
-
-	if err != nil {
+	if ticketId == "" {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message:    "Can not parse JWT.",
-				StatusCode: http.StatusUnauthorized,
+				Message:    "ticketId is required.",
+				StatusCode: http.StatusUnprocessableEntity,
 			},
 		}
 		connection.WriteJSON(message)
 		return
 	}
 
-	// TODO: Why not using middleware
-	user := gameHandler.userService.FindById(claims.ID)
+	userId := gameHandler.ticketService.AcquireUserId(ticketId)
 
-	if user == nil {
+	if userId == "" {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message:    "User not found.",
-				StatusCode: http.StatusNotFound,
-			},
-		}
-		connection.WriteJSON(message)
-		return
-	}
-
-	if user.EmailVerifiedAt == nil {
-		message := models.ServerMessage{
-			Command: constants.CommandReportError,
-			Content: responses.Error{
-				Message:    "Email has not been verified.",
+				Message:    "Unauthorized.",
 				StatusCode: http.StatusUnauthorized,
 			},
 		}
@@ -157,59 +210,31 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 
 	game, _ := gameHandler.hub.Games.Load(gameId)
 
-	if _, exists := game.Players.Load(user.Id.Hex()); !exists &&
-		game.Players.Len() == constants.MaxPlayers {
+	if player, exists := game.Players.Load(userId); exists {
+		player.Message = make(chan *models.ServerMessage, 10)
+		player.Connection = connection
+		player.IsConnected = true
+
+		go player.Write()
+
+		game.Initialize(gameHandler.hub, player.Id)
+
+		if game.IsEveryoneConnected() == true &&
+			game.State == constants.StatePending {
+			game.Start(gameHandler.hub)
+		}
+
+		game.Joined(gameHandler.hub, player.Id)
+
+		player.Read(gameHandler.hub)
+	} else {
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
-				Message:    "Game is already full.",
-				StatusCode: http.StatusBadRequest,
+				Message:    "You must join the game through lobby.",
+				StatusCode: http.StatusForbidden,
 			},
 		}
 		connection.WriteJSON(message)
-		return
 	}
-
-	var player *models.Player
-
-	if _, exists := game.Players.Load(user.Id.Hex()); exists {
-		player, _ = game.Players.Load(user.Id.Hex())
-		player.Connection = connection
-		player.Message = make(chan *models.ServerMessage, 10)
-		player.IsConnected = true
-		game.Initialize(gameHandler.hub, player.Id)
-	} else {
-		if game.State != constants.StatePending {
-			message := models.ServerMessage{
-				Command: constants.CommandReportError,
-				Content: responses.Error{
-					Message:    "You can not join the game that has already started.",
-					StatusCode: http.StatusBadRequest,
-				},
-			}
-			connection.WriteJSON(message)
-			return
-		}
-
-		player = &models.Player{
-			Id:          user.Id.Hex(),
-			Username:    user.Username,
-			GameId:      gameId,
-			Avatar:      game.GetAvailableAvatar(),
-			Connection:  connection,
-			Message:     make(chan *models.ServerMessage, 10),
-			Index:       int(time.Now().UnixMilli()),
-			IsConnected: true,
-		}
-
-		gameHandler.hub.Subscribe(player)
-
-		game.Initialize(gameHandler.hub, player.Id)
-
-		game.Join(gameHandler.hub, player)
-	}
-
-	go player.Write()
-
-	player.Read(gameHandler.hub)
 }

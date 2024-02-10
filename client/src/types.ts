@@ -6,16 +6,13 @@ export type User = {
 	username: string;
 	verified: boolean;
 	token: string;
-};
-
-export type CreateGameResponse = {
-	id: string;
-	statusCode: number;
+	avatarId: number;
 };
 
 export type StartBiddingResponse = {
 	endsAt: number;
 	state: GameState;
+	starterPlayerId: string;
 };
 
 export type EndBiddingResponse = {
@@ -44,6 +41,8 @@ export type Player = {
 	picking: boolean;
 	bid: number;
 	wonTricksCount: number;
+	isConnected: boolean;
+	roundStarter: boolean;
 };
 
 export type DealResponse = {
@@ -122,9 +121,10 @@ export type Countdown = {
 export type PlayerResponse = {
 	id: string;
 	username: string;
-	avatar: string;
+	avatarId: number;
 	score: number;
 	bid: number;
+	isConnected: boolean;
 	handCardIds: number[];
 	pickableCardIds: number[];
 	wonTricksCount: number;
@@ -139,6 +139,7 @@ export type InitResponse = {
 	round: number;
 	trick: number;
 	state: GameState;
+	lobbyId: string;
 	expirationTime: number;
 	pickingUserId: string;
 	players: PlayerResponse[];
@@ -146,10 +147,10 @@ export type InitResponse = {
 	tableCards: TableCardResponse[];
 };
 
-export type StartedResponse = {
-	players: PlayerResponse[];
+export type LeftResponse = {
+	playerId: string;
 };
 
-export type LeftResponse = {
+export type JoiedResponse = {
 	playerId: string;
 };

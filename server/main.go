@@ -2,16 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/amirrezam75/go-router"
 	"log"
 	"net/http"
 	"os"
 	"skullking/handlers"
-	"skullking/middlewares"
 	"skullking/models"
-	"skullking/pkg/validator"
 	"skullking/repositories"
-	"skullking/routes"
 	"skullking/services"
 )
 
@@ -20,40 +16,34 @@ func main() {
 
 	client, cancel, disconnect := initDatabase()
 
-	redis := initRedis()
-
 	defer cancel()
 	defer disconnect()
 
 	db := client.Database(os.Getenv("MONGODB_DATABASE"))
-	var userRepository = repositories.NewUserRepository(db)
 
-	var tokenRepository = repositories.NewTokenRepository(redis)
+	var ticketService = services.NewTicketService(os.Getenv("KENOPSIA_USER_BASE_URL"))
 
-	var userService = services.NewUserService(userRepository, tokenRepository)
-
-	v := validator.NewValidator()
-
-	r := router.NewRouter()
-	r.Middleware(middlewares.CorsPolicy{})
-
-	userHandler := handlers.NewUserHandler(userService, v)
+	var lobbyService = services.NewLobbyService(os.Getenv("KENOPSIA_LOBBY_BASE_URL"), os.Getenv("KENOPSIA_TOKEN"))
 
 	gameRepository := repositories.NewGameRepository(db)
 
-	hub := models.NewHub(gameRepository)
-	gameHandler := handlers.NewGameHandler(hub, userService)
+	var broker = initBroker()
+
+	var publisherService = services.NewPublisherService(broker)
+
+	var logService = services.LogService{}
+
+	hub := models.NewHub(gameRepository, publisherService, logService)
+
+	gameHandler := handlers.NewGameHandler(hub, lobbyService, ticketService)
 
 	go hub.Run()
 
-	routes.Route{
-		Router:      r,
-		UserService: userService,
-		UserHandler: userHandler,
-		GameHandler: gameHandler,
-	}.Setup()
+	userService := services.NewUserService()
+
+	var router = setupRoutes(gameHandler, userService)
 
 	fmt.Println("Listening on port 3000")
 
-	log.Fatal(http.ListenAndServe(":3000", r))
+	log.Fatal(http.ListenAndServe(":3000", router))
 }

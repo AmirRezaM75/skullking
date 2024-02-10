@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"skullking/models"
@@ -147,7 +146,6 @@ func (ur gameRepository) Create(game *models.Game) error {
 	gameId, err := primitive.ObjectIDFromHex(game.Id)
 
 	if err != nil {
-		fmt.Println("Can not convert hex to mongo ObjectID")
 		return err
 	}
 

@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  app:
-    container_name: sk-app
-    image: sk-app
+  skullking-app:
+    container_name: skullking-app
+    image: skullking-app
     build:
       context: .
       dockerfile: ./docker/production/Dockerfile
@@ -24,14 +24,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-  redis:
-    container_name: sk-redis
-    image: redis:alpine
-    volumes:
-      - redis-data:/data
-
 volumes:
   mongodb-data:
-    driver: local
-  redis-data:
     driver: local
