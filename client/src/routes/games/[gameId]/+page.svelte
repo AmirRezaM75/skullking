@@ -132,7 +132,7 @@
 			return;
 		}
 
-		if (isDigit && game.findPickingPlayerId() === data.authId) {
+		if (isDigit) {
 			const card = game.cards[parseInt(event.key) - 1];
 			if (card) {
 				pick(card.id);
@@ -171,10 +171,23 @@
 	}
 
 	function bid(bid: number) {
+		if (bid > game.round) {
+			return
+		}
 		bidFunc(bid);
 	}
 
 	function pick(cardId: number) {
+		if (game.findPickingPlayerId() !== data.authId) {
+			return
+		}
+
+		const card = game.cards.find(c => c.id === cardId)
+
+		if (!card || card.disabled) {
+			return
+		}
+
 		pickFunc(cardId);
 	}
 </script>
@@ -195,11 +208,14 @@
 </svelte:head>
 
 <div class="board">
-	{#if disconnected}
+	{#if game.errorMessage !== ''}
+		<ExceptionReporter
+			message={game.errorMessage}
+			errorCode={game.errorCode}
+			on:close={() => game.errorMessage = ''} 
+		/>
+	{:else if disconnected}
 		<ConnectionErrorDialog />
-	{/if}
-	{#if game.exceptionMessage !== ''}
-		<ExceptionReporter message={game.exceptionMessage} errorCode={404} />
 	{/if}
 	{#if game.state == GameState.Pending}
 		<Loader />
@@ -209,6 +225,14 @@
 				? 'open-sidebar-animation'
 				: 'close-sidebar-animation'}"
 		>
+			<div class="w-full px-5 pt-2 text-center">
+				<div class="w-full border-b border-gray-700 pb-2 uppercase text-sm text-white">
+					<span>Round: {game.round}</span>
+					<span class="mx-4">/</span>
+					<span>Trick: {game.trick}</span>
+				</div>
+			</div>
+
 			<div class="users-container">
 				{#each game.players as player}
 					<User {player} />

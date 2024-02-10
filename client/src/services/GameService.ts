@@ -70,7 +70,8 @@ class GameService {
 		username: ''
 	};
 
-	exceptionMessage = '';
+	errorMessage = '';
+	errorCode = 0;
 
 	constructor(cardService: CardService, authId: string) {
 		this.players = [];
@@ -442,7 +443,8 @@ class GameService {
 	}
 
 	reportError(content: ReportErrorResponse) {
-		this.exceptionMessage = content.message;
+		this.errorMessage = content.message;
+		this.errorCode = content.statusCode;
 	}
 
 	started() {
@@ -486,12 +488,9 @@ class GameService {
 			return '';
 		}
 
-		for (let i = 0; i < this.players.length; i++) {
-			if (this.players[i].picking) {
-				return this.players[i].id;
-			}
-		}
-		return '';
+		const player = this.players.find((p) => p.picking);
+
+		return player ? player.id : '';
 	}
 }
 

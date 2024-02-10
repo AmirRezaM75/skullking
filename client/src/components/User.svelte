@@ -13,6 +13,7 @@
 		<img src={player.avatar} alt="" />
 	</div>
 	<div class="info">
+		<!-- background: radial-gradient(circle, rgb(31 73 255) 0%, rgba(255,255,255,0) 100%); -->
 		<div class="username-container">
 			<div
 				class="connection-status {player.isConnected ? 'bg-green-500' : 'bg-red-500'}"

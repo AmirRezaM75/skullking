@@ -201,7 +201,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 			Command: constants.CommandReportError,
 			Content: responses.Error{
 				Message:    "Unauthorized.",
-				StatusCode: http.StatusUnprocessableEntity,
+				StatusCode: http.StatusUnauthorized,
 			},
 		}
 		connection.WriteJSON(message)
@@ -232,7 +232,7 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 			Command: constants.CommandReportError,
 			Content: responses.Error{
 				Message:    "You must join the game through lobby.",
-				StatusCode: http.StatusBadRequest,
+				StatusCode: http.StatusForbidden,
 			},
 		}
 		connection.WriteJSON(message)

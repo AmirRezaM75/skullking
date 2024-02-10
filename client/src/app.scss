@@ -64,6 +64,10 @@ form {
 		background: linear-gradient(45deg, white, wheat);
 	}
 
+	&.light {
+		background: #e9e9e9;
+	}
+
 	&.primary-gradient {
 		background: linear-gradient(45deg, aqua, var(--lime-primary));
 	}
@@ -207,7 +211,7 @@ form {
 }
 
 .users-container {
-	@apply w-full h-full px-5;
+	@apply w-full h-full px-5 overflow-y-auto;
 
 	.user {
 		@apply flex items-center py-4 px-3 border-b border-b-gray-700;

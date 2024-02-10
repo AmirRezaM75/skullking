@@ -1,17 +1,26 @@
 <script lang="ts">
+	import { createEventDispatcher } from "svelte";
+
 	export let message: string;
 	export let label = 'Error';
 	export let errorCode = 0;
+
+	const dispatch = createEventDispatcher<{ close: boolean }>();
+
+	function close() {
+		dispatch('close', true);
+	}
 </script>
 
-<div class="exception-container">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="exception-container" on:click|self={close}>
 	<div class="dialog-box">
 		<p class="text-xl text-red-400 font-semibold uppercase mb-2">{label}</p>
 		<p class="text-gray-100">{message}</p>
 		<p>
 			<slot />
-			{#if errorCode !== 0}
-				<a href="/" class="btn light-gradient mt-4">
+			{#if [404, 403].includes(errorCode) }
+				<a href="/" class="btn light mt-4">
 					<img
 						width="18"
 						class="mr-2"

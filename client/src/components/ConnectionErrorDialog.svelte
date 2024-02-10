@@ -11,7 +11,7 @@
 	message="Connection to the server timed out. Please reload the page by clicking on the designated
 	button or using the appropriate keyboard shortcut."
 >
-	<button type="button" class="btn light-gradient mt-4" on:click={reload}>
+	<button type="button" class="btn light mt-4" on:click={reload}>
 		<img
 			class="mr-2"
 			width="20"
