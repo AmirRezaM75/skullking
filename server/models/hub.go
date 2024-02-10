@@ -81,10 +81,13 @@ func (h *Hub) Cleanup() {
 	h.Games.Range(func(_ string, game *Game) bool {
 		if game.CreatedAt <= time.Now().Add(-30*time.Minute).Unix() &&
 			game.State == constants.StatePending {
-			h.LogService.Info(map[string]string{
-				"message": "Delete game due to inactivity",
-				"gameId":  game.Id,
-			})
+			// Quick way to fix nil pointer when running tests
+			if h.LogService != nil {
+				h.LogService.Info(map[string]string{
+					"message": "Delete game due to inactivity",
+					"gameId":  game.Id,
+				})
+			}
 			h.Games.Delete(game.Id)
 		}
 		return true
