@@ -223,7 +223,7 @@ class GameService {
 			this.startBidding({
 				endsAt: content.expirationTime,
 				state: content.state,
-				starterPlayerId: "",
+				starterPlayerId: ''
 			});
 
 			const player = content.players.find((player) => player.id === this.authId);

@@ -148,7 +148,7 @@
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<div
 						on:click={() => openAvatarModal(player.id)}
-						class="relative bg-slate-900 p-6 rounded-lg text-center border border-slate-900
+						class="w-40 relative bg-slate-900 py-6 px-4 rounded-lg text-center border border-slate-900
 					{player.id === data.auth.id ? 'cursor-pointer hover:border-lime-primary' : ''}"
 					>
 						{#if data.auth.id === player.id}
@@ -157,11 +157,13 @@
 							</div>
 						{/if}
 						<div
-							class="mb-3 rounded-full w-24 h-24 bg-top bg-no-repeat"
+							class="mx-auto mb-3 rounded-full w-24 h-24 bg-top bg-no-repeat"
 							style="background-image: url({`/images/avatars/${player.avatarId + 1}.jpg`});
 							background-size: 110px"
 						/>
-						<span class="text-gray-300 font-bold text-lg uppercase">{player.username}</span>
+						<p class="w-full truncate text-gray-300 font-bold text-lg uppercase">
+							{player.username}
+						</p>
 					</div>
 				{/each}
 			</div>
