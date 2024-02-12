@@ -83,6 +83,7 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 			AvatarId:    player.AvatarId,
 			Index:       indexes[i] + 1,
 			IsConnected: false,
+			IsClosed:    true,
 		})
 	}
 
@@ -211,7 +212,9 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 	game, _ := gameHandler.hub.Games.Load(gameId)
 
 	if player, exists := game.Players.Load(userId); exists {
+		player.Kick()
 		player.Message = make(chan *models.ServerMessage, 10)
+		player.IsClosed = false
 		player.Connection = connection
 		player.IsConnected = true
 

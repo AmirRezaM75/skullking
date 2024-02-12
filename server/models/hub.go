@@ -52,13 +52,13 @@ func (h *Hub) Run() {
 				// If there is no specific receiver broadcast it to all players
 				if message.ReceiverId == "" {
 					game.Players.Range(func(_ string, player *Player) bool {
-						if message.ExcludedId != player.Id && player.IsConnected {
+						if message.ExcludedId != player.Id && !player.IsClosed {
 							player.Message <- message
 						}
 						return true
 					})
 				} else {
-					if p, ok := game.Players.Load(message.ReceiverId); ok && p.IsConnected {
+					if p, ok := game.Players.Load(message.ReceiverId); ok && !p.IsClosed {
 						p.Message <- message
 					}
 				}

@@ -20,18 +20,29 @@ type Player struct {
 	// To determine whether a player is currently participating in the game or has left,
 	// it can be useful to check whether their corresponding channel is open or closed.
 	IsConnected bool
+	// To keep track of closed channel
+	IsClosed bool
 }
 
-func (player *Player) disconnect() {
-	if player.IsConnected {
-		_ = player.Connection.Close()
-		player.IsConnected = false
+// Different scenarios for 'close of closed channel'
+// 1) If user opens duplicate tab and close the first one
+
+func (player *Player) Kick() {
+	if !player.IsClosed {
+		close(player.Message)
+		player.IsClosed = true
 	}
+
+	if player.Connection != nil {
+		_ = player.Connection.Close()
+	}
+
+	player.IsConnected = false
 }
 
 func (player *Player) Write() {
 	defer func() {
-		player.disconnect()
+		player.Kick()
 	}()
 
 	for {
@@ -47,8 +58,7 @@ func (player *Player) Write() {
 
 func (player *Player) Read(hub *Hub) {
 	defer func() {
-		player.disconnect()
-		close(player.Message)
+		player.Kick()
 		hub.Unsubscribe(player)
 	}()
 
