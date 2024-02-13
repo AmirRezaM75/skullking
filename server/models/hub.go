@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"skullking/constants"
 	"skullking/pkg/syncx"
 	"time"
@@ -43,12 +44,36 @@ func NewHub(
 	}
 }
 
+func (h *Hub) logMessage(message *ServerMessage) {
+	content, err := json.Marshal(message)
+
+	if err != nil {
+		h.LogService.Error(map[string]string{
+			"message":     err.Error(),
+			"description": "Can not marshal message",
+		})
+		content = []byte("")
+	}
+
+	h.LogService.Info(map[string]string{
+		"message":    "event dispatched",
+		"excludedId": message.ExcludedId,
+		"receiverId": message.ReceiverId,
+		"gameId":     message.GameId,
+		"command":    message.Command,
+		"content":    string(content),
+	})
+}
+
 func (h *Hub) Run() {
 	for {
 		select {
 		case message := <-h.Dispatch:
 			if _, ok := h.Games.Load(message.GameId); ok {
 				var game, _ = h.Games.Load(message.GameId)
+
+				h.logMessage(message)
+
 				// If there is no specific receiver broadcast it to all players
 				if message.ReceiverId == "" {
 					game.Players.Range(func(_ string, player *Player) bool {
