@@ -6,6 +6,7 @@ import (
 	"log"
 	"skullking/constants"
 	"strconv"
+	"sync"
 )
 
 type Player struct {
@@ -22,17 +23,28 @@ type Player struct {
 	IsConnected bool
 	// To keep track of closed channel
 	IsClosed bool
+	mutex    sync.Mutex
 }
 
 // Different scenarios for 'close of closed channel'
 // 1) If user opens duplicate tab and close the first one
 
 func (player *Player) Kick() {
+
+	// We are using mutex to make sure IsClosed value is evaluated correctly
+	// when reading its value at the same time.
+	// https://go101.org/article/channel-closing.html
+	player.mutex.Lock()
+
+	defer player.mutex.Unlock()
+
 	if !player.IsClosed {
 		close(player.Message)
 		player.IsClosed = true
 	}
 
+	// First we need to check if it's nil or not
+	// we call kick method in game_handler, and player may has no connection
 	if player.Connection != nil {
 		_ = player.Connection.Close()
 	}
