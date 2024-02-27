@@ -30,7 +30,8 @@ services:
     volumes:
       - mongodb-data:/data/db
     networks:
-      - kenopsia-network
+      - default
+      - database-network
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
@@ -42,3 +43,6 @@ volumes:
 networks:
   kenopsia-network:
     name: kenopsia-network
+  database-network:
+    external:
+      name: metabase-network
