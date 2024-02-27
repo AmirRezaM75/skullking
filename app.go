@@ -1,4 +1,4 @@
-package main
+package skull_king
 
 import (
 	"context"

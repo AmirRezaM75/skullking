@@ -106,3 +106,11 @@ Capturing (taking) character cards will earn a bonus:
 - 20 points for each Mermaid taken by a Pirate.
 - 30 points for each Pirate taken by the Skull King.
 - 40 points for taking the Skull King with a Mermaid.
+
+# Setup
+
+## Production
+
+```bash
+docker compose -f docker-compose-production.yml up -d --build
+```
