@@ -111,6 +111,48 @@ Capturing (taking) character cards will earn a bonus:
 
 ## Production
 
+### Nginx
+
+```
+server
+{
+  listen 80;
+  server_name api.skullking.ir;
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl;
+  ssl_certificate /etc/letsencrypt/live/skullking.ir/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/skullking.ir/privkey.pem;
+  server_name api.skullking.ir;
+
+  location / {
+    proxy_pass http://127.0.0.1:3002/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  location /games/join  {
+    proxy_pass http://127.0.0.1:3002$request_uri;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+
+    proxy_read_timeout 300;
+    proxy_connect_timeout 300;
+    proxy_send_timeout 300;
+  }
+}
+```
+
+### Docker
+
 ```bash
 docker compose -f docker-compose-production.yml up -d --build
 ```
