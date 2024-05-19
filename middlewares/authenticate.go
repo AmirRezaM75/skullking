@@ -30,7 +30,12 @@ func (a Authenticate) Handle(next http.Handler) http.Handler {
 			return
 		}
 
-		user := a.UserService.FindById(claims.ID)
+		if claims.Subject == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		user := a.UserService.FindById(claims.Subject)
 
 		if user == nil {
 			w.WriteHeader(http.StatusUnauthorized)

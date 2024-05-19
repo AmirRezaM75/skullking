@@ -4,10 +4,6 @@ services:
   skullking-app:
     container_name: skullking-app
     image: skullking-app
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://localhost:3100/loki/api/v1/push"
     build:
       context: .
       dockerfile: ./docker/development/Dockerfile
