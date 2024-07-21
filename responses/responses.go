@@ -115,3 +115,7 @@ type Left struct {
 type Joined struct {
 	PlayerId string `json:"playerId"`
 }
+
+type StatisticsFetched struct {
+	RoundScoresPerUser map[string][]int `json:"roundScoresPerUser"`
+}
