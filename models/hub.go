@@ -77,9 +77,13 @@ func (h *Hub) Run() {
 				// If there is no specific receiver broadcast it to all players
 				if message.ReceiverId == "" {
 					game.Players.Range(func(_ string, player *Player) bool {
+						player.mutex.Lock()
+
 						if message.ExcludedId != player.Id && !player.IsClosed {
 							player.Message <- message
 						}
+
+						defer player.mutex.Unlock()
 						return true
 					})
 				} else {
@@ -105,12 +109,14 @@ func (h *Hub) Unsubscribe(player *Player) {
 func (h *Hub) Cleanup() {
 	h.Games.Range(func(_ string, game *Game) bool {
 		if game.CreatedAt <= time.Now().Add(-30*time.Minute).Unix() &&
-			game.State == constants.StatePending {
+			(game.State == constants.StatePending ||
+				game.State == constants.StateEnded) {
 			// Quick way to fix nil pointer when running tests
 			if h.LogService != nil {
 				h.LogService.Info(map[string]string{
-					"message": "Delete game due to inactivity",
+					"message": "Game has been deleted.",
 					"gameId":  game.Id,
+					"state":   game.State,
 				})
 			}
 			h.Games.Delete(game.Id)

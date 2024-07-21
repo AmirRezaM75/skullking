@@ -83,6 +83,8 @@ func (game *Game) endGame(hub *Hub) {
 
 	hub.Dispatch <- m
 
+	game.State = constants.StateEnded
+
 	err := hub.GameRepository.Create(game)
 
 	if err != nil {
@@ -103,9 +105,10 @@ func (game *Game) endGame(hub *Hub) {
 		})
 	}
 
-	err = hub.PublisherService.Publish(message)
+	_ = hub.PublisherService.Publish(message)
 
-	hub.Games.Delete(game.Id)
+	// We don't delete the game from memory, because user may try to get statistics
+	// We will delete later on with hub@cleanUp method.
 }
 
 // Start is just a wrapper around NextRound, to make it more readable
@@ -760,4 +763,35 @@ func (game *Game) IsEveryoneConnected() bool {
 	})
 
 	return output
+}
+
+func (game *Game) FetchStatistics(hub *Hub, receiverId string) {
+	var roundScoresPerUser = make(map[string][]int)
+	for _, round := range game.Rounds {
+		// We always need to check nil to avoid:
+		// runtime error: invalid memory address or nil pointer dereference
+		if round == nil {
+			break
+		}
+		for playerId, score := range round.Scores {
+			if scores, exists := roundScoresPerUser[playerId]; exists {
+				roundScoresPerUser[playerId] = append(scores, score)
+			} else {
+				roundScoresPerUser[playerId] = []int{score}
+			}
+		}
+	}
+
+	var content = responses.StatisticsFetched{
+		RoundScoresPerUser: roundScoresPerUser,
+	}
+
+	var m = &ServerMessage{
+		Content:    content,
+		Command:    constants.CommandStatisticsFetched,
+		GameId:     game.Id,
+		ReceiverId: receiverId,
+	}
+
+	hub.Dispatch <- m
 }

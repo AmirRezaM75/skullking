@@ -124,4 +124,8 @@ func (player *Player) react(message ClientMessage, hub *Hub) {
 		cardId, _ := strconv.Atoi(message.Content)
 		game.Pick(hub, uint16(cardId), player.Id)
 	}
+
+	if message.Command == constants.CommandFetchStatistics {
+		game.FetchStatistics(hub, player.Id)
+	}
 }

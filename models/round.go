@@ -5,6 +5,7 @@ import (
 	"skullking/pkg/syncx"
 )
 
+// Round map's keys refer to user id
 type Round struct {
 	Number             int
 	DealtCards         map[string][]CardId

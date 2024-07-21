@@ -17,8 +17,10 @@ const CommandAnnounceScores = "ANNOUNCE_SCORES"
 const CommandNextTrick = "NEXT_TRICK"
 const CommandEndGame = "END_GAME"
 const CommandReportError = "REPORT_ERROR"
+const CommandStatisticsFetched = "STATISTICS_FETCHED"
 
 // These commands coming from client
 
 const CommandPick = "PICK"
 const CommandBid = "BID"
+const CommandFetchStatistics = "FETCH_STATISTICS"
