@@ -89,3 +89,27 @@ func (trick Trick) getWinnerBonusPoint() int {
 	}
 	return bonus
 }
+
+func (trick Trick) getWinner() (CardId, string) {
+	var cardIds []CardId
+
+	for _, pickedCard := range trick.PickedCards {
+		cardIds = append(cardIds, pickedCard.CardId)
+	}
+
+	winnerCardId := winner(cardIds)
+
+	if winnerCardId == 0 {
+		return winnerCardId, ""
+	}
+
+	var winnerPlayerId string
+	for _, pickedCard := range trick.PickedCards {
+		if pickedCard.CardId == winnerCardId {
+			winnerPlayerId = pickedCard.PlayerId
+			break
+		}
+	}
+
+	return winnerCardId, winnerPlayerId
+}

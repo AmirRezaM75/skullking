@@ -28,6 +28,9 @@ type StartPicking struct {
 type Picked struct {
 	PlayerId string `json:"playerId"`
 	CardId   uint16 `json:"cardId"`
+	// We need to highlight currently winning card/player
+	// https://github.com/AmirRezaM75/skullking/issues/13
+	WinnerCardId uint16 `json:"winnerCardId"`
 }
 
 type AnnounceTrickWinner struct {

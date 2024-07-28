@@ -356,10 +356,12 @@ func (game *Game) isTrickOver() bool {
 }
 
 func (game *Game) announceTrickWinner(hub *Hub) {
-	cardId, playerId := game.findTrickWinner()
+	var trick = game.getCurrentTrick()
 
-	game.getCurrentTrick().WinnerPlayerId = playerId
-	game.getCurrentTrick().WinnerCardId = cardId
+	cardId, playerId := trick.getWinner()
+
+	trick.WinnerPlayerId = playerId
+	trick.WinnerCardId = cardId
 
 	content := responses.AnnounceTrickWinner{
 		PlayerId: playerId,
@@ -429,33 +431,9 @@ func (game *Game) nextTrick(hub *Hub) {
 	game.startPicking(hub)
 }
 
-func (game *Game) findTrickWinner() (CardId, string) {
-	var trick = game.getCurrentTrick()
-
-	var cardIds []CardId
-	for _, pickedCard := range trick.PickedCards {
-		cardIds = append(cardIds, pickedCard.CardId)
-	}
-
-	winnerCardId := winner(cardIds)
-
-	if winnerCardId == 0 {
-		return winnerCardId, ""
-	}
-
-	var winnerPlayerId string
-	for _, pickedCard := range trick.PickedCards {
-		if pickedCard.CardId == winnerCardId {
-			winnerPlayerId = pickedCard.PlayerId
-			break
-		}
-	}
-
-	return winnerCardId, winnerPlayerId
-}
-
 func (game *Game) pickForIdlePlayer(hub *Hub) {
 	var trick = game.getCurrentTrick()
+
 	var pickerId = trick.PickingUserId
 
 	if trick.isPlayerPicked(pickerId) {
@@ -468,11 +446,15 @@ func (game *Game) pickForIdlePlayer(hub *Hub) {
 		PlayerId: pickerId,
 		CardId:   CardId(availableCardIds[0]),
 	}
+
 	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
+	winnerCardId, _ := trick.getWinner()
+
 	content := responses.Picked{
-		PlayerId: pickerId,
-		CardId:   uint16(pickedCard.CardId),
+		PlayerId:     pickerId,
+		CardId:       uint16(pickedCard.CardId),
+		WinnerCardId: uint16(winnerCardId),
 	}
 
 	m := &ServerMessage{
@@ -608,9 +590,12 @@ func (game *Game) Pick(hub *Hub, cardId uint16, playerId string) {
 
 	trick.PickedCards = append(trick.PickedCards, pickedCard)
 
+	winnerCardId, _ := trick.getWinner()
+
 	content := responses.Picked{
-		PlayerId: playerId,
-		CardId:   cardId,
+		PlayerId:     playerId,
+		CardId:       cardId,
+		WinnerCardId: uint16(winnerCardId),
 	}
 
 	var m = &ServerMessage{
