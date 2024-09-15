@@ -78,17 +78,23 @@ func (h *Hub) Run() {
 				if message.ReceiverId == "" {
 					game.Players.Range(func(_ string, player *Player) bool {
 						player.mutex.Lock()
+						defer player.mutex.Unlock()
 
 						if message.ExcludedId != player.Id && !player.IsClosed {
 							player.Message <- message
 						}
 
-						defer player.mutex.Unlock()
 						return true
 					})
 				} else {
-					if p, ok := game.Players.Load(message.ReceiverId); ok && !p.IsClosed {
-						p.Message <- message
+					if player, ok := game.Players.Load(message.ReceiverId); ok {
+						func() {
+							player.mutex.Lock()
+							defer player.mutex.Unlock()
+							if !player.IsClosed {
+								player.Message <- message
+							}
+						}()
 					}
 				}
 			}
