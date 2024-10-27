@@ -712,39 +712,27 @@ func (game *Game) findPlayerIndexById(playerId string) int {
 	}
 }
 
-func (game *Game) findPlayerByIndex(index int) *Player {
-	var player *Player
+func (game *Game) findPlayerIdByIndex(index int) string {
+	var id = ""
 
-	game.Players.Range(func(_ string, p *Player) bool {
-		if p.Index == index {
-			player = p
+	game.Players.Range(func(_ string, player *Player) bool {
+		if player.Index == index {
+			id = player.Id
 			return false
 		}
 		return true
 	})
 
-	if player == nil {
+	if id == "" {
 		log.Println(
 			fmt.Sprintf(
-				"ERROR: Unable to find player by index %d. [gameId: %s, round: %d, trick: %d]",
+				"ERROR: Unable to find player index %d within for loop. [gameId: %s, round: %d, trick: %d]",
 				index,
 				game.Id,
 				game.Round,
 				game.Trick,
 			),
 		)
-	}
-
-	return player
-}
-
-func (game *Game) findPlayerIdByIndex(index int) string {
-	var player = game.findPlayerByIndex(index)
-
-	var id = ""
-
-	if player != nil {
-		id = player.Id
 	}
 
 	return id
@@ -815,7 +803,7 @@ func (game *Game) handleBotsBid(hub *Hub) {
 			return true
 		}
 
-		game.getCurrentRound().Bids.Store(player.Id, bid)
+		game.Bid(hub, player.Id, bid)
 
 		return true
 	})
