@@ -27,13 +27,15 @@ func main() {
 
 	gameRepository := repositories.NewGameRepository(db)
 
+	botRepository := repositories.NewBotRepository(os.Getenv("SKULL_KING_AI_BASE_UR"))
+
 	var broker = initBroker()
 
 	var publisherService = services.NewPublisherService(broker)
 
 	var logService = services.LogService{}
 
-	hub := models.NewHub(gameRepository, publisherService, logService)
+	hub := models.NewHub(gameRepository, botRepository, publisherService, logService)
 
 	gameHandler := handlers.NewGameHandler(hub, lobbyService, ticketService)
 

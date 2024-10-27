@@ -156,6 +156,17 @@ func TestWhaleCardIsLeadWhenKrakenIsPickedBefore(t *testing.T) {
 	}
 }
 
+// The Kraken and the White Whale are ancient rivals.
+// When played in the same trick the second one played wins
+// the battle. That card then sets the action to be applied.
+func TestKrakenCardIsLeadWhenWhaleIsPickedBefore(t *testing.T) {
+	CardIds := []CardId{Pirate1, Mermaid1, Escape1, SkullKing, Whale, Parrot1, Kraken}
+	cardId := winner(CardIds)
+	if 0 != cardId {
+		t.Errorf("Wrong winner card.")
+	}
+}
+
 func TestMermaidWinsIfPirateAndSkullKingAreAllPlayed1(t *testing.T) {
 	CardIds := []CardId{Pirate1, Mermaid1, Escape1, SkullKing, Parrot1}
 	cardId := winner(CardIds)

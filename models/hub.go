@@ -13,6 +13,20 @@ type GameRepository interface {
 	Create(u *Game) error
 }
 
+type BotRepository interface {
+	Bid(cardIds []uint16) (int, error)
+	Pick(
+		handCards []uint16,
+		pickableCards []uint16,
+		tableCards []uint16,
+		observedCards []uint16,
+		bid int,
+		tricksTaken uint,
+		playerIndex int,
+		numPlayers int,
+	) (uint16, error)
+}
+
 type PublisherService interface {
 	Publish(message string) error
 }
@@ -26,12 +40,14 @@ type Hub struct {
 	Games            syncx.Map[string, *Game]
 	Dispatch         chan *ServerMessage
 	GameRepository   GameRepository
+	BotRepository    BotRepository
 	PublisherService PublisherService
 	LogService       LogService
 }
 
 func NewHub(
 	gameRepository GameRepository,
+	botRepository BotRepository,
 	publisherService PublisherService,
 	logService LogService,
 ) *Hub {
@@ -39,6 +55,7 @@ func NewHub(
 		Games:            syncx.Map[string, *Game]{},
 		Dispatch:         make(chan *ServerMessage),
 		GameRepository:   gameRepository,
+		BotRepository:    botRepository,
 		PublisherService: publisherService,
 		LogService:       logService,
 	}
