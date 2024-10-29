@@ -27,7 +27,7 @@ func main() {
 
 	gameRepository := repositories.NewGameRepository(db)
 
-	botRepository := repositories.NewBotRepository(os.Getenv("SKULL_KING_AI_BASE_URL"))
+	botRepository := repositories.NewBotRepository(os.Getenv("SKULLKING_AI_BASE_URL"))
 
 	var broker = initBroker()
 
