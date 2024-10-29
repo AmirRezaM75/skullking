@@ -794,6 +794,9 @@ func (game *Game) handleBotsBid(hub *Hub) {
 
 		bid, err := hub.BotRepository.Bid(cardIds)
 
+		// In order to reduce pressure on AI server
+		time.Sleep(500 * time.Millisecond)
+
 		if err != nil {
 			hub.LogService.Error(map[string]string{
 				"msg": err.Error(),
@@ -810,6 +813,8 @@ func (game *Game) handleBotsBid(hub *Hub) {
 }
 
 func (game *Game) handleBotPick(hub *Hub, player *Player) {
+	var start = time.Now()
+
 	var round = game.getCurrentRound()
 
 	var trick = game.getCurrentTrick()
@@ -840,6 +845,17 @@ func (game *Game) handleBotPick(hub *Hub, player *Player) {
 		playerIndex,
 		numPlayers,
 	)
+
+	// It's better to wait for two seconds before picking
+	// 1) Gives better user experience
+	// 2) Reduce pressure on the AI server
+	elapsed := time.Since(start).Seconds()
+
+	const MaxWaitTime = 3
+	if elapsed < MaxWaitTime {
+		wait := time.Duration(MaxWaitTime - elapsed)
+		time.Sleep(wait * time.Second)
+	}
 
 	if err != nil {
 		hub.LogService.Error(map[string]string{

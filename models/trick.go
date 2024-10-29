@@ -54,7 +54,8 @@ func (trick Trick) getAllPickedCardIds() []CardId {
 }
 
 func (trick Trick) getAllPickedIntCardIds() []uint16 {
-	var cardIds []uint16
+	// The SkullKing AI can't handle null
+	var cardIds = make([]uint16, 0)
 
 	for _, cardId := range trick.getAllPickedCardIds() {
 		cardIds = append(cardIds, uint16(cardId))
