@@ -114,16 +114,8 @@ outerLoop:
 func (round *Round) getRemainingIntCardIds(playerId string) []uint16 {
 	var remainingCardIds []uint16
 
-	pickedCardIds := round.getPickedCardIdsByPlayerId(playerId)
-
-outerLoop:
-	for _, dealtCardId := range round.DealtCards[playerId] {
-		for _, pickedCardId := range pickedCardIds {
-			if pickedCardId == dealtCardId {
-				continue outerLoop
-			}
-		}
-		remainingCardIds = append(remainingCardIds, uint16(dealtCardId))
+	for _, cardId := range round.getRemainingCardIds(playerId) {
+		remainingCardIds = append(remainingCardIds, uint16(cardId))
 	}
 
 	return remainingCardIds
@@ -142,4 +134,22 @@ func (round *Round) getWonTricksCount(playerId string) uint {
 	}
 
 	return count
+}
+
+func (round *Round) getAllPickedIntCardIdsBeforeTrick(trickNumber int) []uint16 {
+	var cardIds = make([]uint16, 0)
+
+	for _, trick := range round.Tricks {
+		if trick == nil {
+			break
+		}
+
+		if trick.Number >= trickNumber {
+			break
+		}
+
+		cardIds = append(cardIds, trick.getAllPickedIntCardIds()...)
+	}
+
+	return cardIds
 }

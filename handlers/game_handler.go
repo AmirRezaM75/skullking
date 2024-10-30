@@ -12,6 +12,7 @@ import (
 	"skullking/pkg/syncx"
 	"skullking/responses"
 	"skullking/services"
+	"strconv"
 	"time"
 )
 
@@ -70,21 +71,43 @@ func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	// Generate array of [0, players.length)
-	indexes := rand.Perm(len(lobby.Players))
+	var humansCount = len(lobby.Players)
+	var botsCount = len(lobby.Bots)
+
+	indexes := rand.Perm(humansCount + botsCount)
+
+	var index = 0
 
 	var players syncx.Map[string, *models.Player]
 
-	for i, player := range lobby.Players {
+	for _, player := range lobby.Players {
 		players.Store(player.Id, &models.Player{
 			Id:          player.Id,
 			Username:    player.Username,
 			GameId:      game.Id,
 			AvatarId:    player.AvatarId,
-			Index:       indexes[i] + 1,
+			Index:       indexes[index] + 1,
 			IsConnected: false,
 			IsClosed:    true,
+			IsBot:       false,
 		})
+		index++
+	}
+
+	for _, bot := range lobby.Bots {
+		var botId = strconv.Itoa(int(bot.Id))
+
+		players.Store(botId, &models.Player{
+			Id:          botId,
+			Username:    bot.Username,
+			GameId:      game.Id,
+			AvatarId:    bot.AvatarId,
+			Index:       indexes[index] + 1,
+			IsConnected: true,
+			IsClosed:    true,
+			IsBot:       true,
+		})
+		index++
 	}
 
 	game.Players = players

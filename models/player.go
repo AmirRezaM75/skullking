@@ -23,6 +23,7 @@ type Player struct {
 	IsConnected bool
 	// To keep track of closed channel
 	IsClosed bool
+	IsBot    bool
 	mutex    sync.Mutex
 }
 

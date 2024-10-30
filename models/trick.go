@@ -53,6 +53,17 @@ func (trick Trick) getAllPickedCardIds() []CardId {
 	return cardIds
 }
 
+func (trick Trick) getAllPickedIntCardIds() []uint16 {
+	// The SkullKing AI can't handle null
+	var cardIds = make([]uint16, 0)
+
+	for _, cardId := range trick.getAllPickedCardIds() {
+		cardIds = append(cardIds, uint16(cardId))
+	}
+
+	return cardIds
+}
+
 func (trick Trick) getWinnerBonusPoint() int {
 	var bonus int
 

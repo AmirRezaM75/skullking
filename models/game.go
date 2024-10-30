@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"skullking/constants"
 	"skullking/pkg/syncx"
@@ -210,6 +211,8 @@ func (game *Game) startBidding(hub *Hub) {
 
 	game.ExpirationTime = content.EndsAt
 
+	go game.handleBotsBid(hub)
+
 	timer := time.NewTimer(duration)
 
 	go func() {
@@ -250,13 +253,6 @@ func (game *Game) startPicking(hub *Hub) {
 
 	pickerId := game.setNextPlayerForPicking()
 
-	if pickerId == "" {
-		hub.LogService.Error(map[string]string{
-			"method":      "game@StartPicking",
-			"description": "No player id is found for picking.",
-		})
-	}
-
 	content := responses.StartPicking{
 		PlayerId: pickerId,
 		EndsAt:   game.getPickingExpirationTime(),
@@ -267,6 +263,13 @@ func (game *Game) startPicking(hub *Hub) {
 	game.Players.Range(func(_ string, player *Player) bool {
 		if pickerId == player.Id {
 			content.CardIds = game.getPickableIntCardIds(pickerId)
+
+			if player.IsBot {
+				go game.handleBotPick(hub, player)
+			}
+
+		} else {
+			content.CardIds = []uint16{}
 		}
 
 		m := &ServerMessage{
@@ -779,4 +782,86 @@ func (game *Game) FetchStatistics(hub *Hub, receiverId string) {
 	}
 
 	hub.Dispatch <- m
+}
+
+func (game *Game) handleBotsBid(hub *Hub) {
+	game.Players.Range(func(_ string, player *Player) bool {
+		if !player.IsBot {
+			return true
+		}
+
+		var cardIds = game.getCurrentRound().getDealtCardIdsByPlayerId(player.Id)
+
+		bid, err := hub.BotRepository.Bid(cardIds)
+
+		// In order to reduce pressure on AI server
+		time.Sleep(250 * time.Millisecond)
+
+		if err != nil {
+			hub.LogService.Error(map[string]string{
+				"msg": err.Error(),
+				"for": "BotRepository@Bid",
+			})
+
+			return true
+		}
+
+		game.Bid(hub, player.Id, bid)
+
+		return true
+	})
+}
+
+func (game *Game) handleBotPick(hub *Hub, player *Player) {
+	var round = game.getCurrentRound()
+
+	var trick = game.getCurrentTrick()
+
+	var handCards = round.getRemainingIntCardIds(player.Id)
+
+	var tableCards = trick.getAllPickedIntCardIds()
+
+	var observedCards = round.getAllPickedIntCardIdsBeforeTrick(trick.Number - 1)
+
+	bid, _ := round.Bids.Load(player.Id)
+
+	var tricksTaken = round.getWonTricksCount(player.Id)
+
+	var playerIndex = player.Index
+
+	var numPlayers = game.Players.Len()
+
+	var pickableCards = game.getPickableIntCardIds(player.Id)
+
+	cardId, err := hub.BotRepository.Pick(
+		handCards,
+		pickableCards,
+		tableCards,
+		observedCards,
+		bid,
+		tricksTaken,
+		playerIndex,
+		numPlayers,
+	)
+
+	// It's better to wait for two seconds before picking
+	// 1) Gives better user experience
+	// 2) Reduce pressure on the AI server
+	time.Sleep(3 * time.Second)
+
+	if err != nil {
+		hub.LogService.Error(map[string]string{
+			"msg": err.Error(),
+			"for": "BotRepository@Pick",
+		})
+
+		// Randomly select a card
+		rand.Seed(time.Now().UnixNano())
+
+		randomIndex := rand.Intn(len(pickableCards))
+
+		cardId = pickableCards[randomIndex]
+	}
+
+	game.Pick(hub, cardId, player.Id)
 }
