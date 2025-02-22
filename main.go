@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/amirrezam75/kenopsiauser"
 	"log"
 	"net/http"
 	"os"
@@ -18,10 +19,12 @@ func main() {
 
 	defer cancel()
 	defer disconnect()
-
 	db := client.Database(os.Getenv("MONGODB_DATABASE"))
 
-	var ticketService = services.NewTicketService(os.Getenv("KENOPSIA_USER_BASE_URL"))
+	var userRepository = kenopsiauser.NewUserRepository(
+		os.Getenv("KENOPSIA_USER_BASE_URL"),
+		os.Getenv("KENOPSIA_TOKEN"),
+	)
 
 	var lobbyService = services.NewLobbyService(os.Getenv("KENOPSIA_LOBBY_BASE_URL"), os.Getenv("KENOPSIA_TOKEN"))
 
@@ -37,13 +40,11 @@ func main() {
 
 	hub := models.NewHub(gameRepository, botRepository, publisherService, logService)
 
-	gameHandler := handlers.NewGameHandler(hub, lobbyService, ticketService)
+	gameHandler := handlers.NewGameHandler(hub, lobbyService, userRepository)
 
 	go hub.Run()
 
-	userService := services.NewUserService()
-
-	var router = setupRoutes(gameHandler, userService)
+	var router = setupRoutes(gameHandler, userRepository)
 
 	fmt.Println("Listening on port 3000")
 

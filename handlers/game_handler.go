@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
+	commonservices "github.com/amirrezam75/kenopsiacommon/services"
+	"github.com/amirrezam75/kenopsiauser"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/rand"
@@ -17,27 +19,27 @@ import (
 )
 
 type GameHandler struct {
-	hub           *models.Hub
-	lobbyService  services.LobbyService
-	ticketService services.TicketService
+	hub            *models.Hub
+	lobbyService   services.LobbyService
+	userRepository kenopsiauser.UserRepository
 }
 
 func NewGameHandler(
 	hub *models.Hub,
 	lobbyService services.LobbyService,
-	ticketService services.TicketService,
+	userRepository kenopsiauser.UserRepository,
 ) *GameHandler {
 	return &GameHandler{
-		hub:           hub,
-		lobbyService:  lobbyService,
-		ticketService: ticketService,
+		hub:            hub,
+		lobbyService:   lobbyService,
+		userRepository: userRepository,
 	}
 }
 
 func (gameHandler *GameHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	user := services.ContextService{}.GetUser(r.Context())
+	user := commonservices.ContextService{}.GetUser(r.Context())
 
 	if user == nil {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -218,9 +220,13 @@ func (gameHandler *GameHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId := gameHandler.ticketService.AcquireUserId(ticketId)
+	userId, err := gameHandler.userRepository.AcquireUserId(ticketId)
 
-	if userId == "" {
+	if err != nil {
+		services.LogService{}.Error(map[string]string{
+			"msg":  err.Error(),
+			"desc": "could not acquire user id",
+		})
 		message := models.ServerMessage{
 			Command: constants.CommandReportError,
 			Content: responses.Error{
