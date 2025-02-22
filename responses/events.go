@@ -9,13 +9,15 @@ type PublisherEvent struct {
 
 func GameCreatedEvent(gameId, lobbyId string) (string, error) {
 	type GameCreatedContent struct {
-		GameId  string `json:"gameId"`
-		LobbyId string `json:"lobbyId"`
+		GameId   string `json:"gameId"`
+		LobbyId  string `json:"lobbyId"`
+		GameName string `json:"gameName"`
 	}
 
 	var content = GameCreatedContent{
-		GameId:  gameId,
-		LobbyId: lobbyId,
+		GameId:   gameId,
+		LobbyId:  lobbyId,
+		GameName: "skullking",
 	}
 
 	return parseEvent("GameCreated", content)

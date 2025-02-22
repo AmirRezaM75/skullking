@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/amirrezam75/go-router"
 	m "github.com/amirrezam75/go-router/middlewares"
+	"github.com/amirrezam75/kenopsiacommon/middlwares"
+	commonservices "github.com/amirrezam75/kenopsiacommon/services"
+	"github.com/amirrezam75/kenopsiauser"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,7 +17,6 @@ import (
 	"net/http"
 	"os"
 	"skullking/handlers"
-	"skullking/middlewares"
 	"skullking/services"
 	"time"
 )
@@ -65,7 +67,7 @@ func loadEnvironments() {
 
 func setupRoutes(
 	gameHandler *handlers.GameHandler,
-	userService services.UserService,
+	userRepository kenopsiauser.UserRepository,
 ) *router.Router {
 	var rateLimiterLogger = func(identifier, url string) {
 		services.LogService{}.Info(map[string]string{
@@ -79,7 +81,7 @@ func setupRoutes(
 		Duration: time.Minute,
 		Limit:    10,
 		Extractor: func(r *http.Request) string {
-			var user = services.ContextService{}.GetUser(r.Context())
+			var user = commonservices.ContextService{}.GetUser(r.Context())
 
 			if user == nil {
 				return r.RemoteAddr
@@ -90,7 +92,7 @@ func setupRoutes(
 	}
 
 	var rateLimiterMiddleware = m.NewRateLimiterMiddleware(rateLimiterConfig, rateLimiterLogger)
-	var authMiddleware = middlewares.Authenticate{UserService: userService}
+	var authMiddleware = middlewares.NewAuthenticateMiddleware(userRepository)
 
 	r := router.NewRouter()
 	r.Middleware(middlewares.CorsPolicy{})
